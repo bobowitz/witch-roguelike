@@ -57,12 +57,13 @@ export class Player {
       if (e.x === x && e.y === y) {
         e.hurt(1);
         hitEnemy = true;
-        this.game.level.tick();
-        this.drawX = (this.x - x) * 0.5;
-        this.drawY = (this.y - y) * 0.5;
       }
     }
-    if (!hitEnemy) {
+    if (hitEnemy) {
+      this.drawX = (this.x - x) * 0.5;
+      this.drawY = (this.y - y) * 0.5;
+      this.game.level.tick();
+    } else {
       let other = this.game.level.getCollidable(x, y);
       if (other === null) {
         this.move(x, y);

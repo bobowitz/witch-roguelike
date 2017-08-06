@@ -1448,12 +1448,14 @@ var Player = (function () {
                 if (e.x === x && e.y === y) {
                     e.hurt(1);
                     hitEnemy = true;
-                    _this.game.level.tick();
-                    _this.drawX = (_this.x - x) * 0.5;
-                    _this.drawY = (_this.y - y) * 0.5;
                 }
             }
-            if (!hitEnemy) {
+            if (hitEnemy) {
+                _this.drawX = (_this.x - x) * 0.5;
+                _this.drawY = (_this.y - y) * 0.5;
+                _this.game.level.tick();
+            }
+            else {
                 var other = _this.game.level.getCollidable(x, y);
                 if (other === null) {
                     _this.move(x, y);
