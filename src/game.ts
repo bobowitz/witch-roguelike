@@ -30,6 +30,7 @@ export class Game {
 
       this.player = new Player(this, 0, 0);
       this.level = new Level(this, null);
+      this.level.enterLevel();
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
     });

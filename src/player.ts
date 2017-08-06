@@ -10,6 +10,8 @@ export class Player {
   y: number;
   w: number;
   h: number;
+  drawX: number;
+  drawY: number;
   game: Game;
 
   constructor(game: Game, x: number, y: number) {
@@ -52,13 +54,24 @@ export class Player {
   };
 
   move = (x: number, y: number) => {
+    this.drawX = x - this.x;
+    this.drawY = y - this.y;
     this.x = x;
     this.y = y;
+  };
+
+  moveNoSmooth = (x: number, y: number) => {
+    this.x = x;
+    this.y = y;
+    this.drawX = 0;
+    this.drawY = 0;
   };
 
   update = () => {};
 
   draw = () => {
-    Game.drawTile(0, 1, 1, 2, this.x, this.y - 1.5, 1, 2);
+    this.drawX += -0.5 * this.drawX;
+    this.drawY += -0.5 * this.drawY;
+    Game.drawTile(0, 1, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
   };
 }

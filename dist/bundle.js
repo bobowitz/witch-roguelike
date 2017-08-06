@@ -104,6 +104,7 @@ var Game = (function () {
             Game.tileset.src = "res/tileset.png";
             _this.player = new player_1.Player(_this, 0, 0);
             _this.level = new level_1.Level(_this, null);
+            _this.level.enterLevel();
             setInterval(_this.run, 1000.0 / gameConstants_1.GameConstants.FPS);
         });
     }
@@ -179,12 +180,12 @@ var Level = (function () {
         var _this = this;
         this.enterLevel = function () {
             if (_this.hasBottomDoor)
-                _this.game.player.move(_this.bottomDoorX, _this.bottomDoorY);
+                _this.game.player.moveNoSmooth(_this.bottomDoorX, _this.bottomDoorY);
             else
-                _this.game.player.move(_this.bottomDoorX, _this.bottomDoorY - 1);
+                _this.game.player.moveNoSmooth(_this.bottomDoorX, _this.bottomDoorY - 1);
         };
         this.enterLevelThroughDoor = function (door) {
-            _this.game.player.move(door.x, door.y + 1);
+            _this.game.player.moveNoSmooth(door.x, door.y + 1);
         };
         this.getCollidable = function (x, y) {
             for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
@@ -448,7 +449,6 @@ var Level = (function () {
             }
             this.levelArray[x][y] = new trapdoor_1.Trapdoor(this.game, x, y);
         }
-        this.game.player.move(this.bottomDoorX, this.bottomDoorY - 1);
     }
     Level.prototype.pointInside = function (x, y, rX, rY, rW, rH) {
         if (x < rX || x >= rX + rW)
@@ -795,16 +795,22 @@ var KnightEnemy = (function (_super) {
         _this.tick = function () {
             _this.ticks++;
             if (_this.ticks % 2 === 0) {
+                var oldX = _this.x;
+                var oldY = _this.y;
                 _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player);
                 if (_this.moves.length > 0 &&
                     !(_this.game.player.x === _this.moves[0].pos.x && _this.game.player.y === _this.moves[0].pos.y)) {
                     _this.x = _this.moves[0].pos.x;
                     _this.y = _this.moves[0].pos.y;
                 }
+                _this.drawX = _this.x - oldX;
+                _this.drawY = _this.y - oldY;
             }
         };
         _this.draw = function () {
-            game_1.Game.drawTile(1, 1, 1, 2, _this.x, _this.y - 1.5, 1, 2);
+            _this.drawX += -0.5 * _this.drawX;
+            _this.drawY += -0.5 * _this.drawY;
+            game_1.Game.drawTile(1, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
         };
         _this.game = game;
         _this.level = level;
@@ -840,6 +846,8 @@ var Enemy = (function (_super) {
     function Enemy(x, y) {
         var _this = _super.call(this, x, y) || this;
         _this.tick = function () { };
+        _this.drawX = 0;
+        _this.drawY = 0;
         return _this;
     }
     return Enemy;
@@ -1224,12 +1232,22 @@ var Player = (function () {
             }
         };
         this.move = function (x, y) {
+            _this.drawX = x - _this.x;
+            _this.drawY = y - _this.y;
             _this.x = x;
             _this.y = y;
         };
+        this.moveNoSmooth = function (x, y) {
+            _this.x = x;
+            _this.y = y;
+            _this.drawX = 0;
+            _this.drawY = 0;
+        };
         this.update = function () { };
         this.draw = function () {
-            game_1.Game.drawTile(0, 1, 1, 2, _this.x, _this.y - 1.5, 1, 2);
+            _this.drawX += -0.5 * _this.drawX;
+            _this.drawY += -0.5 * _this.drawY;
+            game_1.Game.drawTile(0, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
         };
         this.game = game;
         this.x = x;

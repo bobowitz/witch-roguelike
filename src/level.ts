@@ -291,17 +291,15 @@ export class Level {
       }
       this.levelArray[x][y] = new Trapdoor(this.game, x, y);
     }
-
-    this.game.player.move(this.bottomDoorX, this.bottomDoorY - 1);
   }
 
   enterLevel = () => {
-    if (this.hasBottomDoor) this.game.player.move(this.bottomDoorX, this.bottomDoorY);
-    else this.game.player.move(this.bottomDoorX, this.bottomDoorY - 1);
+    if (this.hasBottomDoor) this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY);
+    else this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);
   };
 
   enterLevelThroughDoor = (door: Door) => {
-    this.game.player.move(door.x, door.y + 1);
+    this.game.player.moveNoSmooth(door.x, door.y + 1);
   };
 
   getCollidable = (x: number, y: number) => {

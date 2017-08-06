@@ -21,6 +21,8 @@ export class KnightEnemy extends Enemy {
   tick = () => {
     this.ticks++;
     if (this.ticks % 2 === 0) {
+      let oldX = this.x;
+      let oldY = this.y;
       this.moves = astar.AStar.search(this.level.levelArray, this, this.game.player);
       if (
         this.moves.length > 0 &&
@@ -29,10 +31,14 @@ export class KnightEnemy extends Enemy {
         this.x = this.moves[0].pos.x;
         this.y = this.moves[0].pos.y;
       }
+      this.drawX = this.x - oldX;
+      this.drawY = this.y - oldY;
     }
   };
 
   draw = () => {
-    Game.drawTile(1, 1, 1, 2, this.x, this.y - 1.5, 1, 2);
+    this.drawX += -0.5 * this.drawX;
+    this.drawY += -0.5 * this.drawY;
+    Game.drawTile(1, 1, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
   };
 }
