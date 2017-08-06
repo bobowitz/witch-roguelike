@@ -15,4 +15,5 @@ export class Enemy extends Collidable {
   hurt = (damage: number) => {};
 
   tick = () => {};
+  drawTopLayer = () => {};
 }

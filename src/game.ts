@@ -61,6 +61,8 @@ export class Game {
     Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
     this.level.draw();
     this.player.draw();
+    this.level.drawTopLayer();
+    this.player.drawTopLayer();
   };
 
   static drawTile = (

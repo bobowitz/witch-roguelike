@@ -97,6 +97,8 @@ var Game = (function () {
             Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
             _this.level.draw();
             _this.player.draw();
+            _this.level.drawTopLayer();
+            _this.player.drawTopLayer();
         };
         window.addEventListener("load", function () {
             Game.ctx = document.getElementById("gameCanvas").getContext("2d");
@@ -231,6 +233,14 @@ var Level = (function () {
                 var e = _d[_c];
                 e.draw();
             }
+        };
+        // for stuff rendered on top of the player
+        this.drawTopLayer = function () {
+            for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                e.drawTopLayer();
+            }
+            // gui stuff
         };
         // if previousDoor is null, no bottom door
         this.hasBottomDoor = true;
@@ -831,7 +841,9 @@ var KnightEnemy = (function (_super) {
                 _this.drawY += -0.5 * _this.drawY;
                 game_1.Game.drawTile(3, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
             }
-            _this.healthBar.drawAboveTile(_this.x - _this.drawX, _this.y - 0.75 - _this.drawY);
+        };
+        _this.drawTopLayer = function () {
+            _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
         };
         _this.game = game;
         _this.level = level;
@@ -869,6 +881,7 @@ var Enemy = (function (_super) {
         var _this = _super.call(this, x, y) || this;
         _this.hurt = function (damage) { };
         _this.tick = function () { };
+        _this.drawTopLayer = function () { };
         _this.drawX = 0;
         _this.drawY = 0;
         return _this;
@@ -1297,13 +1310,17 @@ var Player = (function () {
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
                 game_1.Game.drawTile(0, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
-                _this.healthBar.drawAboveTile(_this.x - _this.drawX, _this.y - 0.75 - _this.drawY);
             }
             else {
                 game_1.Game.ctx.fillStyle = "white";
                 var gameOverString = "Game Over. Refresh the page";
                 game_1.Game.ctx.font = "14px courier";
                 game_1.Game.ctx.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2);
+            }
+        };
+        this.drawTopLayer = function () {
+            if (!_this.dead) {
+                _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
             }
         };
         this.game = game;
@@ -1383,30 +1400,40 @@ var gameConstants_1 = __webpack_require__(9);
 var HealthBar = (function () {
     function HealthBar(health) {
         var _this = this;
+        this.DRAW_TICKS = gameConstants_1.GameConstants.FPS * 3; // 3 seconds of ticks
         this.hurt = function (damage) {
             _this.health -= damage;
+            if (_this.drawTicks > 0)
+                _this.drawTicks = _this.DRAW_TICKS / 2;
+            else
+                _this.drawTicks = _this.DRAW_TICKS;
         };
+        // here x is the center of the bar
         this.draw = function (x, y) {
-            var healthPct = _this.health / _this.fullHealth;
-            var WIDTH = 14;
-            var HEIGHT = 1;
-            var BORDER_W = 1;
-            var BORDER_H = 1;
-            var redColor = "#ac3232";
-            var greenColor = "#6abe30";
-            var borderColor = "#222034";
-            game_1.Game.ctx.fillStyle = borderColor;
-            game_1.Game.ctx.fillRect(x, y - HEIGHT - BORDER_H * 2, WIDTH + BORDER_W * 2, HEIGHT + BORDER_H * 2);
-            game_1.Game.ctx.fillStyle = redColor;
-            game_1.Game.ctx.fillRect(x + BORDER_W, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
-            game_1.Game.ctx.fillStyle = greenColor;
-            game_1.Game.ctx.fillRect(x + BORDER_W, y - HEIGHT - BORDER_H, Math.floor(healthPct * WIDTH), HEIGHT);
+            if (_this.drawTicks > 0) {
+                _this.drawTicks--;
+                var healthPct = _this.health / _this.fullHealth;
+                var WIDTH = Math.min(14, Math.min(_this.DRAW_TICKS - _this.drawTicks, _this.drawTicks));
+                var HEIGHT = 1;
+                var BORDER_W = 1;
+                var BORDER_H = 1;
+                var redColor = "#ac3232";
+                var greenColor = "#6abe30";
+                var borderColor = "#222034";
+                game_1.Game.ctx.fillStyle = borderColor;
+                game_1.Game.ctx.fillRect(x - WIDTH / 2 - BORDER_W, y - HEIGHT - BORDER_H * 2, WIDTH + BORDER_W * 2, HEIGHT + BORDER_H * 2);
+                game_1.Game.ctx.fillStyle = redColor;
+                game_1.Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
+                game_1.Game.ctx.fillStyle = greenColor;
+                game_1.Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, Math.floor(healthPct * WIDTH), HEIGHT);
+            }
         };
         this.drawAboveTile = function (x, y) {
             _this.draw(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE);
         };
         this.health = health;
         this.fullHealth = health;
+        this.drawTicks = 0;
     }
     return HealthBar;
 }());

@@ -100,7 +100,6 @@ export class Player {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
       Game.drawTile(0, 1, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
-      this.healthBar.drawAboveTile(this.x - this.drawX, this.y - 0.75 - this.drawY);
     } else {
       Game.ctx.fillStyle = "white";
       let gameOverString = "Game Over. Refresh the page";
@@ -110,6 +109,12 @@ export class Player {
         GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
         GameConstants.HEIGHT / 2
       );
+    }
+  };
+
+  drawTopLayer = () => {
+    if (!this.dead) {
+      this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
     }
   };
 }

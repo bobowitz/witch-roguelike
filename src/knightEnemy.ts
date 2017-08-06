@@ -61,6 +61,9 @@ export class KnightEnemy extends Enemy {
       this.drawY += -0.5 * this.drawY;
       Game.drawTile(3, 1, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
     }
-    this.healthBar.drawAboveTile(this.x - this.drawX, this.y - 0.75 - this.drawY);
+  };
+
+  drawTopLayer = () => {
+    this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
   };
 }

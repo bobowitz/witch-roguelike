@@ -4,35 +4,55 @@ import { GameConstants } from "./gameConstants";
 export class HealthBar {
   health: number;
   fullHealth: number;
+  drawTicks: number;
+  readonly DRAW_TICKS = GameConstants.FPS * 3; // 3 seconds of ticks
 
   constructor(health: number) {
     this.health = health;
     this.fullHealth = health;
+    this.drawTicks = 0;
   }
 
   hurt = (damage: number) => {
     this.health -= damage;
+    if (this.drawTicks > 0) this.drawTicks = this.DRAW_TICKS / 2;
+    else this.drawTicks = this.DRAW_TICKS;
   };
 
+  // here x is the center of the bar
   draw = (x: number, y: number) => {
-    let healthPct = this.health / this.fullHealth;
+    if (this.drawTicks > 0) {
+      this.drawTicks--;
 
-    let WIDTH = 14;
-    let HEIGHT = 1;
-    let BORDER_W = 1;
-    let BORDER_H = 1;
+      let healthPct = this.health / this.fullHealth;
 
-    let redColor = "#ac3232";
-    let greenColor = "#6abe30";
-    let borderColor = "#222034";
+      let WIDTH = Math.min(14, Math.min(this.DRAW_TICKS - this.drawTicks, this.drawTicks));
+      let HEIGHT = 1;
+      let BORDER_W = 1;
+      let BORDER_H = 1;
 
-    Game.ctx.fillStyle = borderColor;
-    Game.ctx.fillRect(x, y - HEIGHT - BORDER_H * 2, WIDTH + BORDER_W * 2, HEIGHT + BORDER_H * 2);
-    Game.ctx.fillStyle = redColor;
-    Game.ctx.fillRect(x + BORDER_W, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
+      let redColor = "#ac3232";
+      let greenColor = "#6abe30";
+      let borderColor = "#222034";
 
-    Game.ctx.fillStyle = greenColor;
-    Game.ctx.fillRect(x + BORDER_W, y - HEIGHT - BORDER_H, Math.floor(healthPct * WIDTH), HEIGHT);
+      Game.ctx.fillStyle = borderColor;
+      Game.ctx.fillRect(
+        x - WIDTH / 2 - BORDER_W,
+        y - HEIGHT - BORDER_H * 2,
+        WIDTH + BORDER_W * 2,
+        HEIGHT + BORDER_H * 2
+      );
+      Game.ctx.fillStyle = redColor;
+      Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
+
+      Game.ctx.fillStyle = greenColor;
+      Game.ctx.fillRect(
+        x - WIDTH / 2,
+        y - HEIGHT - BORDER_H,
+        Math.floor(healthPct * WIDTH),
+        HEIGHT
+      );
+    }
   };
 
   drawAboveTile = (x: number, y: number) => {

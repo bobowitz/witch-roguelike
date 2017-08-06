@@ -345,4 +345,13 @@ export class Level {
       e.draw();
     }
   };
+
+  // for stuff rendered on top of the player
+  drawTopLayer = () => {
+    for (const e of this.enemies) {
+      e.drawTopLayer();
+    }
+
+    // gui stuff
+  };
 }
