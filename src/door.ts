@@ -5,22 +5,22 @@ import { Level } from "./level";
 
 export class Door extends Collidable {
   linkedLevel: Level;
-  inLevel: Level;
   game: Game;
+  deadEnd: boolean;
 
-  constructor(game: Game, inLevel: Level, x: number, y: number) {
-    super(x, y);
+  constructor(level: Level, game: Game, x: number, y: number, deadEnd: boolean) {
+    super(level, x, y);
     this.game = game;
-    this.inLevel = inLevel;
     this.linkedLevel = null;
+    this.deadEnd = deadEnd;
   }
 
   onCollide = (player: Player) => {
-    if (this.linkedLevel === null) this.linkedLevel = new Level(this.game, this);
+    if (this.linkedLevel === null) this.linkedLevel = new Level(this.game, this, this.deadEnd);
     this.game.changeLevel(this.linkedLevel);
   };
 
   draw = () => {
-    Game.drawTile(3, 0, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(3, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
   };
 }

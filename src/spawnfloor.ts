@@ -2,7 +2,7 @@ import { Game } from "./game";
 import { Tile } from "./tile";
 import { Level } from "./level";
 
-export class Floor extends Tile {
+export class SpawnFloor extends Tile {
   // all are in grid units
   w: number;
   h: number;

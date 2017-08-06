@@ -8,6 +8,8 @@ export class Game {
   level: Level;
   player: Player;
   static tileset: HTMLImageElement;
+  static mobset: HTMLImageElement;
+  static itemset: HTMLImageElement;
 
   // [min, max] inclusive
   static rand = (min: number, max: number): number => {
@@ -27,9 +29,13 @@ export class Game {
 
       Game.tileset = new Image();
       Game.tileset.src = "res/tileset.png";
+      Game.mobset = new Image();
+      Game.mobset.src = "res/mobset.png";
+      Game.itemset = new Image();
+      Game.itemset.src = "res/itemset.png";
 
       this.player = new Player(this, 0, 0);
-      this.level = new Level(this, null);
+      this.level = new Level(this, null, false);
       this.level.enterLevel();
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
@@ -42,7 +48,7 @@ export class Game {
   };
 
   changeLevelThroughDoor = (door: Door) => {
-    this.level = door.inLevel;
+    this.level = door.level;
     this.level.enterLevelThroughDoor(door);
   };
 
@@ -57,8 +63,6 @@ export class Game {
   };
 
   draw = () => {
-    Game.ctx.fillStyle = "#140c1c";
-    Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
     this.level.draw();
     this.player.draw();
     this.level.drawTopLayer();
@@ -77,6 +81,52 @@ export class Game {
   ) => {
     Game.ctx.drawImage(
       Game.tileset,
+      sX * GameConstants.TILESIZE,
+      sY * GameConstants.TILESIZE,
+      sW * GameConstants.TILESIZE,
+      sH * GameConstants.TILESIZE,
+      dX * GameConstants.TILESIZE,
+      dY * GameConstants.TILESIZE,
+      dW * GameConstants.TILESIZE,
+      dH * GameConstants.TILESIZE
+    );
+  };
+
+  static drawMob = (
+    sX: number,
+    sY: number,
+    sW: number,
+    sH: number,
+    dX: number,
+    dY: number,
+    dW: number,
+    dH: number
+  ) => {
+    Game.ctx.drawImage(
+      Game.mobset,
+      sX * GameConstants.TILESIZE,
+      sY * GameConstants.TILESIZE,
+      sW * GameConstants.TILESIZE,
+      sH * GameConstants.TILESIZE,
+      dX * GameConstants.TILESIZE,
+      dY * GameConstants.TILESIZE,
+      dW * GameConstants.TILESIZE,
+      dH * GameConstants.TILESIZE
+    );
+  };
+
+  static drawItem = (
+    sX: number,
+    sY: number,
+    sW: number,
+    sH: number,
+    dX: number,
+    dY: number,
+    dW: number,
+    dH: number
+  ) => {
+    Game.ctx.drawImage(
+      Game.itemset,
       sX * GameConstants.TILESIZE,
       sY * GameConstants.TILESIZE,
       sW * GameConstants.TILESIZE,

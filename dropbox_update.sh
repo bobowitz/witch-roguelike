@@ -1,0 +1,1 @@
+cp ~/Dropbox/3studios/witch-game/*.png res/

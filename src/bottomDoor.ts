@@ -7,8 +7,8 @@ export class BottomDoor extends Collidable {
   linkedTopDoor: Door;
   game: Game;
 
-  constructor(game: Game, linkedTopDoor: Door, x: number, y: number) {
-    super(x, y);
+  constructor(level: Level, game: Game, linkedTopDoor: Door, x: number, y: number) {
+    super(level, x, y);
     this.game = game;
     this.linkedTopDoor = linkedTopDoor;
   }
@@ -18,6 +18,6 @@ export class BottomDoor extends Collidable {
   };
 
   draw = () => {
-    Game.drawTile(1, 0, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(1, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
   };
 }

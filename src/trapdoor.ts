@@ -5,13 +5,13 @@ import { Level } from "./level";
 export class Trapdoor extends Collidable {
   game: Game;
 
-  constructor(game: Game, x: number, y: number) {
-    super(x, y);
+  constructor(level: Level, game: Game, x: number, y: number) {
+    super(level, x, y);
     this.game = game;
   }
 
   draw = () => {
-    Game.drawTile(13, 0, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(13, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
   };
 
   onCollide = () => {

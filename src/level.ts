@@ -10,14 +10,19 @@ import { Tile } from "./tile";
 import { Trapdoor } from "./trapdoor";
 import { KnightEnemy } from "./knightEnemy";
 import { Enemy } from "./enemy";
+import { Chest } from "./chest";
+import { Item } from "./item/item";
+import { SpawnFloor } from "./spawnfloor";
 
 export class Level {
   levelArray: Tile[][];
   enemies: Array<Enemy>;
+  items: Array<Item>;
   game: Game;
   bottomDoorX: number;
   bottomDoorY: number;
   hasBottomDoor: boolean;
+  env: number; // which environment is this level?
 
   private pointInside(
     x: number,
@@ -36,13 +41,19 @@ export class Level {
     for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
       for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
         if (this.levelArray[x][y] instanceof Wall) {
-          if (this.levelArray[x][y + 1] instanceof Floor) {
-            if (this.levelArray[x][y + 2] instanceof Floor)
-              this.levelArray[x][y + 1] = new WallSide(x, y + 1);
+          if (
+            this.levelArray[x][y + 1] instanceof Floor ||
+            this.levelArray[x][y + 1] instanceof SpawnFloor
+          ) {
+            if (
+              this.levelArray[x][y + 2] instanceof Floor ||
+              this.levelArray[x][y + 2] instanceof SpawnFloor
+            )
+              this.levelArray[x][y + 1] = new WallSide(this, x, y + 1);
             else {
               if (this.levelArray[x][y - 1] instanceof Wall)
-                this.levelArray[x][y] = new WallSide(x, y);
-              else this.levelArray[x][y] = new Floor(x, y);
+                this.levelArray[x][y] = new WallSide(this, x, y);
+              else this.levelArray[x][y] = new Floor(this, x, y);
             }
           }
         }
@@ -50,7 +61,11 @@ export class Level {
     }
   }
 
-  constructor(game: Game, previousDoor: Door) {
+  constructor(game: Game, previousDoor: Door, deadEnd: boolean) {
+    this.env = Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
+
+    this.items = Array<Item>();
+
     // if previousDoor is null, no bottom door
     this.hasBottomDoor = true;
     if (previousDoor === null) {
@@ -75,14 +90,14 @@ export class Level {
     // fill in outside walls
     for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
       for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
-        this.levelArray[x][y] = new Wall(x, y, 1);
+        this.levelArray[x][y] = new Wall(this, x, y, 1);
       }
     }
     // put in floors
     for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
       for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
         if (this.pointInside(x, y, roomX, roomY, width, height)) {
-          this.levelArray[x][y] = new Floor(x, y);
+          this.levelArray[x][y] = new Floor(this, x, y);
         }
       }
     }
@@ -91,7 +106,7 @@ export class Level {
       for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
         if (this.pointInside(x, y, roomX - 1, roomY - 1, width + 2, height + 2)) {
           if (!this.pointInside(x, y, roomX, roomY, width, height)) {
-            this.levelArray[x][y] = new Wall(x, y, 0);
+            this.levelArray[x][y] = new Wall(this, x, y, 0);
           }
         }
       }
@@ -108,7 +123,7 @@ export class Level {
 
       for (let xx = x; xx < x + blockW; xx++) {
         for (let yy = y; yy < y + blockH; yy++) {
-          this.levelArray[xx][yy] = new Wall(xx, yy, 0);
+          this.levelArray[xx][yy] = new Wall(this, xx, yy, 0);
         }
       }
     }
@@ -131,12 +146,12 @@ export class Level {
           y = Game.rand(roomY + 2, roomY + height - 3);
           for (let xx = x; xx < x + blockW + 1; xx++) {
             for (let yy = y - 2; yy < y + blockH + 2; yy++) {
-              this.levelArray[xx][yy] = new Floor(xx, yy);
+              this.levelArray[xx][yy] = new Floor(this, xx, yy);
             }
           }
           for (let xx = x; xx < x + blockW; xx++) {
             for (let yy = y; yy < y + blockH; yy++) {
-              this.levelArray[xx][yy] = new Wall(xx, yy, 0);
+              this.levelArray[xx][yy] = new Wall(this, xx, yy, 0);
             }
           }
         } else {
@@ -144,12 +159,12 @@ export class Level {
           y = Game.rand(roomY + 2, roomY + height - 3);
           for (let xx = x - 1; xx < x + blockW; xx++) {
             for (let yy = y - 2; yy < y + blockH + 2; yy++) {
-              this.levelArray[xx][yy] = new Floor(xx, yy);
+              this.levelArray[xx][yy] = new Floor(this, xx, yy);
             }
           }
           for (let xx = x; xx < x + blockW; xx++) {
             for (let yy = y; yy < y + blockH; yy++) {
-              this.levelArray[xx][yy] = new Wall(xx, yy, 0);
+              this.levelArray[xx][yy] = new Wall(this, xx, yy, 0);
             }
           }
         }
@@ -163,12 +178,12 @@ export class Level {
           x = Game.rand(roomX + 2, roomX + width - 3);
           for (let xx = x - 1; xx < x + blockW + 1; xx++) {
             for (let yy = y + 1; yy < y + blockH + 2; yy++) {
-              this.levelArray[xx][yy] = new Floor(xx, yy);
+              this.levelArray[xx][yy] = new Floor(this, xx, yy);
             }
           }
           for (let xx = x; xx < x + blockW; xx++) {
             for (let yy = y; yy < y + blockH; yy++) {
-              this.levelArray[xx][yy] = new Wall(xx, yy, 0);
+              this.levelArray[xx][yy] = new Wall(this, xx, yy, 0);
             }
           }
         } else {
@@ -176,24 +191,26 @@ export class Level {
           x = Game.rand(roomX + 2, roomX + width - 3);
           for (let xx = x - 1; xx < x + blockW + 1; xx++) {
             for (let yy = y - 2; yy < y + blockH; yy++) {
-              this.levelArray[xx][yy] = new Floor(xx, yy);
+              this.levelArray[xx][yy] = new Floor(this, xx, yy);
             }
           }
           for (let xx = x; xx < x + blockW; xx++) {
             for (let yy = y; yy < y + blockH; yy++) {
-              this.levelArray[xx][yy] = new Wall(xx, yy, 0);
+              this.levelArray[xx][yy] = new Wall(this, xx, yy, 0);
             }
           }
         }
       }
     }
 
-    this.levelArray[this.bottomDoorX][this.bottomDoorY - 1] = new Floor(
+    this.levelArray[this.bottomDoorX][this.bottomDoorY - 1] = new SpawnFloor(
+      this,
       this.bottomDoorX,
       this.bottomDoorY - 1
     );
     if (previousDoor !== null) {
       this.levelArray[this.bottomDoorX][this.bottomDoorY] = new BottomDoor(
+        this,
         this.game,
         previousDoor,
         this.bottomDoorX,
@@ -203,8 +220,39 @@ export class Level {
 
     this.fixWalls();
 
+    // add trapdoors
+    let numTrapdoors = Game.rand(1, 10);
+    if (numTrapdoors === 1) {
+      numTrapdoors = Game.randTable([1, 1, 1, 1, 1, 1, 2]);
+    } else numTrapdoors = 0;
+    for (let i = 0; i < numTrapdoors; i++) {
+      let x = 0;
+      let y = 0;
+      while (!(this.getTile(x, y) instanceof Floor)) {
+        x = Game.rand(roomX, roomX + width - 1);
+        y = Game.rand(roomY, roomY + height - 1);
+      }
+      this.levelArray[x][y] = new Trapdoor(this, this.game, x, y);
+    }
+
+    // add chests
+    let numChests = Game.rand(1, 10);
+    if (numChests === 1) {
+      numChests = Game.randTable([1, 1, 1, 2, 3, 4]);
+    } else numChests = 0;
+    for (let i = 0; i < numChests; i++) {
+      let x = 0;
+      let y = 0;
+      while (!(this.getTile(x, y) instanceof Floor)) {
+        x = Game.rand(roomX, roomX + width - 1);
+        y = Game.rand(roomY, roomY + height - 1);
+      }
+      this.levelArray[x][y] = new Chest(this, this.game, x, y);
+    }
+
     // add doors
     let numDoors = Game.randTable([1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3]);
+    if (deadEnd) numDoors = Game.randTable([0, 0, 1, 1, 1, 1]);
     for (let i = 0; i < numDoors; i++) {
       let x = 0;
       let y = 0;
@@ -218,7 +266,13 @@ export class Level {
         this.getTile(x + 1, y) instanceof Door
       );
 
-      this.levelArray[x][y] = new Door(this.game, this, x, y);
+      // if there are multiple doors, roll to see if the first one should be a dead end
+      if (i === 0 && numDoors > 1 && Game.rand(1, 10) === 1) {
+        this.levelArray[x][y] = new Door(this, this.game, x, y, true);
+      } else {
+        // otherwise, generate a non-dead end
+        this.levelArray[x][y] = new Door(this, this.game, x, y, deadEnd);
+      }
     }
 
     this.enemies = Array<Enemy>();
@@ -257,43 +311,7 @@ export class Level {
         x = Game.rand(roomX, roomX + width - 1);
         y = Game.rand(roomY, roomY + height - 1);
       }
-      this.enemies.push(new KnightEnemy(this.game, this, x, y));
-    }
-
-    // add trapdoors
-    let numTrapdoors = Game.randTable([
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      2,
-    ]);
-    for (let i = 0; i < numTrapdoors; i++) {
-      let x = 0;
-      let y = 0;
-      while (!(this.getTile(x, y) instanceof Floor)) {
-        x = Game.rand(roomX, roomX + width - 1);
-        y = Game.rand(roomY, roomY + height - 1);
-      }
-      this.levelArray[x][y] = new Trapdoor(this.game, x, y);
+      this.enemies.push(new KnightEnemy(this, this.game, x, y));
     }
   }
 
@@ -343,6 +361,9 @@ export class Level {
 
     for (const e of this.enemies) {
       e.draw();
+    }
+    for (const i of this.items) {
+      i.draw();
     }
   };
 

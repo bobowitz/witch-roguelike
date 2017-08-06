@@ -12,8 +12,8 @@ export class KnightEnemy extends Enemy {
   ticks: number;
   healthBar: HealthBar;
 
-  constructor(game: Game, level: Level, x: number, y: number) {
-    super(x, y);
+  constructor(level: Level, game: Game, x: number, y: number) {
+    super(level, x, y);
     this.game = game;
     this.level = level;
     this.moves = new Array<astar.AStarData>();
@@ -35,8 +35,10 @@ export class KnightEnemy extends Enemy {
           ) {
             this.game.player.hurt(1);
           } else {
-            this.x = this.moves[0].pos.x;
-            this.y = this.moves[0].pos.y;
+            if (this.game.level.getCollidable(this.moves[0].pos.x, this.moves[0].pos.y) === null) {
+              this.x = this.moves[0].pos.x;
+              this.y = this.moves[0].pos.y;
+            }
           }
         }
         this.drawX = this.x - oldX;
@@ -59,7 +61,7 @@ export class KnightEnemy extends Enemy {
     if (!this.dead) {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      Game.drawTile(3, 1, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+      Game.drawMob(3, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
     }
   };
 

@@ -9,4 +9,6 @@ export class LevelConstants {
 
   static readonly SCREEN_W = 17; // screen size in tiles
   static readonly SCREEN_H = 17; // screen size in tiles
+
+  static readonly ENVIRONMENTS = 4;
 }

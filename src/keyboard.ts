@@ -1,4 +1,4 @@
-export const Key = {
+export const Keyboard = {
   _pressed: {},
 
   rightListener: function() {},
@@ -17,19 +17,19 @@ export const Key = {
   },
 
   onKeydown: (event: KeyboardEvent) => {
-    Key._pressed[event.keyCode] = true;
+    Keyboard._pressed[event.keyCode] = true;
     switch (event.keyCode) {
-      case Key.LEFT:
-        Key.leftListener();
+      case Keyboard.LEFT:
+        Keyboard.leftListener();
         break;
-      case Key.RIGHT:
-        Key.rightListener();
+      case Keyboard.RIGHT:
+        Keyboard.rightListener();
         break;
-      case Key.UP:
-        Key.upListener();
+      case Keyboard.UP:
+        Keyboard.upListener();
         break;
-      case Key.DOWN:
-        Key.downListener();
+      case Keyboard.DOWN:
+        Keyboard.downListener();
         break;
     }
   },
@@ -41,14 +41,14 @@ export const Key = {
 window.addEventListener(
   "keyup",
   function(event) {
-    Key.onKeyup(event);
+    Keyboard.onKeyup(event);
   },
   false
 );
 window.addEventListener(
   "keydown",
   function(event) {
-    Key.onKeydown(event);
+    Keyboard.onKeydown(event);
   },
   false
 );

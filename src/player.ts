@@ -1,10 +1,13 @@
-import { Key } from "./key";
+import { Keyboard } from "./keyboard";
 import { GameConstants } from "./gameConstants";
 import { Game } from "./game";
 import { Door } from "./door";
 import { BottomDoor } from "./bottomDoor";
 import { Trapdoor } from "./trapdoor";
 import { HealthBar } from "./healthbar";
+import { Chest } from "./chest";
+import { Floor } from "./floor";
+import { Inventory } from "./inventory";
 
 export class Player {
   x: number;
@@ -16,6 +19,7 @@ export class Player {
   game: Game;
   healthBar: HealthBar;
   dead: boolean;
+  inventory: Inventory;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -23,13 +27,15 @@ export class Player {
     this.x = x;
     this.y = y;
 
-    Key.leftListener = this.leftListener;
-    Key.rightListener = this.rightListener;
-    Key.upListener = this.upListener;
-    Key.downListener = this.downListener;
+    Keyboard.leftListener = this.leftListener;
+    Keyboard.rightListener = this.rightListener;
+    Keyboard.upListener = this.upListener;
+    Keyboard.downListener = this.downListener;
 
     this.healthBar = new HealthBar(10);
     this.dead = false;
+
+    this.inventory = new Inventory();
   }
 
   leftListener = () => {
@@ -65,6 +71,12 @@ export class Player {
         if (other instanceof Door || other instanceof BottomDoor || other instanceof Trapdoor) {
           this.move(x, y);
         }
+        if (other instanceof Chest) {
+          other.open();
+          this.game.level.levelArray[x][y] = new Floor(this.game.level, x, y);
+          this.drawX = (this.x - x) * 0.5;
+          this.drawY = (this.y - y) * 0.5;
+        }
         other.onCollide(this);
       }
     }
@@ -84,6 +96,14 @@ export class Player {
     this.drawY = y - this.y;
     this.x = x;
     this.y = y;
+
+    for (let i of this.game.level.items) {
+      if (i.x === x && i.y === y) {
+        this.inventory.items.push(i);
+
+        this.game.level.items = this.game.level.items.filter(x => x !== i); // remove item from item list
+      }
+    }
   };
 
   moveNoSmooth = (x: number, y: number) => {
@@ -99,7 +119,7 @@ export class Player {
     if (!this.dead) {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      Game.drawTile(0, 1, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+      Game.drawMob(0, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
     } else {
       Game.ctx.fillStyle = "white";
       let gameOverString = "Game Over. Refresh the page";
@@ -116,5 +136,6 @@ export class Player {
     if (!this.dead) {
       this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
     }
+    this.inventory.draw();
   };
 }
