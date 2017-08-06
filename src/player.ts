@@ -40,16 +40,26 @@ export class Player {
   };
 
   tryMove = (x: number, y: number) => {
-    let other = this.game.level.getCollidable(x, y);
-    if (other === null) {
-      this.move(x, y);
-      this.game.level.tick();
-    } else {
-      if (other instanceof Door || other instanceof BottomDoor || other instanceof Trapdoor) {
-        this.move(x, y);
+    let hitEnemy = false;
+    for (let e of this.game.level.enemies) {
+      if (e.x === x && e.y === y) {
+        e.health--;
+        hitEnemy = true;
         this.game.level.tick();
       }
-      other.onCollide(this);
+    }
+    if (!hitEnemy) {
+      let other = this.game.level.getCollidable(x, y);
+      if (other === null) {
+        this.move(x, y);
+        this.game.level.tick();
+      } else {
+        if (other instanceof Door || other instanceof BottomDoor || other instanceof Trapdoor) {
+          this.move(x, y);
+          this.game.level.tick();
+        }
+        other.onCollide(this);
+      }
     }
   };
 
