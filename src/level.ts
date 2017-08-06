@@ -249,7 +249,11 @@ export class Level {
     for (let i = 0; i < numEnemies; i++) {
       let x = 0;
       let y = 0;
-      while (!(this.getTile(x, y) instanceof Floor)) {
+      while (
+        !(this.getTile(x, y) instanceof Floor) ||
+        (x === this.bottomDoorX && y === this.bottomDoorY) ||
+        (x === this.bottomDoorX && y === this.bottomDoorY - 1)
+      ) {
         x = Game.rand(roomX, roomX + width - 1);
         y = Game.rand(roomY, roomY + height - 1);
       }

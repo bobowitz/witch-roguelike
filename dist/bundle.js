@@ -408,7 +408,9 @@ var Level = (function () {
         for (var i = 0; i < numEnemies; i++) {
             var x = 0;
             var y = 0;
-            while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
+            while (!(this.getTile(x, y) instanceof floor_1.Floor) ||
+                (x === this.bottomDoorX && y === this.bottomDoorY) ||
+                (x === this.bottomDoorX && y === this.bottomDoorY - 1)) {
                 x = game_1.Game.rand(roomX, roomX + width - 1);
                 y = game_1.Game.rand(roomY, roomY + height - 1);
             }
@@ -788,6 +790,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(13);
 var game_1 = __webpack_require__(0);
 var astarclass_1 = __webpack_require__(14);
+var healthbar_1 = __webpack_require__(17);
 var KnightEnemy = (function (_super) {
     __extends(KnightEnemy, _super);
     function KnightEnemy(game, level, x, y) {
@@ -799,32 +802,42 @@ var KnightEnemy = (function (_super) {
                     var oldX = _this.x;
                     var oldY = _this.y;
                     _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player);
-                    if (_this.moves.length > 0 &&
-                        !(_this.game.player.x === _this.moves[0].pos.x && _this.game.player.y === _this.moves[0].pos.y)) {
-                        _this.x = _this.moves[0].pos.x;
-                        _this.y = _this.moves[0].pos.y;
+                    if (_this.moves.length > 0) {
+                        if (_this.game.player.x === _this.moves[0].pos.x &&
+                            _this.game.player.y === _this.moves[0].pos.y) {
+                            _this.game.player.hurt(1);
+                        }
+                        else {
+                            _this.x = _this.moves[0].pos.x;
+                            _this.y = _this.moves[0].pos.y;
+                        }
                     }
                     _this.drawX = _this.x - oldX;
                     _this.drawY = _this.y - oldY;
                 }
             }
-            if (_this.health <= 0) {
+            if (_this.healthBar.health <= 0) {
                 _this.dead = true;
                 _this.x = -10;
                 _this.y = -10;
             }
         };
+        _this.hurt = function (damage) {
+            _this.healthBar.hurt(damage);
+        };
         _this.draw = function () {
             if (!_this.dead) {
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
-                game_1.Game.drawTile(1, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                game_1.Game.drawTile(3, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
             }
+            _this.healthBar.drawAboveTile(_this.x - _this.drawX, _this.y - 0.75 - _this.drawY);
         };
         _this.game = game;
         _this.level = level;
         _this.moves = new Array();
         _this.ticks = 0;
+        _this.healthBar = new healthbar_1.HealthBar(2);
         return _this;
     }
     return KnightEnemy;
@@ -854,10 +867,10 @@ var Enemy = (function (_super) {
     __extends(Enemy, _super);
     function Enemy(x, y) {
         var _this = _super.call(this, x, y) || this;
+        _this.hurt = function (damage) { };
         _this.tick = function () { };
         _this.drawX = 0;
         _this.drawY = 0;
-        _this.health = 1;
         return _this;
     }
     return Enemy;
@@ -1208,33 +1221,41 @@ var astar;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var key_1 = __webpack_require__(16);
+var gameConstants_1 = __webpack_require__(9);
 var game_1 = __webpack_require__(0);
 var door_1 = __webpack_require__(6);
 var bottomDoor_1 = __webpack_require__(7);
 var trapdoor_1 = __webpack_require__(8);
+var healthbar_1 = __webpack_require__(17);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
         this.leftListener = function () {
-            _this.tryMove(_this.x - 1, _this.y);
+            if (!_this.dead)
+                _this.tryMove(_this.x - 1, _this.y);
         };
         this.rightListener = function () {
-            _this.tryMove(_this.x + 1, _this.y);
+            if (!_this.dead)
+                _this.tryMove(_this.x + 1, _this.y);
         };
         this.upListener = function () {
-            _this.tryMove(_this.x, _this.y - 1);
+            if (!_this.dead)
+                _this.tryMove(_this.x, _this.y - 1);
         };
         this.downListener = function () {
-            _this.tryMove(_this.x, _this.y + 1);
+            if (!_this.dead)
+                _this.tryMove(_this.x, _this.y + 1);
         };
         this.tryMove = function (x, y) {
             var hitEnemy = false;
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
                 if (e.x === x && e.y === y) {
-                    e.health--;
+                    e.hurt(1);
                     hitEnemy = true;
                     _this.game.level.tick();
+                    _this.drawX = (_this.x - x) * 0.5;
+                    _this.drawY = (_this.y - y) * 0.5;
                 }
             }
             if (!hitEnemy) {
@@ -1246,10 +1267,16 @@ var Player = (function () {
                 else {
                     if (other instanceof door_1.Door || other instanceof bottomDoor_1.BottomDoor || other instanceof trapdoor_1.Trapdoor) {
                         _this.move(x, y);
-                        _this.game.level.tick();
                     }
                     other.onCollide(_this);
                 }
+            }
+        };
+        this.hurt = function (damage) {
+            _this.healthBar.hurt(damage);
+            if (_this.healthBar.health <= 0) {
+                _this.healthBar.health = 0;
+                _this.dead = true;
             }
         };
         this.move = function (x, y) {
@@ -1266,9 +1293,18 @@ var Player = (function () {
         };
         this.update = function () { };
         this.draw = function () {
-            _this.drawX += -0.5 * _this.drawX;
-            _this.drawY += -0.5 * _this.drawY;
-            game_1.Game.drawTile(0, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+            if (!_this.dead) {
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
+                game_1.Game.drawTile(0, 1, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                _this.healthBar.drawAboveTile(_this.x - _this.drawX, _this.y - 0.75 - _this.drawY);
+            }
+            else {
+                game_1.Game.ctx.fillStyle = "white";
+                var gameOverString = "Game Over. Refresh the page";
+                game_1.Game.ctx.font = "14px courier";
+                game_1.Game.ctx.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2);
+            }
         };
         this.game = game;
         this.x = x;
@@ -1277,6 +1313,8 @@ var Player = (function () {
         key_1.Key.rightListener = this.rightListener;
         key_1.Key.upListener = this.upListener;
         key_1.Key.downListener = this.downListener;
+        this.healthBar = new healthbar_1.HealthBar(10);
+        this.dead = false;
     }
     return Player;
 }());
@@ -1331,6 +1369,48 @@ window.addEventListener("keyup", function (event) {
 window.addEventListener("keydown", function (event) {
     exports.Key.onKeydown(event);
 }, false);
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var gameConstants_1 = __webpack_require__(9);
+var HealthBar = (function () {
+    function HealthBar(health) {
+        var _this = this;
+        this.hurt = function (damage) {
+            _this.health -= damage;
+        };
+        this.draw = function (x, y) {
+            var healthPct = _this.health / _this.fullHealth;
+            var WIDTH = 14;
+            var HEIGHT = 1;
+            var BORDER_W = 1;
+            var BORDER_H = 1;
+            var redColor = "#ac3232";
+            var greenColor = "#6abe30";
+            var borderColor = "#222034";
+            game_1.Game.ctx.fillStyle = borderColor;
+            game_1.Game.ctx.fillRect(x, y - HEIGHT - BORDER_H * 2, WIDTH + BORDER_W * 2, HEIGHT + BORDER_H * 2);
+            game_1.Game.ctx.fillStyle = redColor;
+            game_1.Game.ctx.fillRect(x + BORDER_W, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
+            game_1.Game.ctx.fillStyle = greenColor;
+            game_1.Game.ctx.fillRect(x + BORDER_W, y - HEIGHT - BORDER_H, Math.floor(healthPct * WIDTH), HEIGHT);
+        };
+        this.drawAboveTile = function (x, y) {
+            _this.draw(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE);
+        };
+        this.health = health;
+        this.fullHealth = health;
+    }
+    return HealthBar;
+}());
+exports.HealthBar = HealthBar;
 
 
 /***/ })
