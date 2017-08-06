@@ -17,6 +17,7 @@ export class Level {
   game: Game;
   bottomDoorX: number;
   bottomDoorY: number;
+  hasBottomDoor: boolean;
 
   private pointInside(
     x: number,
@@ -51,6 +52,10 @@ export class Level {
 
   constructor(game: Game, previousDoor: Door) {
     // if previousDoor is null, no bottom door
+    this.hasBottomDoor = true;
+    if (previousDoor === null) {
+      this.hasBottomDoor = false;
+    }
     this.game = game;
 
     let width = Game.rand(LevelConstants.MIN_LEVEL_W, LevelConstants.MAX_LEVEL_W);
@@ -291,7 +296,8 @@ export class Level {
   }
 
   enterLevel = () => {
-    this.game.player.move(this.bottomDoorX, this.bottomDoorY);
+    if (this.hasBottomDoor) this.game.player.move(this.bottomDoorX, this.bottomDoorY);
+    else this.game.player.move(this.bottomDoorX, this.bottomDoorY - 1);
   };
 
   enterLevelThroughDoor = (door: Door) => {
