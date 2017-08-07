@@ -49,11 +49,13 @@ export class Game {
   }
 
   changeLevel = (newLevel: Level) => {
+    this.level.exitLevel();
     this.level = newLevel;
     this.level.enterLevel();
   };
 
   changeLevelThroughDoor = (door: Door) => {
+    this.level.exitLevel();
     this.level = door.level;
     this.level.enterLevelThroughDoor(door);
   };

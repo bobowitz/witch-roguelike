@@ -328,6 +328,10 @@ export class Level {
     }
   }
 
+  exitLevel = () => {
+    this.textParticles.splice(0, this.textParticles.length);
+  };
+
   enterLevel = () => {
     if (this.hasBottomDoor) this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY);
     else this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);

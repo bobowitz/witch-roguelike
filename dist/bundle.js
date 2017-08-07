@@ -78,10 +78,12 @@ var Game = (function () {
     function Game() {
         var _this = this;
         this.changeLevel = function (newLevel) {
+            _this.level.exitLevel();
             _this.level = newLevel;
             _this.level.enterLevel();
         };
         this.changeLevelThroughDoor = function (door) {
+            _this.level.exitLevel();
             _this.level = door.level;
             _this.level.enterLevelThroughDoor(door);
         };
@@ -243,6 +245,9 @@ var spike_1 = __webpack_require__(26);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd) {
         var _this = this;
+        this.exitLevel = function () {
+            _this.textParticles.splice(0, _this.textParticles.length);
+        };
         this.enterLevel = function () {
             if (_this.hasBottomDoor)
                 _this.game.player.moveNoSmooth(_this.bottomDoorX, _this.bottomDoorY);
