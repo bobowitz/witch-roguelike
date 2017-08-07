@@ -263,13 +263,14 @@ var Level = (function () {
                         numChests++;
                 }
             }
-            if (numChests > 1)
+            _this.name = "";
+            if (numChests >= 2)
                 _this.name = "Treasure";
-            else if (numDoors > 1)
+            else if (numDoors >= 3)
                 _this.name = "Passageway";
             else if (numTrapdoors > 0)
                 _this.name = "Trick Room";
-            else {
+            else if (game_1.Game.rand(1, 10) === 1) {
                 if (_this.env === 0) {
                     var names = ["Dungeon", "Prison", "Sewer"];
                     _this.name = names[game_1.Game.rand(0, names.length - 1)];
@@ -287,8 +288,17 @@ var Level = (function () {
                     _this.name = names[game_1.Game.rand(0, names.length - 1)];
                 }
             }
-            var adjectiveList = ["Abandoned", "Deserted", "Haunted", "Cursed", "Ancient"];
-            _this.name = adjectiveList[game_1.Game.rand(0, adjectiveList.length - 1)] + " " + _this.name;
+            var adjectiveList = [
+                "Abandoned",
+                "Deserted",
+                "Haunted",
+                "Cursed",
+                "Ancient",
+                "Lonely",
+                "Spooky",
+            ];
+            if (_this.name !== "")
+                _this.name = adjectiveList[game_1.Game.rand(0, adjectiveList.length - 1)] + " " + _this.name;
         };
         this.exitLevel = function () {
             _this.textParticles.splice(0, _this.textParticles.length);
@@ -453,7 +463,7 @@ var Level = (function () {
         var numFingers = game_1.Game.randTable([0, 1, 1, 2, 2, 3, 4, 5]);
         if (game_1.Game.rand(1, 13) > width)
             numFingers += width * 0.3;
-        var FINGER_LENGTH = width - 2;
+        var FINGER_LENGTH = height - 3;
         for (var i = 0; i < numFingers; i++) {
             var x = 0;
             var y = 0;

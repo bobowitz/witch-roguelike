@@ -147,7 +147,7 @@ export class Level {
     // add "finger" blocks extending from ring walls inward
     let numFingers = Game.randTable([0, 1, 1, 2, 2, 3, 4, 5]);
     if (Game.rand(1, 13) > width) numFingers += width * 0.3;
-    let FINGER_LENGTH = width - 2;
+    let FINGER_LENGTH = height - 3;
     for (let i = 0; i < numFingers; i++) {
       let x = 0;
       let y = 0;
@@ -359,10 +359,12 @@ export class Level {
       }
     }
 
-    if (numChests > 1) this.name = "Treasure";
-    else if (numDoors > 1) this.name = "Passageway";
+    this.name = "";
+
+    if (numChests >= 2) this.name = "Treasure";
+    else if (numDoors >= 3) this.name = "Passageway";
     else if (numTrapdoors > 0) this.name = "Trick Room";
-    else {
+    else if (Game.rand(1, 10) === 1) {
       if (this.env === 0) {
         let names = ["Dungeon", "Prison", "Sewer"];
         this.name = names[Game.rand(0, names.length - 1)];
@@ -381,9 +383,17 @@ export class Level {
       }
     }
 
-    let adjectiveList = ["Abandoned", "Deserted", "Haunted", "Cursed", "Ancient"];
-
-    this.name = adjectiveList[Game.rand(0, adjectiveList.length - 1)] + " " + this.name;
+    let adjectiveList = [
+      "Abandoned",
+      "Deserted",
+      "Haunted",
+      "Cursed",
+      "Ancient",
+      "Lonely",
+      "Spooky",
+    ];
+    if (this.name !== "")
+      this.name = adjectiveList[Game.rand(0, adjectiveList.length - 1)] + " " + this.name;
   };
 
   exitLevel = () => {
