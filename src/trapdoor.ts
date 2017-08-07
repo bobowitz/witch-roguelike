@@ -1,6 +1,7 @@
 import { Collidable } from "./collidable";
 import { Game } from "./game";
 import { Level } from "./level";
+import { Player } from "./player";
 
 export class Trapdoor extends Collidable {
   game: Game;
@@ -14,7 +15,7 @@ export class Trapdoor extends Collidable {
     Game.drawTile(13, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
   };
 
-  onCollide = () => {
-    this.game.changeLevel(new Level(this.game, null));
+  onCollide = (player: Player) => {
+    this.game.changeLevel(new Level(this.game, null, false));
   };
 }

@@ -69,8 +69,15 @@ export class Player {
         this.move(x, y);
         this.game.level.tick();
       } else {
-        if (other instanceof Door || other instanceof BottomDoor || other instanceof Trapdoor) {
+        if (other instanceof Door) {
+          if (x - this.x === 0) {
+            this.move(x, y);
+            other.onCollide(this);
+          }
+        }
+        if (other instanceof BottomDoor || other instanceof Trapdoor) {
           this.move(x, y);
+          other.onCollide(this);
         }
         if (other instanceof Chest) {
           other.open();
@@ -78,7 +85,6 @@ export class Player {
           this.drawX = (this.x - x) * 0.5;
           this.drawY = (this.y - y) * 0.5;
         }
-        other.onCollide(this);
       }
     }
   };

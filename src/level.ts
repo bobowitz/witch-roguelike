@@ -277,29 +277,10 @@ export class Level {
 
     this.enemies = Array<Enemy>();
     // add enemies
-    let numEnemies = Game.randTable([
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      5,
-      5,
-      5,
-      5,
-    ]);
+    let numEnemies = Game.rand(1, 3);
+    if (numEnemies === 1) {
+      numEnemies = Game.randTable([1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5]);
+    } else numEnemies = 0;
     for (let i = 0; i < numEnemies; i++) {
       let x = 0;
       let y = 0;
@@ -358,12 +339,25 @@ export class Level {
         if (tile !== null) tile.draw();
       }
     }
+  };
+
+  drawEntitiesBehindPlayer = () => {
+    this.enemies.sort((a, b) => a.y - b.y);
+    this.items.sort((a, b) => a.y - b.y);
 
     for (const e of this.enemies) {
-      e.draw();
+      if (e.y <= this.game.player.y) e.draw();
     }
     for (const i of this.items) {
-      i.draw();
+      if (i.y <= this.game.player.y) i.draw();
+    }
+  };
+  drawEntitiesInFrontOfPlayer = () => {
+    for (const e of this.enemies) {
+      if (e.y > this.game.player.y) e.draw();
+    }
+    for (const i of this.items) {
+      if (i.y > this.game.player.y) i.draw();
     }
   };
 

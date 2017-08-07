@@ -94,7 +94,9 @@ var Game = (function () {
         };
         this.draw = function () {
             _this.level.draw();
+            _this.level.drawEntitiesBehindPlayer();
             _this.player.draw();
+            _this.level.drawEntitiesInFrontOfPlayer();
             _this.level.drawTopLayer();
             _this.player.drawTopLayer();
         };
@@ -281,13 +283,31 @@ var Level = (function () {
                         tile.draw();
                 }
             }
-            for (var _c = 0, _d = _this.enemies; _c < _d.length; _c++) {
-                var e = _d[_c];
-                e.draw();
+        };
+        this.drawEntitiesBehindPlayer = function () {
+            _this.enemies.sort(function (a, b) { return a.y - b.y; });
+            _this.items.sort(function (a, b) { return a.y - b.y; });
+            for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                if (e.y <= _this.game.player.y)
+                    e.draw();
             }
-            for (var _e = 0, _f = _this.items; _e < _f.length; _e++) {
-                var i = _f[_e];
-                i.draw();
+            for (var _b = 0, _c = _this.items; _b < _c.length; _b++) {
+                var i = _c[_b];
+                if (i.y <= _this.game.player.y)
+                    i.draw();
+            }
+        };
+        this.drawEntitiesInFrontOfPlayer = function () {
+            for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                if (e.y > _this.game.player.y)
+                    e.draw();
+            }
+            for (var _b = 0, _c = _this.items; _b < _c.length; _b++) {
+                var i = _c[_b];
+                if (i.y > _this.game.player.y)
+                    i.draw();
             }
         };
         // for stuff rendered on top of the player
@@ -491,29 +511,12 @@ var Level = (function () {
         }
         this.enemies = Array();
         // add enemies
-        var numEnemies = game_1.Game.randTable([
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            5,
-            5,
-            5,
-            5,
-        ]);
+        var numEnemies = game_1.Game.rand(1, 3);
+        if (numEnemies === 1) {
+            numEnemies = game_1.Game.randTable([1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5]);
+        }
+        else
+            numEnemies = 0;
         for (var i = 0; i < numEnemies; i++) {
             var x = 0;
             var y = 0;
@@ -680,7 +683,7 @@ var BottomDoor = (function (_super) {
     __extends(BottomDoor, _super);
     function BottomDoor(level, game, linkedTopDoor, x, y) {
         var _this = _super.call(this, level, x, y) || this;
-        _this.onCollide = function () {
+        _this.onCollide = function (player) {
             _this.game.changeLevelThroughDoor(_this.linkedTopDoor);
         };
         _this.draw = function () {
@@ -722,8 +725,8 @@ var Trapdoor = (function (_super) {
         _this.draw = function () {
             game_1.Game.drawTile(13, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
         };
-        _this.onCollide = function () {
-            _this.game.changeLevel(new level_1.Level(_this.game, null));
+        _this.onCollide = function (player) {
+            _this.game.changeLevel(new level_1.Level(_this.game, null, false));
         };
         _this.game = game;
         return _this;
@@ -1462,8 +1465,15 @@ var Player = (function () {
                     _this.game.level.tick();
                 }
                 else {
-                    if (other instanceof door_1.Door || other instanceof bottomDoor_1.BottomDoor || other instanceof trapdoor_1.Trapdoor) {
+                    if (other instanceof door_1.Door) {
+                        if (x - _this.x === 0) {
+                            _this.move(x, y);
+                            other.onCollide(_this);
+                        }
+                    }
+                    if (other instanceof bottomDoor_1.BottomDoor || other instanceof trapdoor_1.Trapdoor) {
                         _this.move(x, y);
+                        other.onCollide(_this);
                     }
                     if (other instanceof chest_1.Chest) {
                         other.open();
@@ -1471,7 +1481,6 @@ var Player = (function () {
                         _this.drawX = (_this.x - x) * 0.5;
                         _this.drawY = (_this.y - y) * 0.5;
                     }
-                    other.onCollide(_this);
                 }
             }
         };

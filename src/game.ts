@@ -64,7 +64,9 @@ export class Game {
 
   draw = () => {
     this.level.draw();
+    this.level.drawEntitiesBehindPlayer();
     this.player.draw();
+    this.level.drawEntitiesInFrontOfPlayer();
     this.level.drawTopLayer();
     this.player.drawTopLayer();
   };
