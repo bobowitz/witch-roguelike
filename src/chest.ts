@@ -3,6 +3,7 @@ import { Item } from "./item/item";
 import { Game } from "./game";
 import { Key } from "./item/key";
 import { Level } from "./level";
+import { Potion } from "./item/potion";
 
 export class Chest extends Collidable {
   game: Game;
@@ -18,6 +19,9 @@ export class Chest extends Collidable {
   };
 
   open = () => {
-    this.game.level.items.push(new Key(this.x, this.y));
+    // DROP TABLES!
+
+    if (Game.rand(1, 7) === 1) this.game.level.items.push(new Key(this.x, this.y));
+    else this.game.level.items.push(new Potion(this.x, this.y));
   };
 }

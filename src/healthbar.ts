@@ -13,6 +13,13 @@ export class HealthBar {
     this.drawTicks = 0;
   }
 
+  heal = (amount: number) => {
+    this.health += amount;
+    if (this.health > this.fullHealth) this.health = this.fullHealth;
+    if (this.drawTicks > 0) this.drawTicks = this.DRAW_TICKS / 2;
+    else this.drawTicks = this.DRAW_TICKS;
+  };
+
   hurt = (damage: number) => {
     this.health -= damage;
     if (this.drawTicks > 0) this.drawTicks = this.DRAW_TICKS / 2;

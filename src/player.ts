@@ -8,6 +8,9 @@ import { HealthBar } from "./healthbar";
 import { Chest } from "./chest";
 import { Floor } from "./floor";
 import { Inventory } from "./inventory";
+import { LockedDoor } from "./lockedDoor";
+import { Sound } from "./sound";
+import { Potion } from "./item/potion";
 
 export class Player {
   x: number;
@@ -75,6 +78,14 @@ export class Player {
             other.onCollide(this);
           }
         }
+        if (other instanceof LockedDoor) {
+          if (x - this.x === 0) {
+            this.drawX = (this.x - x) * 0.5;
+            this.drawY = (this.y - y) * 0.5;
+            other.unlock(this);
+            this.game.level.tick();
+          }
+        }
         if (other instanceof BottomDoor || other instanceof Trapdoor) {
           this.move(x, y);
           other.onCollide(this);
@@ -89,6 +100,10 @@ export class Player {
     }
   };
 
+  heal = (amount: number) => {
+    this.healthBar.heal(amount);
+  };
+
   hurt = (damage: number) => {
     this.healthBar.hurt(damage);
     if (this.healthBar.health <= 0) {
@@ -99,6 +114,8 @@ export class Player {
   };
 
   move = (x: number, y: number) => {
+    Sound.footstep();
+
     this.drawX = x - this.x;
     this.drawY = y - this.y;
     this.x = x;
@@ -106,7 +123,11 @@ export class Player {
 
     for (let i of this.game.level.items) {
       if (i.x === x && i.y === y) {
-        this.inventory.items.push(i);
+        if (i instanceof Potion) {
+          this.heal(3);
+        } else {
+          this.inventory.addItem(i);
+        }
 
         this.game.level.items = this.game.level.items.filter(x => x !== i); // remove item from item list
       }
@@ -126,7 +147,8 @@ export class Player {
     if (!this.dead) {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      Game.drawMob(0, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+      Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+      Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
     } else {
       Game.ctx.fillStyle = "white";
       let gameOverString = "Game Over. Refresh the page";

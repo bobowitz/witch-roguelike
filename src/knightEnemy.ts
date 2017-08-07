@@ -61,7 +61,8 @@ export class KnightEnemy extends Enemy {
     if (!this.dead) {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      Game.drawMob(3, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+      Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+      Game.drawMob(4, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
     }
   };
 

@@ -13,6 +13,7 @@ import { Enemy } from "./enemy";
 import { Chest } from "./chest";
 import { Item } from "./item/item";
 import { SpawnFloor } from "./spawnfloor";
+import { LockedDoor } from "./lockedDoor";
 
 export class Level {
   levelArray: Tile[][];
@@ -235,21 +236,6 @@ export class Level {
       this.levelArray[x][y] = new Trapdoor(this, this.game, x, y);
     }
 
-    // add chests
-    let numChests = Game.rand(1, 10);
-    if (numChests === 1) {
-      numChests = Game.randTable([1, 1, 1, 2, 3, 4]);
-    } else numChests = 0;
-    for (let i = 0; i < numChests; i++) {
-      let x = 0;
-      let y = 0;
-      while (!(this.getTile(x, y) instanceof Floor)) {
-        x = Game.rand(roomX, roomX + width - 1);
-        y = Game.rand(roomY, roomY + height - 1);
-      }
-      this.levelArray[x][y] = new Chest(this, this.game, x, y);
-    }
-
     // add doors
     let numDoors = Game.randTable([1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3]);
     if (deadEnd) numDoors = Game.randTable([0, 0, 1, 1, 1, 1]);
@@ -267,12 +253,36 @@ export class Level {
       );
 
       // if there are multiple doors, roll to see if the first one should be a dead end
-      if (i === 0 && numDoors > 1 && Game.rand(1, 10) === 1) {
-        this.levelArray[x][y] = new Door(this, this.game, x, y, true);
+      if (i === 0 && numDoors > 1) {
+        if (Game.rand(1, 5) === 1) {
+          // locked (90% dead-end as well) door
+          this.levelArray[x][y] = new LockedDoor(this, x, y);
+        } else if (Game.rand(1, 10) === 1) {
+          // regular dead-end door
+          this.levelArray[x][y] = new Door(this, this.game, x, y, true);
+        } else {
+          this.levelArray[x][y] = new Door(this, this.game, x, y, deadEnd);
+        }
       } else {
         // otherwise, generate a non-dead end
         this.levelArray[x][y] = new Door(this, this.game, x, y, deadEnd);
       }
+    }
+
+    // add chests
+    let numChests = Game.rand(1, 5);
+    if (numChests === 1 || numDoors === 0) {
+      // if it's a dead end, at least give them a chest
+      numChests = Game.randTable([0, 1, 1, 1, 2, 3, 4]);
+    } else numChests = 0;
+    for (let i = 0; i < numChests; i++) {
+      let x = 0;
+      let y = 0;
+      while (!(this.getTile(x, y) instanceof Floor)) {
+        x = Game.rand(roomX, roomX + width - 1);
+        y = Game.rand(roomY, roomY + height - 1);
+      }
+      this.levelArray[x][y] = new Chest(this, this.game, x, y);
     }
 
     this.enemies = Array<Enemy>();

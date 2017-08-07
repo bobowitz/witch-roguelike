@@ -2,6 +2,7 @@ import { GameConstants } from "./gameConstants";
 import { Level } from "./level";
 import { Player } from "./player";
 import { Door } from "./door";
+import { Sound } from "./sound";
 
 export class Game {
   static ctx: CanvasRenderingContext2D;
@@ -33,6 +34,8 @@ export class Game {
       Game.mobset.src = "res/mobset.png";
       Game.itemset = new Image();
       Game.itemset.src = "res/itemset.png";
+
+      Sound.loadSounds();
 
       this.player = new Player(this, 0, 0);
       this.level = new Level(this, null, false);

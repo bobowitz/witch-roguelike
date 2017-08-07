@@ -15,6 +15,9 @@ export class Enemy extends Collidable {
 
   hurt = (damage: number) => {};
 
+  draw = () => {
+    Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+  };
   tick = () => {};
   drawTopLayer = () => {};
 }
