@@ -1,6 +1,7 @@
 export const Keyboard = {
   _pressed: {},
 
+  spaceListener: function() {},
   rightListener: function() {},
   leftListener: function() {},
   upListener: function() {},
@@ -19,6 +20,9 @@ export const Keyboard = {
   onKeydown: (event: KeyboardEvent) => {
     Keyboard._pressed[event.keyCode] = true;
     switch (event.keyCode) {
+      case Keyboard.SPACE:
+        Keyboard.spaceListener();
+        break;
       case Keyboard.LEFT:
         Keyboard.leftListener();
         break;

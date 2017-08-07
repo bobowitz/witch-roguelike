@@ -11,6 +11,7 @@ import { Inventory } from "./inventory";
 import { LockedDoor } from "./lockedDoor";
 import { Sound } from "./sound";
 import { Potion } from "./item/potion";
+import { Spike } from "./spike";
 
 export class Player {
   x: number;
@@ -20,6 +21,8 @@ export class Player {
   drawX: number;
   drawY: number;
   game: Game;
+  flashing: boolean;
+  flashingFrame: number;
   healthBar: HealthBar;
   dead: boolean;
   inventory: Inventory;
@@ -30,6 +33,7 @@ export class Player {
     this.x = x;
     this.y = y;
 
+    Keyboard.spaceListener = this.spaceListener;
     Keyboard.leftListener = this.leftListener;
     Keyboard.rightListener = this.rightListener;
     Keyboard.upListener = this.upListener;
@@ -37,10 +41,20 @@ export class Player {
 
     this.healthBar = new HealthBar(10);
     this.dead = false;
+    this.flashing = false;
+    this.flashingFrame = 0;
 
     this.inventory = new Inventory();
   }
 
+  spaceListener = () => {
+    this.game.level.levelArray[this.x][this.y] = new Chest(
+      this.game.level,
+      this.game,
+      this.x,
+      this.y
+    );
+  };
   leftListener = () => {
     if (!this.dead) this.tryMove(this.x - 1, this.y);
   };
@@ -77,24 +91,24 @@ export class Player {
             this.move(x, y);
             other.onCollide(this);
           }
-        }
-        if (other instanceof LockedDoor) {
+        } else if (other instanceof LockedDoor) {
           if (x - this.x === 0) {
             this.drawX = (this.x - x) * 0.5;
             this.drawY = (this.y - y) * 0.5;
             other.unlock(this);
             this.game.level.tick();
           }
-        }
-        if (other instanceof BottomDoor || other instanceof Trapdoor) {
+        } else if (other instanceof BottomDoor || other instanceof Trapdoor) {
           this.move(x, y);
           other.onCollide(this);
-        }
-        if (other instanceof Chest) {
+        } else if (other instanceof Chest) {
           other.open();
           this.game.level.levelArray[x][y] = new Floor(this.game.level, x, y);
           this.drawX = (this.x - x) * 0.5;
           this.drawY = (this.y - y) * 0.5;
+        } else if (other instanceof Spike) {
+          this.move(x, y);
+          other.onCollide(this);
         }
       }
     }
@@ -105,6 +119,7 @@ export class Player {
   };
 
   hurt = (damage: number) => {
+    this.flashing = true;
     this.healthBar.hurt(damage);
     if (this.healthBar.health <= 0) {
       this.healthBar.health = 0;
@@ -144,11 +159,14 @@ export class Player {
   update = () => {};
 
   draw = () => {
+    this.flashingFrame += 4 / GameConstants.FPS;
     if (!this.dead) {
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
-      Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
-      Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+      if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
+        this.drawX += -0.5 * this.drawX;
+        this.drawY += -0.5 * this.drawY;
+        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+        Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+      }
     } else {
       Game.ctx.fillStyle = "white";
       let gameOverString = "Game Over. Refresh the page";

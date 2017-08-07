@@ -14,6 +14,7 @@ import { Chest } from "./chest";
 import { Item } from "./item/item";
 import { SpawnFloor } from "./spawnfloor";
 import { LockedDoor } from "./lockedDoor";
+import { Spike } from "./spike";
 
 export class Level {
   levelArray: Tile[][];
@@ -285,6 +286,21 @@ export class Level {
       this.levelArray[x][y] = new Chest(this, this.game, x, y);
     }
 
+    // add spikes
+    let numSpikes = Game.rand(1, 10);
+    if (numSpikes === 1) {
+      numSpikes = Game.randTable([1, 1, 1, 1, 2, 3]);
+    } else numSpikes = 0;
+    for (let i = 0; i < numSpikes; i++) {
+      let x = 0;
+      let y = 0;
+      while (!(this.getTile(x, y) instanceof Floor)) {
+        x = Game.rand(roomX, roomX + width - 1);
+        y = Game.rand(roomY, roomY + height - 1);
+      }
+      this.levelArray[x][y] = new Spike(this, x, y);
+    }
+
     this.enemies = Array<Enemy>();
     // add enemies
     let numEnemies = Game.rand(1, 3);
@@ -334,6 +350,7 @@ export class Level {
   };
 
   tick = () => {
+    this.game.player.flashing = false;
     for (const e of this.enemies) {
       e.tick();
     }

@@ -234,6 +234,7 @@ var knightEnemy_1 = __webpack_require__(14);
 var chest_1 = __webpack_require__(11);
 var spawnfloor_1 = __webpack_require__(22);
 var lockedDoor_1 = __webpack_require__(23);
+var spike_1 = __webpack_require__(26);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd) {
         var _this = this;
@@ -269,6 +270,7 @@ var Level = (function () {
             return null;
         };
         this.tick = function () {
+            _this.game.player.flashing = false;
             for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
                 e.tick();
@@ -522,6 +524,22 @@ var Level = (function () {
                 y = game_1.Game.rand(roomY, roomY + height - 1);
             }
             this.levelArray[x][y] = new chest_1.Chest(this, this.game, x, y);
+        }
+        // add spikes
+        var numSpikes = game_1.Game.rand(1, 10);
+        if (numSpikes === 1) {
+            numSpikes = game_1.Game.randTable([1, 1, 1, 1, 2, 3]);
+        }
+        else
+            numSpikes = 0;
+        for (var i = 0; i < numSpikes; i++) {
+            var x = 0;
+            var y = 0;
+            while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
+                x = game_1.Game.rand(roomX, roomX + width - 1);
+                y = game_1.Game.rand(roomY, roomY + height - 1);
+            }
+            this.levelArray[x][y] = new spike_1.Spike(this, x, y);
         }
         this.enemies = Array();
         // add enemies
@@ -1464,9 +1482,13 @@ var inventory_1 = __webpack_require__(21);
 var lockedDoor_1 = __webpack_require__(23);
 var sound_1 = __webpack_require__(24);
 var potion_1 = __webpack_require__(25);
+var spike_1 = __webpack_require__(26);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
+        this.spaceListener = function () {
+            _this.game.level.levelArray[_this.x][_this.y] = new chest_1.Chest(_this.game.level, _this.game, _this.x, _this.y);
+        };
         this.leftListener = function () {
             if (!_this.dead)
                 _this.tryMove(_this.x - 1, _this.y);
@@ -1510,7 +1532,7 @@ var Player = (function () {
                             other.onCollide(_this);
                         }
                     }
-                    if (other instanceof lockedDoor_1.LockedDoor) {
+                    else if (other instanceof lockedDoor_1.LockedDoor) {
                         if (x - _this.x === 0) {
                             _this.drawX = (_this.x - x) * 0.5;
                             _this.drawY = (_this.y - y) * 0.5;
@@ -1518,15 +1540,19 @@ var Player = (function () {
                             _this.game.level.tick();
                         }
                     }
-                    if (other instanceof bottomDoor_1.BottomDoor || other instanceof trapdoor_1.Trapdoor) {
+                    else if (other instanceof bottomDoor_1.BottomDoor || other instanceof trapdoor_1.Trapdoor) {
                         _this.move(x, y);
                         other.onCollide(_this);
                     }
-                    if (other instanceof chest_1.Chest) {
+                    else if (other instanceof chest_1.Chest) {
                         other.open();
                         _this.game.level.levelArray[x][y] = new floor_1.Floor(_this.game.level, x, y);
                         _this.drawX = (_this.x - x) * 0.5;
                         _this.drawY = (_this.y - y) * 0.5;
+                    }
+                    else if (other instanceof spike_1.Spike) {
+                        _this.move(x, y);
+                        other.onCollide(_this);
                     }
                 }
             }
@@ -1535,6 +1561,7 @@ var Player = (function () {
             _this.healthBar.heal(amount);
         };
         this.hurt = function (damage) {
+            _this.flashing = true;
             _this.healthBar.hurt(damage);
             if (_this.healthBar.health <= 0) {
                 _this.healthBar.health = 0;
@@ -1571,11 +1598,14 @@ var Player = (function () {
         };
         this.update = function () { };
         this.draw = function () {
+            _this.flashingFrame += 4 / gameConstants_1.GameConstants.FPS;
             if (!_this.dead) {
-                _this.drawX += -0.5 * _this.drawX;
-                _this.drawY += -0.5 * _this.drawY;
-                game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
-                game_1.Game.drawMob(1, 0, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                if (!_this.flashing || Math.floor(_this.flashingFrame) % 2 === 0) {
+                    _this.drawX += -0.5 * _this.drawX;
+                    _this.drawY += -0.5 * _this.drawY;
+                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
+                    game_1.Game.drawMob(1, 0, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                }
             }
             else {
                 game_1.Game.ctx.fillStyle = "white";
@@ -1593,12 +1623,15 @@ var Player = (function () {
         this.game = game;
         this.x = x;
         this.y = y;
+        keyboard_1.Keyboard.spaceListener = this.spaceListener;
         keyboard_1.Keyboard.leftListener = this.leftListener;
         keyboard_1.Keyboard.rightListener = this.rightListener;
         keyboard_1.Keyboard.upListener = this.upListener;
         keyboard_1.Keyboard.downListener = this.downListener;
         this.healthBar = new healthbar_1.HealthBar(10);
         this.dead = false;
+        this.flashing = false;
+        this.flashingFrame = 0;
         this.inventory = new inventory_1.Inventory();
     }
     return Player;
@@ -1615,6 +1648,7 @@ exports.Player = Player;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Keyboard = {
     _pressed: {},
+    spaceListener: function () { },
     rightListener: function () { },
     leftListener: function () { },
     upListener: function () { },
@@ -1630,6 +1664,9 @@ exports.Keyboard = {
     onKeydown: function (event) {
         exports.Keyboard._pressed[event.keyCode] = true;
         switch (event.keyCode) {
+            case exports.Keyboard.SPACE:
+                exports.Keyboard.spaceListener();
+                break;
             case exports.Keyboard.LEFT:
                 exports.Keyboard.leftListener();
                 break;
@@ -1831,6 +1868,42 @@ var Potion = (function (_super) {
     return Potion;
 }(item_1.Item));
 exports.Potion = Potion;
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var collidable_1 = __webpack_require__(1);
+var game_1 = __webpack_require__(0);
+var Spike = (function (_super) {
+    __extends(Spike, _super);
+    function Spike() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.onCollide = function (player) {
+            player.hurt(1);
+        };
+        _this.draw = function () {
+            game_1.Game.drawTile(11, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+        };
+        return _this;
+    }
+    return Spike;
+}(collidable_1.Collidable));
+exports.Spike = Spike;
 
 
 /***/ })
