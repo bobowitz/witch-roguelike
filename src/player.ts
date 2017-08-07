@@ -176,6 +176,12 @@ export class Player {
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
         Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
       }
+    }
+  };
+
+  drawTopLayer = () => {
+    if (!this.dead) {
+      this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
     } else {
       Game.ctx.fillStyle = "white";
       let gameOverString = "Game Over.";
@@ -190,12 +196,6 @@ export class Player {
         GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
         GameConstants.HEIGHT / 2 + 10
       );
-    }
-  };
-
-  drawTopLayer = () => {
-    if (!this.dead) {
-      this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
     }
     this.inventory.draw();
   };

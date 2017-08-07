@@ -1632,17 +1632,17 @@ var Player = (function () {
                     game_1.Game.drawMob(1, 0, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
                 }
             }
+        };
+        this.drawTopLayer = function () {
+            if (!_this.dead) {
+                _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
+            }
             else {
                 game_1.Game.ctx.fillStyle = "white";
                 var gameOverString = "Game Over.";
                 game_1.Game.ctx.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 - 10);
                 var refreshString = "[refresh to restart]";
                 game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + 10);
-            }
-        };
-        this.drawTopLayer = function () {
-            if (!_this.dead) {
-                _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
             }
             _this.inventory.draw();
         };
