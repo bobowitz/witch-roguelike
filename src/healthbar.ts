@@ -38,21 +38,17 @@ export class HealthBar {
       let BORDER_W = 1;
       let BORDER_H = 1;
 
-      let redColor = "#ac3232";
-      let greenColor = "#6abe30";
-      let borderColor = "#222034";
-
-      Game.ctx.fillStyle = borderColor;
+      Game.ctx.fillStyle = GameConstants.OUTLINE;
       Game.ctx.fillRect(
         x - WIDTH / 2 - BORDER_W,
         y - HEIGHT - BORDER_H * 2,
         WIDTH + BORDER_W * 2,
         HEIGHT + BORDER_H * 2
       );
-      Game.ctx.fillStyle = redColor;
+      Game.ctx.fillStyle = GameConstants.RED;
       Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
 
-      Game.ctx.fillStyle = greenColor;
+      Game.ctx.fillStyle = GameConstants.GREEN;
       Game.ctx.fillRect(
         x - WIDTH / 2,
         y - HEIGHT - BORDER_H,

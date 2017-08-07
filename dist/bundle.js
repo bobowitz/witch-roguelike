@@ -103,6 +103,8 @@ var Game = (function () {
         };
         window.addEventListener("load", function () {
             Game.ctx = document.getElementById("gameCanvas").getContext("2d");
+            Game.ctx.font = "20px PixelFont";
+            Game.ctx.textBaseline = "top";
             Game.tileset = new Image();
             Game.tileset.src = "res/tileset.png";
             Game.mobset = new Image();
@@ -187,6 +189,9 @@ var GameConstants = (function () {
     GameConstants.TILESIZE = 16;
     GameConstants.WIDTH = levelConstants_1.LevelConstants.SCREEN_W * GameConstants.TILESIZE;
     GameConstants.HEIGHT = levelConstants_1.LevelConstants.SCREEN_H * GameConstants.TILESIZE;
+    GameConstants.RED = "#ac3232";
+    GameConstants.GREEN = "#6abe30";
+    GameConstants.OUTLINE = "#222034";
     return GameConstants;
 }());
 exports.GameConstants = GameConstants;
@@ -319,12 +324,18 @@ var Level = (function () {
         this.drawTopLayer = function () {
             for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
-                e.drawTopLayer();
+                e.drawTopLayer(); // health bars
+            }
+            _this.textParticles = _this.textParticles.filter(function (x) { return !x.dead; });
+            for (var _b = 0, _c = _this.textParticles; _b < _c.length; _b++) {
+                var p = _c[_b];
+                p.draw();
             }
             // gui stuff
         };
         this.env = game_1.Game.rand(0, levelConstants_1.LevelConstants.ENVIRONMENTS - 1);
         this.items = Array();
+        this.textParticles = Array();
         // if previousDoor is null, no bottom door
         this.hasBottomDoor = true;
         if (previousDoor === null) {
@@ -809,14 +820,11 @@ var HealthBar = (function () {
                 var HEIGHT = 1;
                 var BORDER_W = 1;
                 var BORDER_H = 1;
-                var redColor = "#ac3232";
-                var greenColor = "#6abe30";
-                var borderColor = "#222034";
-                game_1.Game.ctx.fillStyle = borderColor;
+                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
                 game_1.Game.ctx.fillRect(x - WIDTH / 2 - BORDER_W, y - HEIGHT - BORDER_H * 2, WIDTH + BORDER_W * 2, HEIGHT + BORDER_H * 2);
-                game_1.Game.ctx.fillStyle = redColor;
+                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.RED;
                 game_1.Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
-                game_1.Game.ctx.fillStyle = greenColor;
+                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.GREEN;
                 game_1.Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, Math.floor(healthPct * WIDTH), HEIGHT);
             }
         };
@@ -1486,11 +1494,18 @@ var lockedDoor_1 = __webpack_require__(23);
 var sound_1 = __webpack_require__(24);
 var potion_1 = __webpack_require__(25);
 var spike_1 = __webpack_require__(26);
+var textParticle_1 = __webpack_require__(27);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
         this.spaceListener = function () {
-            _this.game.level.levelArray[_this.x][_this.y] = new chest_1.Chest(_this.game.level, _this.game, _this.x, _this.y);
+            // dev tools: chest spawning
+            // this.game.level.levelArray[this.x][this.y] = new Chest(
+            //   this.game.level,
+            //   this.game,
+            //   this.x,
+            //   this.y
+            // );
         };
         this.leftListener = function () {
             if (!_this.dead)
@@ -1561,9 +1576,11 @@ var Player = (function () {
             }
         };
         this.heal = function (amount) {
+            _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + amount, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.GREEN));
             _this.healthBar.heal(amount);
         };
         this.hurt = function (damage) {
+            _this.game.level.textParticles.push(new textParticle_1.TextParticle("-" + damage, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.RED));
             _this.flashing = true;
             _this.healthBar.hurt(damage);
             if (_this.healthBar.health <= 0) {
@@ -1612,9 +1629,10 @@ var Player = (function () {
             }
             else {
                 game_1.Game.ctx.fillStyle = "white";
-                var gameOverString = "Game Over. Refresh the page";
-                game_1.Game.ctx.font = "14px courier";
-                game_1.Game.ctx.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2);
+                var gameOverString = "Game Over.";
+                game_1.Game.ctx.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 - 10);
+                var refreshString = "[refresh to restart]";
+                game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + 10);
             }
         };
         this.drawTopLayer = function () {
@@ -1907,6 +1925,54 @@ var Spike = (function (_super) {
     return Spike;
 }(collidable_1.Collidable));
 exports.Spike = Spike;
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var gameConstants_1 = __webpack_require__(2);
+var TextParticle = (function () {
+    function TextParticle(text, x, y, color) {
+        var _this = this;
+        this.draw = function () {
+            var GRAVITY = 0.2;
+            var TIMEOUT = 2; // lasts for 2 seconds
+            _this.z += _this.dz;
+            if (_this.z < 0) {
+                _this.z = 0;
+                _this.dz *= -0.7;
+            }
+            _this.dz -= GRAVITY;
+            _this.time++;
+            if (_this.time > gameConstants_1.GameConstants.FPS * TIMEOUT)
+                _this.dead = true;
+            var width = game_1.Game.ctx.measureText(_this.text).width;
+            for (var xx = -1; xx <= 1; xx++) {
+                for (var yy = -1; yy <= 1; yy++) {
+                    game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
+                    game_1.Game.ctx.fillText(_this.text, _this.x - width / 2 + xx, _this.y - _this.z + yy);
+                }
+            }
+            game_1.Game.ctx.fillStyle = _this.color;
+            game_1.Game.ctx.fillText(_this.text, _this.x - width / 2, _this.y - _this.z);
+        };
+        this.text = text;
+        this.x = x * gameConstants_1.GameConstants.TILESIZE;
+        this.y = y * gameConstants_1.GameConstants.TILESIZE;
+        this.z = gameConstants_1.GameConstants.TILESIZE;
+        this.dz = 2;
+        this.color = color;
+        this.dead = false;
+        this.time = 0;
+    }
+    return TextParticle;
+}());
+exports.TextParticle = TextParticle;
 
 
 /***/ })

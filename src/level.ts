@@ -15,11 +15,13 @@ import { Item } from "./item/item";
 import { SpawnFloor } from "./spawnfloor";
 import { LockedDoor } from "./lockedDoor";
 import { Spike } from "./spike";
+import { TextParticle } from "./textParticle";
 
 export class Level {
   levelArray: Tile[][];
   enemies: Array<Enemy>;
   items: Array<Item>;
+  textParticles: Array<TextParticle>;
   game: Game;
   bottomDoorX: number;
   bottomDoorY: number;
@@ -67,6 +69,7 @@ export class Level {
     this.env = Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
 
     this.items = Array<Item>();
+    this.textParticles = Array<TextParticle>();
 
     // if previousDoor is null, no bottom door
     this.hasBottomDoor = true;
@@ -394,7 +397,12 @@ export class Level {
   // for stuff rendered on top of the player
   drawTopLayer = () => {
     for (const e of this.enemies) {
-      e.drawTopLayer();
+      e.drawTopLayer(); // health bars
+    }
+
+    this.textParticles = this.textParticles.filter(x => !x.dead);
+    for (const p of this.textParticles) {
+      p.draw();
     }
 
     // gui stuff

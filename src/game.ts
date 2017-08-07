@@ -28,6 +28,9 @@ export class Game {
         "2d"
       ) as CanvasRenderingContext2D;
 
+      Game.ctx.font = "20px PixelFont";
+      Game.ctx.textBaseline = "top";
+
       Game.tileset = new Image();
       Game.tileset.src = "res/tileset.png";
       Game.mobset = new Image();

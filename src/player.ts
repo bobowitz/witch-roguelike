@@ -12,6 +12,7 @@ import { LockedDoor } from "./lockedDoor";
 import { Sound } from "./sound";
 import { Potion } from "./item/potion";
 import { Spike } from "./spike";
+import { TextParticle } from "./textParticle";
 
 export class Player {
   x: number;
@@ -48,12 +49,13 @@ export class Player {
   }
 
   spaceListener = () => {
-    this.game.level.levelArray[this.x][this.y] = new Chest(
-      this.game.level,
-      this.game,
-      this.x,
-      this.y
-    );
+    // dev tools: chest spawning
+    // this.game.level.levelArray[this.x][this.y] = new Chest(
+    //   this.game.level,
+    //   this.game,
+    //   this.x,
+    //   this.y
+    // );
   };
   leftListener = () => {
     if (!this.dead) this.tryMove(this.x - 1, this.y);
@@ -115,10 +117,17 @@ export class Player {
   };
 
   heal = (amount: number) => {
+    this.game.level.textParticles.push(
+      new TextParticle("+" + amount, this.x + 0.5, this.y - 0.5, GameConstants.GREEN)
+    );
     this.healthBar.heal(amount);
   };
 
   hurt = (damage: number) => {
+    this.game.level.textParticles.push(
+      new TextParticle("-" + damage, this.x + 0.5, this.y - 0.5, GameConstants.RED)
+    );
+
     this.flashing = true;
     this.healthBar.hurt(damage);
     if (this.healthBar.health <= 0) {
@@ -169,12 +178,17 @@ export class Player {
       }
     } else {
       Game.ctx.fillStyle = "white";
-      let gameOverString = "Game Over. Refresh the page";
-      Game.ctx.font = "14px courier";
+      let gameOverString = "Game Over.";
       Game.ctx.fillText(
         gameOverString,
         GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
-        GameConstants.HEIGHT / 2
+        GameConstants.HEIGHT / 2 - 10
+      );
+      let refreshString = "[refresh to restart]";
+      Game.ctx.fillText(
+        refreshString,
+        GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
+        GameConstants.HEIGHT / 2 + 10
       );
     }
   };
