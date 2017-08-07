@@ -76,7 +76,9 @@ export class Level {
     this.game = game;
 
     let width = Game.rand(LevelConstants.MIN_LEVEL_W, LevelConstants.MAX_LEVEL_W);
-    let height = Game.rand(LevelConstants.MIN_LEVEL_H, LevelConstants.MAX_LEVEL_H);
+    let height = width + Game.rand(-2, 2);
+    height = Math.min(height, LevelConstants.MAX_LEVEL_H);
+    height = Math.max(height, LevelConstants.MIN_LEVEL_H);
 
     this.levelArray = [];
     for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
@@ -275,6 +277,7 @@ export class Level {
     if (numChests === 1 || numDoors === 0) {
       // if it's a dead end, at least give them a chest
       numChests = Game.randTable([0, 1, 1, 1, 2, 3, 4]);
+      // (but not guaranteed   ---^)
     } else numChests = 0;
     for (let i = 0; i < numChests; i++) {
       let x = 0;

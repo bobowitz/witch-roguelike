@@ -202,8 +202,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var LevelConstants = (function () {
     function LevelConstants() {
     }
-    LevelConstants.MIN_LEVEL_W = 6;
-    LevelConstants.MIN_LEVEL_H = 6;
+    LevelConstants.MIN_LEVEL_W = 5;
+    LevelConstants.MIN_LEVEL_H = 5;
     LevelConstants.MAX_LEVEL_W = 11;
     LevelConstants.MAX_LEVEL_H = 11;
     LevelConstants.SCREEN_W = 17; // screen size in tiles
@@ -332,7 +332,9 @@ var Level = (function () {
         }
         this.game = game;
         var width = game_1.Game.rand(levelConstants_1.LevelConstants.MIN_LEVEL_W, levelConstants_1.LevelConstants.MAX_LEVEL_W);
-        var height = game_1.Game.rand(levelConstants_1.LevelConstants.MIN_LEVEL_H, levelConstants_1.LevelConstants.MAX_LEVEL_H);
+        var height = width + game_1.Game.rand(-2, 2);
+        height = Math.min(height, levelConstants_1.LevelConstants.MAX_LEVEL_H);
+        height = Math.max(height, levelConstants_1.LevelConstants.MIN_LEVEL_H);
         this.levelArray = [];
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             this.levelArray[x] = [];
@@ -513,6 +515,7 @@ var Level = (function () {
         if (numChests === 1 || numDoors === 0) {
             // if it's a dead end, at least give them a chest
             numChests = game_1.Game.randTable([0, 1, 1, 1, 2, 3, 4]);
+            // (but not guaranteed   ---^)
         }
         else
             numChests = 0;
