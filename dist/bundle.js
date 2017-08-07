@@ -72,8 +72,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var gameConstants_1 = __webpack_require__(2);
 var level_1 = __webpack_require__(4);
-var player_1 = __webpack_require__(24);
-var sound_1 = __webpack_require__(18);
+var player_1 = __webpack_require__(25);
+var sound_1 = __webpack_require__(19);
 var Game = (function () {
     function Game() {
         var _this = this;
@@ -193,6 +193,7 @@ var GameConstants = (function () {
     GameConstants.HEIGHT = levelConstants_1.LevelConstants.SCREEN_H * GameConstants.TILESIZE;
     GameConstants.RED = "#ac3232";
     GameConstants.GREEN = "#6abe30";
+    GameConstants.ARMOR_GREY = "#9badb7";
     GameConstants.OUTLINE = "#222034";
     return GameConstants;
 }());
@@ -228,20 +229,20 @@ exports.LevelConstants = LevelConstants;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var wall_1 = __webpack_require__(19);
+var wall_1 = __webpack_require__(20);
 var levelConstants_1 = __webpack_require__(3);
 var floor_1 = __webpack_require__(6);
 var game_1 = __webpack_require__(0);
 var collidable_1 = __webpack_require__(1);
 var door_1 = __webpack_require__(7);
-var bottomDoor_1 = __webpack_require__(8);
-var wallSide_1 = __webpack_require__(20);
-var trapdoor_1 = __webpack_require__(9);
-var knightEnemy_1 = __webpack_require__(21);
-var chest_1 = __webpack_require__(12);
-var spawnfloor_1 = __webpack_require__(10);
-var lockedDoor_1 = __webpack_require__(16);
-var spike_1 = __webpack_require__(17);
+var bottomDoor_1 = __webpack_require__(10);
+var wallSide_1 = __webpack_require__(21);
+var trapdoor_1 = __webpack_require__(11);
+var knightEnemy_1 = __webpack_require__(22);
+var chest_1 = __webpack_require__(14);
+var spawnfloor_1 = __webpack_require__(12);
+var lockedDoor_1 = __webpack_require__(17);
+var spike_1 = __webpack_require__(18);
 var gameConstants_1 = __webpack_require__(2);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd, env) {
@@ -806,6 +807,69 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var item_1 = __webpack_require__(9);
+var Potion = (function (_super) {
+    __extends(Potion, _super);
+    function Potion(x, y) {
+        var _this = _super.call(this, x, y) || this;
+        _this.tileX = 2;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Potion;
+}(item_1.Item));
+exports.Potion = Potion;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var Item = (function () {
+    function Item(x, y) {
+        var _this = this;
+        this.draw = function () {
+            game_1.Game.drawItem(0, 0, 1, 1, _this.x, _this.y, 1, 1);
+            _this.tick += Math.PI * 2 / 60;
+            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.tick) * 0.0625 - 1, _this.w, _this.h);
+        };
+        this.drawIcon = function (x, y) {
+            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
+        };
+        this.x = x;
+        this.y = y;
+        this.w = 1;
+        this.h = 2;
+        this.tileX = 0;
+        this.tileY = 0;
+        this.tick = 0;
+    }
+    return Item;
+}());
+exports.Item = Item;
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
 var collidable_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
 var BottomDoor = (function (_super) {
@@ -828,7 +892,7 @@ exports.BottomDoor = BottomDoor;
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -866,7 +930,7 @@ exports.Trapdoor = Trapdoor;
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -904,7 +968,7 @@ exports.SpawnFloor = SpawnFloor;
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -962,7 +1026,7 @@ exports.HealthBar = HealthBar;
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -980,8 +1044,9 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var collidable_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
-var key_1 = __webpack_require__(13);
-var potion_1 = __webpack_require__(15);
+var key_1 = __webpack_require__(15);
+var potion_1 = __webpack_require__(8);
+var armor_1 = __webpack_require__(16);
 var Chest = (function (_super) {
     __extends(Chest, _super);
     function Chest(level, game, x, y) {
@@ -993,6 +1058,8 @@ var Chest = (function (_super) {
             // DROP TABLES!
             if (game_1.Game.rand(1, 5) === 1)
                 _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
+            else if (game_1.Game.rand(1, 3) === 1)
+                _this.game.level.items.push(new armor_1.Armor(10, _this.x, _this.y));
             else
                 _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
         };
@@ -1003,69 +1070,6 @@ var Chest = (function (_super) {
     return Chest;
 }(collidable_1.Collidable));
 exports.Chest = Chest;
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var item_1 = __webpack_require__(14);
-var Key = (function (_super) {
-    __extends(Key, _super);
-    function Key(x, y) {
-        var _this = _super.call(this, x, y) || this;
-        _this.tileX = 1;
-        _this.tileY = 0;
-        return _this;
-    }
-    return Key;
-}(item_1.Item));
-exports.Key = Key;
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var Item = (function () {
-    function Item(x, y) {
-        var _this = this;
-        this.draw = function () {
-            game_1.Game.drawItem(0, 0, 1, 1, _this.x, _this.y, 1, 1);
-            _this.tick += Math.PI * 2 / 60;
-            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.tick) * 0.0625 - 1, _this.w, _this.h);
-        };
-        this.drawIcon = function (x, y) {
-            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
-        };
-        this.x = x;
-        this.y = y;
-        this.w = 1;
-        this.h = 2;
-        this.tileX = 0;
-        this.tileY = 0;
-        this.tick = 0;
-    }
-    return Item;
-}());
-exports.Item = Item;
 
 
 /***/ }),
@@ -1085,18 +1089,18 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var item_1 = __webpack_require__(14);
-var Potion = (function (_super) {
-    __extends(Potion, _super);
-    function Potion(x, y) {
+var item_1 = __webpack_require__(9);
+var Key = (function (_super) {
+    __extends(Key, _super);
+    function Key(x, y) {
         var _this = _super.call(this, x, y) || this;
-        _this.tileX = 2;
+        _this.tileX = 1;
         _this.tileY = 0;
         return _this;
     }
-    return Potion;
+    return Key;
 }(item_1.Item));
-exports.Potion = Potion;
+exports.Key = Key;
 
 
 /***/ }),
@@ -1116,10 +1120,46 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var item_1 = __webpack_require__(9);
+var Armor = (function (_super) {
+    __extends(Armor, _super);
+    function Armor(health, x, y) {
+        var _this = _super.call(this, x, y) || this;
+        _this.hurt = function (damage) {
+            _this.health -= damage;
+        };
+        _this.health = health;
+        _this.lastTickHealth = health;
+        _this.tileX = 3;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Armor;
+}(item_1.Item));
+exports.Armor = Armor;
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
 var collidable_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
 var door_1 = __webpack_require__(7);
-var key_1 = __webpack_require__(13);
+var key_1 = __webpack_require__(15);
 var LockedDoor = (function (_super) {
     __extends(LockedDoor, _super);
     function LockedDoor() {
@@ -1144,7 +1184,7 @@ exports.LockedDoor = LockedDoor;
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1180,7 +1220,7 @@ exports.Spike = Spike;
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1208,7 +1248,7 @@ exports.Sound = Sound;
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1247,7 +1287,7 @@ exports.Wall = Wall;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1280,7 +1320,7 @@ exports.WallSide = WallSide;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1296,11 +1336,11 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var enemy_1 = __webpack_require__(22);
+var enemy_1 = __webpack_require__(23);
 var game_1 = __webpack_require__(0);
-var astarclass_1 = __webpack_require__(23);
-var healthbar_1 = __webpack_require__(11);
-var potion_1 = __webpack_require__(15);
+var astarclass_1 = __webpack_require__(24);
+var healthbar_1 = __webpack_require__(13);
+var potion_1 = __webpack_require__(8);
 var KnightEnemy = (function (_super) {
     __extends(KnightEnemy, _super);
     function KnightEnemy(level, game, x, y) {
@@ -1366,7 +1406,7 @@ exports.KnightEnemy = KnightEnemy;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1404,14 +1444,14 @@ exports.Enemy = Enemy;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var floor_1 = __webpack_require__(6);
-var spawnfloor_1 = __webpack_require__(10);
+var spawnfloor_1 = __webpack_require__(12);
 var astar;
 (function (astar_1) {
     //================== start graph js
@@ -1740,27 +1780,28 @@ var astar;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var keyboard_1 = __webpack_require__(25);
+var keyboard_1 = __webpack_require__(26);
 var gameConstants_1 = __webpack_require__(2);
 var game_1 = __webpack_require__(0);
 var door_1 = __webpack_require__(7);
-var bottomDoor_1 = __webpack_require__(8);
-var trapdoor_1 = __webpack_require__(9);
-var healthbar_1 = __webpack_require__(11);
-var chest_1 = __webpack_require__(12);
+var bottomDoor_1 = __webpack_require__(10);
+var trapdoor_1 = __webpack_require__(11);
+var healthbar_1 = __webpack_require__(13);
+var chest_1 = __webpack_require__(14);
 var floor_1 = __webpack_require__(6);
-var inventory_1 = __webpack_require__(26);
-var lockedDoor_1 = __webpack_require__(16);
-var sound_1 = __webpack_require__(18);
-var potion_1 = __webpack_require__(15);
-var spike_1 = __webpack_require__(17);
-var textParticle_1 = __webpack_require__(27);
+var inventory_1 = __webpack_require__(27);
+var lockedDoor_1 = __webpack_require__(17);
+var sound_1 = __webpack_require__(19);
+var potion_1 = __webpack_require__(8);
+var spike_1 = __webpack_require__(18);
+var textParticle_1 = __webpack_require__(28);
+var armor_1 = __webpack_require__(16);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
@@ -1845,11 +1886,19 @@ var Player = (function () {
             _this.healthBar.heal(amount);
         };
         this.hurt = function (damage) {
-            _this.flashing = true;
-            _this.healthBar.hurt(damage);
-            if (_this.healthBar.health <= 0) {
-                _this.healthBar.health = 0;
-                _this.dead = true;
+            if (_this.armor) {
+                _this.armor.hurt(damage);
+                if (_this.armor.health <= 0) {
+                    _this.armor = null;
+                }
+            }
+            else {
+                _this.flashing = true;
+                _this.healthBar.hurt(damage);
+                if (_this.healthBar.health <= 0) {
+                    _this.healthBar.health = 0;
+                    _this.dead = true;
+                }
             }
         };
         this.move = function (x, y) {
@@ -1862,6 +1911,10 @@ var Player = (function () {
                 if (i.x === x && i.y === y) {
                     if (i instanceof potion_1.Potion) {
                         _this.heal(3);
+                    }
+                    else if (i instanceof armor_1.Armor) {
+                        _this.armor = i;
+                        console.log(_this.armor);
                     }
                     else {
                         _this.inventory.addItem(i);
@@ -1892,6 +1945,17 @@ var Player = (function () {
             else if (totalHealthDiff > 0) {
                 _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.GREEN));
             }
+            else if (_this.armor) {
+                // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)
+                var totalArmorDiff = _this.armor.health - _this.armor.lastTickHealth;
+                _this.armor.lastTickHealth = _this.armor.health;
+                if (totalArmorDiff < 0) {
+                    _this.game.level.textParticles.push(new textParticle_1.TextParticle("" + totalArmorDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.ARMOR_GREY));
+                }
+                else if (totalArmorDiff > 0) {
+                    _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + totalArmorDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.ARMOR_GREY));
+                }
+            }
         };
         this.draw = function () {
             _this.flashingFrame += 4 / gameConstants_1.GameConstants.FPS;
@@ -1900,6 +1964,9 @@ var Player = (function () {
                     _this.drawX += -0.5 * _this.drawX;
                     _this.drawY += -0.5 * _this.drawY;
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
+                    if (_this.armor) {
+                        _this.armor.drawIcon(_this.x - _this.drawX, _this.y - 0.5 - _this.drawY);
+                    }
                     game_1.Game.drawMob(1, 0, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
                 }
             }
@@ -1907,6 +1974,14 @@ var Player = (function () {
         this.drawTopLayer = function () {
             if (!_this.dead) {
                 _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
+                game_1.Game.ctx.fillStyle = "white";
+                if (_this.game.level.env === 3)
+                    game_1.Game.ctx.fillStyle = "black";
+                var healthArmorString = _this.healthBar.health + "/" + _this.healthBar.fullHealth;
+                if (_this.armor) {
+                    healthArmorString += "+" + _this.armor.health + " armor";
+                }
+                game_1.Game.ctx.fillText(healthArmorString, 3, gameConstants_1.GameConstants.HEIGHT - 20);
             }
             else {
                 game_1.Game.ctx.fillStyle = "white";
@@ -1930,6 +2005,7 @@ var Player = (function () {
         this.flashing = false;
         this.flashingFrame = 0;
         this.lastTickHealth = this.healthBar.health;
+        this.armor = null;
         this.inventory = new inventory_1.Inventory();
     }
     return Player;
@@ -1938,7 +2014,7 @@ exports.Player = Player;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1992,7 +2068,7 @@ window.addEventListener("keydown", function (event) {
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2028,7 +2104,7 @@ exports.Inventory = Inventory;
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

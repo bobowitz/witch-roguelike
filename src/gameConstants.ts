@@ -10,5 +10,6 @@ export class GameConstants {
 
   static readonly RED = "#ac3232";
   static readonly GREEN = "#6abe30";
+  static readonly ARMOR_GREY = "#9badb7";
   static readonly OUTLINE = "#222034";
 }

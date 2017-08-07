@@ -13,6 +13,7 @@ import { Sound } from "./sound";
 import { Potion } from "./item/potion";
 import { Spike } from "./spike";
 import { TextParticle } from "./textParticle";
+import { Armor } from "./item/armor";
 
 export class Player {
   x: number;
@@ -28,6 +29,7 @@ export class Player {
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
+  armor: Armor;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -47,6 +49,7 @@ export class Player {
     this.flashingFrame = 0;
     this.lastTickHealth = this.healthBar.health;
 
+    this.armor = null;
     this.inventory = new Inventory();
   }
 
@@ -123,12 +126,19 @@ export class Player {
   };
 
   hurt = (damage: number) => {
-    this.flashing = true;
-    this.healthBar.hurt(damage);
-    if (this.healthBar.health <= 0) {
-      this.healthBar.health = 0;
+    if (this.armor) {
+      this.armor.hurt(damage);
+      if (this.armor.health <= 0) {
+        this.armor = null;
+      }
+    } else {
+      this.flashing = true;
+      this.healthBar.hurt(damage);
+      if (this.healthBar.health <= 0) {
+        this.healthBar.health = 0;
 
-      this.dead = true;
+        this.dead = true;
+      }
     }
   };
 
@@ -144,6 +154,9 @@ export class Player {
       if (i.x === x && i.y === y) {
         if (i instanceof Potion) {
           this.heal(3);
+        } else if (i instanceof Armor) {
+          this.armor = i;
+          console.log(this.armor);
         } else {
           this.inventory.addItem(i);
         }
@@ -177,6 +190,29 @@ export class Player {
       this.game.level.textParticles.push(
         new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.GREEN)
       );
+    } else if (this.armor) {
+      // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)
+      let totalArmorDiff = this.armor.health - this.armor.lastTickHealth;
+      this.armor.lastTickHealth = this.armor.health;
+      if (totalArmorDiff < 0) {
+        this.game.level.textParticles.push(
+          new TextParticle(
+            "" + totalArmorDiff,
+            this.x + 0.5,
+            this.y - 0.5,
+            GameConstants.ARMOR_GREY
+          )
+        );
+      } else if (totalArmorDiff > 0) {
+        this.game.level.textParticles.push(
+          new TextParticle(
+            "+" + totalArmorDiff,
+            this.x + 0.5,
+            this.y - 0.5,
+            GameConstants.ARMOR_GREY
+          )
+        );
+      }
     }
   };
 
@@ -187,6 +223,9 @@ export class Player {
         this.drawX += -0.5 * this.drawX;
         this.drawY += -0.5 * this.drawY;
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+        if (this.armor) {
+          this.armor.drawIcon(this.x - this.drawX, this.y - 0.5 - this.drawY);
+        }
         Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
       }
     }
@@ -195,6 +234,13 @@ export class Player {
   drawTopLayer = () => {
     if (!this.dead) {
       this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
+      Game.ctx.fillStyle = "white";
+      if (this.game.level.env === 3) Game.ctx.fillStyle = "black";
+      let healthArmorString = this.healthBar.health + "/" + this.healthBar.fullHealth;
+      if (this.armor) {
+        healthArmorString += "+" + this.armor.health + " armor";
+      }
+      Game.ctx.fillText(healthArmorString, 3, GameConstants.HEIGHT - 20);
     } else {
       Game.ctx.fillStyle = "white";
       let gameOverString = "Game Over.";

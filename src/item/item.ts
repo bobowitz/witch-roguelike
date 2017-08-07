@@ -1,4 +1,5 @@
 import { Game } from "../game";
+import { GameConstants } from "../gameConstants";
 
 export class Item {
   x: number;
