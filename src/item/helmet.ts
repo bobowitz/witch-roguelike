@@ -17,6 +17,10 @@ export class Helmet extends Equippable {
 
   hurt = (damage: number) => {
     this.health -= damage;
+    if (this.health <= 0) {
+      this.health = 0;
+      this.dead = true;
+    }
   };
 
   coEquippable = (other: Equippable): boolean => {

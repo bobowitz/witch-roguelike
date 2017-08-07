@@ -9,6 +9,7 @@ export class Item {
   tileX: number;
   tileY: number;
   tick: number;
+  dead: boolean; // for inventory, just a removal flag
 
   constructor(x: number, y: number) {
     this.x = x;
@@ -18,6 +19,7 @@ export class Item {
     this.tileX = 0;
     this.tileY = 0;
     this.tick = 0;
+    this.dead = false;
   }
 
   draw = () => {

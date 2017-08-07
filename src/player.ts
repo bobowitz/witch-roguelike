@@ -54,6 +54,7 @@ export class Player {
 
     this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
+    this.inventory.addItem(new Armor(10, 0, 0));
   }
 
   spaceListener = () => {
@@ -144,7 +145,6 @@ export class Player {
         allArmor[i].hurt(Math.round((i + 1) * avgDamage - totalDamage));
         totalDamage += Math.round(avgDamage - totalDamage);
       }
-      this.equipped = this.equipped.filter(x => !(x instanceof Armor) || x.health > 0);
     } else {
       this.flashing = true;
       this.healthBar.hurt(damage);

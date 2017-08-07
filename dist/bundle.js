@@ -580,7 +580,7 @@ var Level = (function () {
                     // locked (90% dead-end as well) door
                     this.levelArray[x][y] = new lockedDoor_1.LockedDoor(this, x, y);
                 }
-                else if (game_1.Game.rand(1, 2) === 1) {
+                else if (game_1.Game.rand(1, 4) >= 3) {
                     // regular dead-end door
                     this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, true);
                 }
@@ -848,6 +848,7 @@ var Item = (function () {
         this.tileX = 0;
         this.tileY = 0;
         this.tick = 0;
+        this.dead = false;
     }
     return Item;
 }());
@@ -879,6 +880,10 @@ var Armor = (function (_super) {
         var _this = _super.call(this, x, y) || this;
         _this.hurt = function (damage) {
             _this.health -= damage;
+            if (_this.health <= 0) {
+                _this.health = 0;
+                _this.dead = true;
+            }
         };
         _this.coEquippable = function (other) {
             return !(other instanceof Armor);
@@ -1219,6 +1224,10 @@ var Helmet = (function (_super) {
         var _this = _super.call(this, x, y) || this;
         _this.hurt = function (damage) {
             _this.health -= damage;
+            if (_this.health <= 0) {
+                _this.health = 0;
+                _this.dead = true;
+            }
         };
         _this.coEquippable = function (other) {
             return !(other instanceof Helmet);
@@ -2068,7 +2077,6 @@ var Player = (function () {
                     allArmor[i].hurt(Math.round((i + 1) * avgDamage - totalDamage));
                     totalDamage += Math.round(avgDamage - totalDamage);
                 }
-                _this.equipped = _this.equipped.filter(function (x) { return !(x instanceof armor_1.Armor) || x.health > 0; });
             }
             else {
                 _this.flashing = true;
@@ -2194,6 +2202,7 @@ var Player = (function () {
         this.lastTickHealth = this.healthBar.health;
         this.equipped = Array();
         this.inventory = new inventory_1.Inventory(game);
+        this.inventory.addItem(new armor_1.Armor(10, 0, 0));
     }
     return Player;
 }());
@@ -2237,6 +2246,8 @@ var Inventory = (function () {
         };
         this.draw = function () {
             // check equips too
+            _this.items = _this.items.filter(function (x) { return !x.dead; });
+            _this.game.player.equipped = _this.items.filter(function (x) { return x instanceof equippable_1.Equippable && x.equipped; });
             for (var i = 0; i < _this.items.length; i++) {
                 var x = i % levelConstants_1.LevelConstants.SCREEN_W;
                 var y = Math.floor(i / levelConstants_1.LevelConstants.SCREEN_W);

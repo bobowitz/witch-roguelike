@@ -274,7 +274,7 @@ export class Level {
         if (Game.rand(1, 5) === 1) {
           // locked (90% dead-end as well) door
           this.levelArray[x][y] = new LockedDoor(this, x, y);
-        } else if (Game.rand(1, 2) === 1) {
+        } else if (Game.rand(1, 4) >= 3) {
           // regular dead-end door
           this.levelArray[x][y] = new Door(this, this.game, x, y, true);
         } else {

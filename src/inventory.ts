@@ -5,6 +5,8 @@ import { Key } from "./item/key";
 import { Input } from "./input";
 import { GameConstants } from "./gameConstants";
 import { Equippable } from "./item/equippable";
+import { Armor } from "./item/armor";
+import { Helmet } from "./item/helmet";
 
 export class Inventory {
   items: Array<Item>;
@@ -52,6 +54,10 @@ export class Inventory {
 
   draw = () => {
     // check equips too
+    this.items = this.items.filter(x => !x.dead);
+    this.game.player.equipped = this.items.filter(
+      x => x instanceof Equippable && x.equipped
+    ) as Array<Equippable>;
 
     for (let i = 0; i < this.items.length; i++) {
       let x = i % LevelConstants.SCREEN_W;
