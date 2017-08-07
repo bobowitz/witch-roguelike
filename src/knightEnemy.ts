@@ -4,6 +4,7 @@ import { Game } from "./game";
 import { Level } from "./level";
 import { astar } from "./astarclass";
 import { HealthBar } from "./healthbar";
+import { Potion } from "./item/potion";
 
 export class KnightEnemy extends Enemy {
   game: Game;
@@ -47,14 +48,19 @@ export class KnightEnemy extends Enemy {
     }
 
     if (this.healthBar.health <= 0) {
-      this.dead = true;
-      this.x = -10;
-      this.y = -10;
+      this.kill();
     }
   };
 
   hurt = (damage: number) => {
     this.healthBar.hurt(damage);
+  };
+
+  kill = () => {
+    this.dead = true;
+    if (Game.rand(1, 5) === 1) this.level.items.push(new Potion(this.x, this.y));
+    this.x = -10;
+    this.y = -10;
   };
 
   draw = () => {

@@ -211,8 +211,8 @@ var LevelConstants = (function () {
     }
     LevelConstants.MIN_LEVEL_W = 5;
     LevelConstants.MIN_LEVEL_H = 5;
-    LevelConstants.MAX_LEVEL_W = 11;
-    LevelConstants.MAX_LEVEL_H = 11;
+    LevelConstants.MAX_LEVEL_W = 13;
+    LevelConstants.MAX_LEVEL_H = 13;
     LevelConstants.SCREEN_W = 17; // screen size in tiles
     LevelConstants.SCREEN_H = 17; // screen size in tiles
     LevelConstants.ENVIRONMENTS = 4;
@@ -242,9 +242,54 @@ var chest_1 = __webpack_require__(12);
 var spawnfloor_1 = __webpack_require__(10);
 var lockedDoor_1 = __webpack_require__(16);
 var spike_1 = __webpack_require__(17);
+var gameConstants_1 = __webpack_require__(2);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd, env) {
         var _this = this;
+        // name this level
+        this.classify = function (width, height, numEnemies) {
+            var numDoors = 0;
+            var numTrapdoors = 0;
+            var numChests = 0;
+            for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
+                var col = _a[_i];
+                for (var _b = 0, col_1 = col; _b < col_1.length; _b++) {
+                    var t = col_1[_b];
+                    if (t instanceof door_1.Door)
+                        numDoors++;
+                    if (t instanceof trapdoor_1.Trapdoor)
+                        numTrapdoors++;
+                    if (t instanceof chest_1.Chest)
+                        numChests++;
+                }
+            }
+            if (numChests > 1)
+                _this.name = "Treasure";
+            else if (numDoors > 1)
+                _this.name = "Passageway";
+            else if (numTrapdoors > 0)
+                _this.name = "Trick Room";
+            else {
+                if (_this.env === 0) {
+                    var names = ["Dungeon", "Prison", "Sewer"];
+                    _this.name = names[game_1.Game.rand(0, names.length - 1)];
+                }
+                if (_this.env === 1) {
+                    var names = ["Forest", "Grass", "Hills"];
+                    _this.name = names[game_1.Game.rand(0, names.length - 1)];
+                }
+                if (_this.env === 2) {
+                    var names = ["House", "Mansion", "Inn"];
+                    _this.name = names[game_1.Game.rand(0, names.length - 1)];
+                }
+                if (_this.env === 3) {
+                    var names = ["Snow Palace", "Ice Palace", "Freeze", "Ice Kingdom", "Glacier", "Mountain"];
+                    _this.name = names[game_1.Game.rand(0, names.length - 1)];
+                }
+            }
+            var adjectiveList = ["Abandoned", "Deserted", "Haunted", "Cursed", "Ancient"];
+            _this.name = adjectiveList[game_1.Game.rand(0, adjectiveList.length - 1)] + " " + _this.name;
+        };
         this.exitLevel = function () {
             _this.textParticles.splice(0, _this.textParticles.length);
         };
@@ -261,8 +306,8 @@ var Level = (function () {
         this.getCollidable = function (x, y) {
             for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
                 var col = _a[_i];
-                for (var _b = 0, col_1 = col; _b < col_1.length; _b++) {
-                    var tile = col_1[_b];
+                for (var _b = 0, col_2 = col; _b < col_2.length; _b++) {
+                    var tile = col_2[_b];
                     if (tile instanceof collidable_1.Collidable && tile.x === x && tile.y === y)
                         return tile;
                 }
@@ -272,8 +317,8 @@ var Level = (function () {
         this.getTile = function (x, y) {
             for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
                 var col = _a[_i];
-                for (var _b = 0, col_2 = col; _b < col_2.length; _b++) {
-                    var tile = col_2[_b];
+                for (var _b = 0, col_3 = col; _b < col_3.length; _b++) {
+                    var tile = col_3[_b];
                     if (tile !== null && tile.x === x && tile.y === y)
                         return tile;
                 }
@@ -294,8 +339,8 @@ var Level = (function () {
         this.draw = function () {
             for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
                 var col = _a[_i];
-                for (var _b = 0, col_3 = col; _b < col_3.length; _b++) {
-                    var tile = col_3[_b];
+                for (var _b = 0, col_4 = col; _b < col_4.length; _b++) {
+                    var tile = col_4[_b];
                     if (tile !== null)
                         tile.draw();
                 }
@@ -339,6 +384,11 @@ var Level = (function () {
                 p.draw();
             }
             // gui stuff
+            // room name
+            game_1.Game.ctx.fillStyle = "white";
+            if (_this.env === 3)
+                game_1.Game.ctx.fillStyle = "black";
+            game_1.Game.ctx.fillText(_this.name, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(_this.name).width / 2, (_this.roomY - 2) * gameConstants_1.GameConstants.TILESIZE);
         };
         this.env = env;
         this.items = Array();
@@ -350,7 +400,7 @@ var Level = (function () {
             this.parentLevel = null;
         }
         this.game = game;
-        var width = game_1.Game.rand(levelConstants_1.LevelConstants.MIN_LEVEL_W, levelConstants_1.LevelConstants.MAX_LEVEL_W);
+        var width = game_1.Game.randTable([5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 9, 11, 13]);
         var height = width + game_1.Game.rand(-2, 2);
         height = Math.min(height, levelConstants_1.LevelConstants.MAX_LEVEL_H);
         height = Math.max(height, levelConstants_1.LevelConstants.MIN_LEVEL_H);
@@ -358,10 +408,10 @@ var Level = (function () {
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             this.levelArray[x] = [];
         }
-        var roomX = Math.floor(levelConstants_1.LevelConstants.SCREEN_W / 2 - width / 2);
-        var roomY = Math.floor(levelConstants_1.LevelConstants.SCREEN_H / 2 - height / 2);
-        this.bottomDoorX = Math.floor(roomX + width / 2);
-        this.bottomDoorY = roomY + height;
+        this.roomX = Math.floor(levelConstants_1.LevelConstants.SCREEN_W / 2 - width / 2);
+        this.roomY = Math.floor(levelConstants_1.LevelConstants.SCREEN_H / 2 - height / 2);
+        this.bottomDoorX = Math.floor(this.roomX + width / 2);
+        this.bottomDoorY = this.roomY + height;
         // fill in outside walls
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
@@ -371,7 +421,7 @@ var Level = (function () {
         // put in floors
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
-                if (this.pointInside(x, y, roomX, roomY, width, height)) {
+                if (this.pointInside(x, y, this.roomX, this.roomY, width, height)) {
                     this.levelArray[x][y] = new floor_1.Floor(this, x, y);
                 }
             }
@@ -379,8 +429,8 @@ var Level = (function () {
         // outer ring walls
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
-                if (this.pointInside(x, y, roomX - 1, roomY - 1, width + 2, height + 2)) {
-                    if (!this.pointInside(x, y, roomX, roomY, width, height)) {
+                if (this.pointInside(x, y, this.roomX - 1, this.roomY - 1, width + 2, height + 2)) {
+                    if (!this.pointInside(x, y, this.roomX, this.roomY, width, height)) {
                         this.levelArray[x][y] = new wall_1.Wall(this, x, y, 0);
                     }
                 }
@@ -389,10 +439,10 @@ var Level = (function () {
         // put some random wall blocks in the room
         var numBlocks = game_1.Game.randTable([0, 1, 1, 2, 2, 2, 2, 3, 3]);
         for (var i = 0; i < numBlocks; i++) {
-            var blockW = Math.min(game_1.Game.randTable([2, 2, 2, 3, 4, 5]), width - 2);
+            var blockW = Math.min(game_1.Game.randTable([2, 2, 2, 5, 7, 9]), width - 2);
             var blockH = Math.min(blockW + game_1.Game.rand(-1, 1), height - 3);
-            var x = game_1.Game.rand(roomX + 1, roomX + width - blockW - 1);
-            var y = game_1.Game.rand(roomY + 2, roomY + height - blockH - 2);
+            var x = game_1.Game.rand(this.roomX + 1, this.roomX + width - blockW - 1);
+            var y = game_1.Game.rand(this.roomY + 2, this.roomY + height - blockH - 2);
             for (var xx = x; xx < x + blockW; xx++) {
                 for (var yy = y; yy < y + blockH; yy++) {
                     this.levelArray[xx][yy] = new wall_1.Wall(this, xx, yy, 0);
@@ -401,7 +451,9 @@ var Level = (function () {
         }
         // add "finger" blocks extending from ring walls inward
         var numFingers = game_1.Game.randTable([0, 1, 1, 2, 2, 3, 4, 5]);
-        var FINGER_LENGTH = 3;
+        if (game_1.Game.rand(1, 13) > width)
+            numFingers += width * 0.3;
+        var FINGER_LENGTH = width - 2;
         for (var i = 0; i < numFingers; i++) {
             var x = 0;
             var y = 0;
@@ -413,8 +465,8 @@ var Level = (function () {
                 blockH = 1;
                 if (game_1.Game.rand(0, 1) === 0) {
                     // left
-                    x = roomX;
-                    y = game_1.Game.rand(roomY + 2, roomY + height - 3);
+                    x = this.roomX;
+                    y = game_1.Game.rand(this.roomY + 2, this.roomY + height - 3);
                     for (var xx = x; xx < x + blockW + 1; xx++) {
                         for (var yy = y - 2; yy < y + blockH + 2; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -427,8 +479,8 @@ var Level = (function () {
                     }
                 }
                 else {
-                    x = roomX + width - blockW;
-                    y = game_1.Game.rand(roomY + 2, roomY + height - 3);
+                    x = this.roomX + width - blockW;
+                    y = game_1.Game.rand(this.roomY + 2, this.roomY + height - 3);
                     for (var xx = x - 1; xx < x + blockW; xx++) {
                         for (var yy = y - 2; yy < y + blockH + 2; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -446,8 +498,8 @@ var Level = (function () {
                 blockH = game_1.Game.rand(1, FINGER_LENGTH);
                 if (game_1.Game.rand(0, 1) === 0) {
                     // top
-                    y = roomY;
-                    x = game_1.Game.rand(roomX + 2, roomX + width - 3);
+                    y = this.roomY;
+                    x = game_1.Game.rand(this.roomX + 2, this.roomX + width - 3);
                     for (var xx = x - 1; xx < x + blockW + 1; xx++) {
                         for (var yy = y + 1; yy < y + blockH + 2; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -460,8 +512,8 @@ var Level = (function () {
                     }
                 }
                 else {
-                    y = roomY + height - blockH;
-                    x = game_1.Game.rand(roomX + 2, roomX + width - 3);
+                    y = this.roomY + height - blockH;
+                    x = game_1.Game.rand(this.roomX + 2, this.roomX + width - 3);
                     for (var xx = x - 1; xx < x + blockW + 1; xx++) {
                         for (var yy = y - 2; yy < y + blockH; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -491,8 +543,8 @@ var Level = (function () {
             var x = 0;
             var y = 0;
             while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
-                x = game_1.Game.rand(roomX, roomX + width - 1);
-                y = game_1.Game.rand(roomY, roomY + height - 1);
+                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
+                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
             }
             this.levelArray[x][y] = new trapdoor_1.Trapdoor(this, this.game, x, y);
         }
@@ -542,8 +594,8 @@ var Level = (function () {
             var x = 0;
             var y = 0;
             while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
-                x = game_1.Game.rand(roomX, roomX + width - 1);
-                y = game_1.Game.rand(roomY, roomY + height - 1);
+                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
+                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
             }
             this.levelArray[x][y] = new chest_1.Chest(this, this.game, x, y);
         }
@@ -558,15 +610,15 @@ var Level = (function () {
             var x = 0;
             var y = 0;
             while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
-                x = game_1.Game.rand(roomX, roomX + width - 1);
-                y = game_1.Game.rand(roomY, roomY + height - 1);
+                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
+                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
             }
             this.levelArray[x][y] = new spike_1.Spike(this, x, y);
         }
         this.enemies = Array();
         // add enemies
         var numEnemies = game_1.Game.rand(1, 2);
-        if (numEnemies === 1) {
+        if (numEnemies === 1 || width * height > 8 * 8) {
             numEnemies = game_1.Game.randTable([1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5]);
         }
         else
@@ -577,8 +629,8 @@ var Level = (function () {
             while (!(this.getTile(x, y) instanceof floor_1.Floor) ||
                 (x === this.bottomDoorX && y === this.bottomDoorY) ||
                 (x === this.bottomDoorX && y === this.bottomDoorY - 1)) {
-                x = game_1.Game.rand(roomX, roomX + width - 1);
-                y = game_1.Game.rand(roomY, roomY + height - 1);
+                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
+                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
             }
             this.enemies.push(new knightEnemy_1.KnightEnemy(this, this.game, x, y));
         }
@@ -586,6 +638,7 @@ var Level = (function () {
             var b = this.levelArray[this.bottomDoorX][this.bottomDoorY];
             this.parentLevel = b.linkedTopDoor.level;
         }
+        this.classify(width, height, numEnemies);
     }
     Level.prototype.pointInside = function (x, y, rX, rY, rW, rH) {
         if (x < rX || x >= rX + rW)
@@ -1237,6 +1290,7 @@ var enemy_1 = __webpack_require__(22);
 var game_1 = __webpack_require__(0);
 var astarclass_1 = __webpack_require__(23);
 var healthbar_1 = __webpack_require__(11);
+var potion_1 = __webpack_require__(15);
 var KnightEnemy = (function (_super) {
     __extends(KnightEnemy, _super);
     function KnightEnemy(level, game, x, y) {
@@ -1265,13 +1319,18 @@ var KnightEnemy = (function (_super) {
                 }
             }
             if (_this.healthBar.health <= 0) {
-                _this.dead = true;
-                _this.x = -10;
-                _this.y = -10;
+                _this.kill();
             }
         };
         _this.hurt = function (damage) {
             _this.healthBar.hurt(damage);
+        };
+        _this.kill = function () {
+            _this.dead = true;
+            if (game_1.Game.rand(1, 5) === 1)
+                _this.level.items.push(new potion_1.Potion(_this.x, _this.y));
+            _this.x = -10;
+            _this.y = -10;
         };
         _this.draw = function () {
             if (!_this.dead) {
