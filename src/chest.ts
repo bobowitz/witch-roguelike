@@ -5,6 +5,7 @@ import { Key } from "./item/key";
 import { Level } from "./level";
 import { Potion } from "./item/potion";
 import { Armor } from "./item/armor";
+import { Helmet } from "./item/helmet";
 
 export class Chest extends Collidable {
   game: Game;
@@ -22,8 +23,21 @@ export class Chest extends Collidable {
   open = () => {
     // DROP TABLES!
 
-    if (Game.rand(1, 5) === 1) this.game.level.items.push(new Key(this.x, this.y));
-    else if (Game.rand(1, 3) === 1) this.game.level.items.push(new Armor(10, this.x, this.y));
-    else this.game.level.items.push(new Potion(this.x, this.y));
+    let drop = Game.randTable([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4]);
+
+    switch (drop) {
+      case 1:
+        this.game.level.items.push(new Potion(this.x, this.y));
+        break;
+      case 2:
+        this.game.level.items.push(new Key(this.x, this.y));
+        break;
+      case 3:
+        this.game.level.items.push(new Armor(Game.randTable([3, 5, 5, 5, 10, 15]), this.x, this.y));
+        break;
+      case 4:
+        this.game.level.items.push(new Helmet(Game.randTable([3, 3, 5, 5, 10]), this.x, this.y));
+        break;
+    }
   };
 }

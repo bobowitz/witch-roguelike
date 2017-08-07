@@ -1,4 +1,4 @@
-import { Keyboard } from "./keyboard";
+import { Input } from "./input";
 import { GameConstants } from "./gameConstants";
 import { Game } from "./game";
 import { Door } from "./door";
@@ -14,6 +14,9 @@ import { Potion } from "./item/potion";
 import { Spike } from "./spike";
 import { TextParticle } from "./textParticle";
 import { Armor } from "./item/armor";
+import { Item } from "./item/item";
+import { Equippable } from "./item/equippable";
+import { Helmet } from "./item/helmet";
 
 export class Player {
   x: number;
@@ -29,7 +32,7 @@ export class Player {
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
-  armor: Armor;
+  equipped: Array<Equippable>;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -37,11 +40,11 @@ export class Player {
     this.x = x;
     this.y = y;
 
-    Keyboard.spaceListener = this.spaceListener;
-    Keyboard.leftListener = this.leftListener;
-    Keyboard.rightListener = this.rightListener;
-    Keyboard.upListener = this.upListener;
-    Keyboard.downListener = this.downListener;
+    Input.spaceListener = this.spaceListener;
+    Input.leftListener = this.leftListener;
+    Input.rightListener = this.rightListener;
+    Input.upListener = this.upListener;
+    Input.downListener = this.downListener;
 
     this.healthBar = new HealthBar(10);
     this.dead = false;
@@ -49,8 +52,8 @@ export class Player {
     this.flashingFrame = 0;
     this.lastTickHealth = this.healthBar.health;
 
-    this.armor = null;
-    this.inventory = new Inventory();
+    this.equipped = Array<Equippable>();
+    this.inventory = new Inventory(game);
   }
 
   spaceListener = () => {
@@ -128,11 +131,20 @@ export class Player {
   };
 
   hurt = (damage: number) => {
-    if (this.armor) {
-      this.armor.hurt(damage);
-      if (this.armor.health <= 0) {
-        this.armor = null;
+    let allArmor = Array<Armor | Helmet>();
+    for (const e of this.equipped) {
+      if (e instanceof Armor || e instanceof Helmet) {
+        allArmor.push(e);
       }
+    }
+    if (allArmor.length > 0) {
+      let totalDamage = 0;
+      let avgDamage = damage / allArmor.length;
+      for (let i = 0; i < allArmor.length; i++) {
+        allArmor[i].hurt(Math.round((i + 1) * avgDamage - totalDamage));
+        totalDamage += Math.round(avgDamage - totalDamage);
+      }
+      this.equipped = this.equipped.filter(x => !(x instanceof Armor) || x.health > 0);
     } else {
       this.flashing = true;
       this.healthBar.hurt(damage);
@@ -156,9 +168,6 @@ export class Player {
       if (i.x === x && i.y === y) {
         if (i instanceof Potion) {
           this.heal(3);
-        } else if (i instanceof Armor) {
-          this.armor = i;
-          console.log(this.armor);
         } else {
           this.inventory.addItem(i);
         }
@@ -192,10 +201,16 @@ export class Player {
       this.game.level.textParticles.push(
         new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.GREEN)
       );
-    } else if (this.armor) {
+    } else {
       // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)
-      let totalArmorDiff = this.armor.health - this.armor.lastTickHealth;
-      this.armor.lastTickHealth = this.armor.health;
+
+      let totalArmorDiff = 0;
+      for (const e of this.equipped) {
+        if (e instanceof Armor || e instanceof Helmet) {
+          totalArmorDiff += e.health - e.lastTickHealth;
+          e.lastTickHealth = e.health;
+        }
+      }
       if (totalArmorDiff < 0) {
         this.game.level.textParticles.push(
           new TextParticle(
@@ -225,10 +240,11 @@ export class Player {
         this.drawX += -0.5 * this.drawX;
         this.drawY += -0.5 * this.drawY;
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
-        if (this.armor) {
-          this.armor.drawIcon(this.x - this.drawX, this.y - 0.5 - this.drawY);
-        }
         Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+        for (const e of this.equipped) {
+          if (e instanceof Armor || e instanceof Helmet)
+            e.drawEquipped(this.x - this.drawX, this.y - this.drawY);
+        }
       }
     }
   };
@@ -239,9 +255,13 @@ export class Player {
       Game.ctx.fillStyle = "white";
       if (this.game.level.env === 3) Game.ctx.fillStyle = "black";
       let healthArmorString = this.healthBar.health + "/" + this.healthBar.fullHealth;
-      if (this.armor) {
-        healthArmorString += "+" + this.armor.health + " armor";
+      let totalArmor = 0;
+      for (const e of this.equipped) {
+        if (e instanceof Armor || e instanceof Helmet) {
+          totalArmor += e.health;
+        }
       }
+      healthArmorString += totalArmor === 0 ? "" : "+" + totalArmor + " armor";
       Game.ctx.fillText(healthArmorString, 3, GameConstants.HEIGHT - 20);
     } else {
       Game.ctx.fillStyle = "white";

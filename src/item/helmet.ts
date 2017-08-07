@@ -1,9 +1,9 @@
 import { Item } from "./item";
+import { Armor } from "./armor";
 import { Game } from "../game";
 import { Equippable } from "./equippable";
-import { Helmet } from "./helmet";
 
-export class Armor extends Equippable {
+export class Helmet extends Equippable {
   health: number;
   lastTickHealth: number;
 
@@ -11,7 +11,7 @@ export class Armor extends Equippable {
     super(x, y);
     this.health = health;
     this.lastTickHealth = health;
-    this.tileX = 4;
+    this.tileX = 5;
     this.tileY = 0;
   }
 
@@ -20,10 +20,10 @@ export class Armor extends Equippable {
   };
 
   coEquippable = (other: Equippable): boolean => {
-    return !(other instanceof Armor);
+    return !(other instanceof Helmet);
   };
 
   drawEquipped = (x: number, y: number) => {
-    Game.drawMob(0, 2, 1, 2, x, y - 1.5, 1, 2);
+    Game.drawMob(1, 2, 1, 2, x, y - 1.5, 1, 2);
   };
 }
