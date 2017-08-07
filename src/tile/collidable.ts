@@ -1,6 +1,6 @@
-import { Player } from "./player";
+import { Player } from "../player";
 import { Tile } from "./tile";
-import { Level } from "./level";
+import { Level } from "../level";
 
 export class Collidable extends Tile {
   w: number;

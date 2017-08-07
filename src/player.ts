@@ -1,22 +1,23 @@
 import { Input } from "./input";
 import { GameConstants } from "./gameConstants";
 import { Game } from "./game";
-import { Door } from "./door";
-import { BottomDoor } from "./bottomDoor";
-import { Trapdoor } from "./trapdoor";
+import { Door } from "./tile/door";
+import { BottomDoor } from "./tile/bottomDoor";
+import { Trapdoor } from "./tile/trapdoor";
 import { HealthBar } from "./healthbar";
-import { Chest } from "./chest";
-import { Floor } from "./floor";
+import { Chest } from "./tile/chest";
+import { Floor } from "./tile/floor";
 import { Inventory } from "./inventory";
-import { LockedDoor } from "./lockedDoor";
+import { LockedDoor } from "./tile/lockedDoor";
 import { Sound } from "./sound";
 import { Potion } from "./item/potion";
-import { Spike } from "./spike";
+import { Spike } from "./tile/spike";
 import { TextParticle } from "./textParticle";
 import { Armor } from "./item/armor";
 import { Item } from "./item/item";
 import { Equippable } from "./item/equippable";
 import { Helmet } from "./item/helmet";
+import { LevelConstants } from "./levelConstants";
 
 export class Player {
   x: number;
@@ -251,8 +252,7 @@ export class Player {
   drawTopLayer = () => {
     if (!this.dead) {
       this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
-      Game.ctx.fillStyle = "white";
-      if (this.game.level.env === 3) Game.ctx.fillStyle = "black";
+      Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let healthArmorString = this.healthBar.health + "/" + this.healthBar.fullHealth;
       let totalArmor = 0;
       for (const e of this.equipped) {
@@ -263,7 +263,7 @@ export class Player {
       healthArmorString += totalArmor === 0 ? "" : "+" + totalArmor + " armor";
       Game.ctx.fillText(healthArmorString, 3, GameConstants.HEIGHT - 20);
     } else {
-      Game.ctx.fillStyle = "white";
+      Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
       Game.ctx.fillText(
         gameOverString,

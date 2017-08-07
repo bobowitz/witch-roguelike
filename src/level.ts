@@ -1,20 +1,20 @@
-import { Wall } from "./wall";
+import { Wall } from "./tile/wall";
 import { LevelConstants } from "./levelConstants";
-import { Floor } from "./floor";
+import { Floor } from "./tile/floor";
 import { Game } from "./game";
-import { Collidable } from "./collidable";
-import { Door } from "./door";
-import { BottomDoor } from "./bottomDoor";
-import { WallSide } from "./wallSide";
-import { Tile } from "./tile";
-import { Trapdoor } from "./trapdoor";
-import { KnightEnemy } from "./knightEnemy";
-import { Enemy } from "./enemy";
-import { Chest } from "./chest";
+import { Collidable } from "./tile/collidable";
+import { Door } from "./tile/door";
+import { BottomDoor } from "./tile/bottomDoor";
+import { WallSide } from "./tile/wallSide";
+import { Tile } from "./tile/tile";
+import { Trapdoor } from "./tile/trapdoor";
+import { KnightEnemy } from "./enemy/knightEnemy";
+import { Enemy } from "./enemy/enemy";
+import { Chest } from "./tile/chest";
 import { Item } from "./item/item";
-import { SpawnFloor } from "./spawnfloor";
-import { LockedDoor } from "./lockedDoor";
-import { Spike } from "./spike";
+import { SpawnFloor } from "./tile/spawnfloor";
+import { LockedDoor } from "./tile/lockedDoor";
+import { Spike } from "./tile/spike";
 import { TextParticle } from "./textParticle";
 import { GameConstants } from "./gameConstants";
 
@@ -400,13 +400,20 @@ export class Level {
     this.textParticles.splice(0, this.textParticles.length);
   };
 
+  updateLevelTextColor = () => {
+    LevelConstants.LEVEL_TEXT_COLOR = "white";
+    if (this.env === 3) LevelConstants.LEVEL_TEXT_COLOR = "black";
+  };
+
   enterLevel = () => {
+    this.updateLevelTextColor();
     if (this.hasBottomDoor) {
       this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY);
     } else this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);
   };
 
   enterLevelThroughDoor = (door: Door) => {
+    this.updateLevelTextColor();
     this.game.player.moveNoSmooth(door.x, door.y + 1);
   };
 
@@ -433,6 +440,7 @@ export class Level {
     for (const e of this.enemies) {
       e.tick();
     }
+    this.enemies = this.enemies.filter(e => !e.dead);
     this.game.player.finishTick();
   };
 
@@ -482,8 +490,7 @@ export class Level {
     // gui stuff
 
     // room name
-    Game.ctx.fillStyle = "white";
-    if (this.env === 3) Game.ctx.fillStyle = "black";
+    Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
     Game.ctx.fillText(
       this.name,
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,

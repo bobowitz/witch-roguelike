@@ -1,9 +1,9 @@
 import { Collidable } from "./collidable";
-import { Player } from "./player";
-import { Level } from "./level";
-import { Game } from "./game";
+import { Player } from "../player";
+import { Level } from "../level";
+import { Game } from "../game";
 import { Door } from "./door";
-import { Key } from "./item/key";
+import { Key } from "../item/key";
 
 export class LockedDoor extends Collidable {
   unlock = (player: Player) => {

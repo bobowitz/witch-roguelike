@@ -1,10 +1,12 @@
 import { Enemy } from "./enemy";
-import { LevelConstants } from "./levelConstants";
-import { Game } from "./game";
-import { Level } from "./level";
-import { astar } from "./astarclass";
-import { HealthBar } from "./healthbar";
-import { Potion } from "./item/potion";
+import { LevelConstants } from "../levelConstants";
+import { Game } from "../game";
+import { Level } from "../level";
+import { astar } from "../astarclass";
+import { HealthBar } from "../healthbar";
+import { Potion } from "../item/potion";
+import { Floor } from "../tile/floor";
+import { Bones } from "../tile/bones";
 
 export class KnightEnemy extends Enemy {
   game: Game;
@@ -57,6 +59,7 @@ export class KnightEnemy extends Enemy {
   };
 
   kill = () => {
+    this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
     this.dead = true;
     if (Game.rand(1, 5) === 1) this.level.items.push(new Potion(this.x, this.y));
     this.x = -10;

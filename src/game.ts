@@ -1,7 +1,7 @@
 import { GameConstants } from "./gameConstants";
 import { Level } from "./level";
 import { Player } from "./player";
-import { Door } from "./door";
+import { Door } from "./tile/door";
 import { Sound } from "./sound";
 
 export class Game {

@@ -1,6 +1,6 @@
-import { Collidable } from "./collidable";
-import { Game } from "./game";
-import { Level } from "./level";
+import { Collidable } from "../tile/collidable";
+import { Game } from "../game";
+import { Level } from "../level";
 
 export class Enemy extends Collidable {
   drawX: number;

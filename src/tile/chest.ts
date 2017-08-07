@@ -1,11 +1,11 @@
 import { Collidable } from "./collidable";
-import { Item } from "./item/item";
-import { Game } from "./game";
-import { Key } from "./item/key";
-import { Level } from "./level";
-import { Potion } from "./item/potion";
-import { Armor } from "./item/armor";
-import { Helmet } from "./item/helmet";
+import { Item } from "../item/item";
+import { Game } from "../game";
+import { Key } from "../item/key";
+import { Level } from "../level";
+import { Potion } from "../item/potion";
+import { Armor } from "../item/armor";
+import { Helmet } from "../item/helmet";
 
 export class Chest extends Collidable {
   game: Game;

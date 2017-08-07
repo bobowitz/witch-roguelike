@@ -1,6 +1,6 @@
-import { Game } from "./game";
+import { Game } from "../game";
 import { Collidable } from "./collidable";
-import { Level } from "./level";
+import { Level } from "../level";
 
 export class Wall extends Collidable {
   type: number;

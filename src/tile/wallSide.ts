@@ -1,4 +1,4 @@
-import { Game } from "./game";
+import { Game } from "../game";
 import { Collidable } from "./collidable";
 
 export class WallSide extends Collidable {

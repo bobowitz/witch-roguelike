@@ -1,6 +1,6 @@
-import { Game } from "./game";
+import { Game } from "../game";
 import { Tile } from "./tile";
-import { Level } from "./level";
+import { Level } from "../level";
 
 export class Floor extends Tile {
   // all are in grid units
@@ -13,7 +13,7 @@ export class Floor extends Tile {
     this.w = 1;
     this.h = 1;
     this.variation = 1;
-    if (Game.rand(1, 20) == 1) this.variation = Game.randTable([7, 8, 9, 10, 12]);
+    if (Game.rand(1, 20) == 1) this.variation = Game.randTable([8, 9, 10, 12]);
   }
 
   draw = () => {

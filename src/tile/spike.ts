@@ -1,6 +1,6 @@
 import { Collidable } from "./collidable";
-import { Player } from "./player";
-import { Game } from "./game";
+import { Player } from "../player";
+import { Game } from "../game";
 
 export class Spike extends Collidable {
   onCollide = (player: Player) => {

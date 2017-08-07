@@ -1,8 +1,8 @@
 import { Collidable } from "./collidable";
-import { Game } from "./game";
-import { Level } from "./level";
-import { Player } from "./player";
-import { LevelConstants } from "./levelConstants";
+import { Game } from "../game";
+import { Level } from "../level";
+import { Player } from "../player";
+import { LevelConstants } from "../levelConstants";
 
 export class Trapdoor extends Collidable {
   game: Game;

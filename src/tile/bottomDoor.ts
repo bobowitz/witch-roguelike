@@ -1,8 +1,8 @@
 import { Collidable } from "./collidable";
-import { Game } from "./game";
-import { Level } from "./level";
+import { Game } from "../game";
+import { Level } from "../level";
 import { Door } from "./door";
-import { Player } from "./player";
+import { Player } from "../player";
 
 export class BottomDoor extends Collidable {
   linkedTopDoor: Door;
