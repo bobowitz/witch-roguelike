@@ -54,7 +54,6 @@ export class Player {
 
     this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
-    this.inventory.addItem(new Armor(10, 0, 0));
   }
 
   spaceListener = () => {

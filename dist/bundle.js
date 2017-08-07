@@ -2202,7 +2202,6 @@ var Player = (function () {
         this.lastTickHealth = this.healthBar.health;
         this.equipped = Array();
         this.inventory = new inventory_1.Inventory(game);
-        this.inventory.addItem(new armor_1.Armor(10, 0, 0));
     }
     return Player;
 }());
