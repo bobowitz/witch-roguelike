@@ -2,6 +2,7 @@ import { Collidable } from "./collidable";
 import { Game } from "./game";
 import { Level } from "./level";
 import { Player } from "./player";
+import { LevelConstants } from "./levelConstants";
 
 export class Trapdoor extends Collidable {
   game: Game;
@@ -16,6 +17,6 @@ export class Trapdoor extends Collidable {
   };
 
   onCollide = (player: Player) => {
-    this.game.changeLevel(new Level(this.game, null, false));
+    this.game.changeLevel(new Level(this.game, null, false, Level.randEnv()));
   };
 }

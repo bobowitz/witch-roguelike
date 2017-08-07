@@ -41,7 +41,7 @@ export class Game {
       Sound.loadSounds();
 
       this.player = new Player(this, 0, 0);
-      this.level = new Level(this, null, false);
+      this.level = new Level(this, null, false, Level.randEnv());
       this.level.enterLevel();
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);

@@ -16,6 +16,7 @@ import { SpawnFloor } from "./spawnfloor";
 import { LockedDoor } from "./lockedDoor";
 import { Spike } from "./spike";
 import { TextParticle } from "./textParticle";
+import { GameConstants } from "./gameConstants";
 
 export class Level {
   levelArray: Tile[][];
@@ -26,6 +27,7 @@ export class Level {
   bottomDoorX: number;
   bottomDoorY: number;
   hasBottomDoor: boolean;
+  parentLevel: Level;
   env: number; // which environment is this level?
 
   private pointInside(
@@ -65,8 +67,12 @@ export class Level {
     }
   }
 
-  constructor(game: Game, previousDoor: Door, deadEnd: boolean) {
-    this.env = Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
+  static randEnv = () => {
+    return Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
+  };
+
+  constructor(game: Game, previousDoor: Door, deadEnd: boolean, env: number) {
+    this.env = env;
 
     this.items = Array<Item>();
     this.textParticles = Array<TextParticle>();
@@ -75,6 +81,7 @@ export class Level {
     this.hasBottomDoor = true;
     if (previousDoor === null) {
       this.hasBottomDoor = false;
+      this.parentLevel = null;
     }
     this.game = game;
 
@@ -244,7 +251,7 @@ export class Level {
 
     // add doors
     let numDoors = Game.randTable([1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3]);
-    if (deadEnd) numDoors = Game.randTable([0, 0, 1, 1, 1, 1]);
+    if (deadEnd && Game.rand(1, 3) === 1) numDoors = 0;
     for (let i = 0; i < numDoors; i++) {
       let x = 0;
       let y = 0;
@@ -263,7 +270,7 @@ export class Level {
         if (Game.rand(1, 5) === 1) {
           // locked (90% dead-end as well) door
           this.levelArray[x][y] = new LockedDoor(this, x, y);
-        } else if (Game.rand(1, 10) === 1) {
+        } else if (Game.rand(1, 2) === 1) {
           // regular dead-end door
           this.levelArray[x][y] = new Door(this, this.game, x, y, true);
         } else {
@@ -276,7 +283,7 @@ export class Level {
     }
 
     // add chests
-    let numChests = Game.rand(1, 5);
+    let numChests = Game.rand(1, 3);
     if (numChests === 1 || numDoors === 0) {
       // if it's a dead end, at least give them a chest
       numChests = Game.randTable([0, 1, 1, 1, 2, 3, 4]);
@@ -309,7 +316,7 @@ export class Level {
 
     this.enemies = Array<Enemy>();
     // add enemies
-    let numEnemies = Game.rand(1, 3);
+    let numEnemies = Game.rand(1, 2);
     if (numEnemies === 1) {
       numEnemies = Game.randTable([1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5]);
     } else numEnemies = 0;
@@ -326,6 +333,11 @@ export class Level {
       }
       this.enemies.push(new KnightEnemy(this, this.game, x, y));
     }
+
+    if (this.hasBottomDoor) {
+      let b = this.levelArray[this.bottomDoorX][this.bottomDoorY] as BottomDoor;
+      this.parentLevel = b.linkedTopDoor.level;
+    }
   }
 
   exitLevel = () => {
@@ -333,8 +345,9 @@ export class Level {
   };
 
   enterLevel = () => {
-    if (this.hasBottomDoor) this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY);
-    else this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);
+    if (this.hasBottomDoor) {
+      this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY);
+    } else this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);
   };
 
   enterLevelThroughDoor = (door: Door) => {
@@ -360,10 +373,11 @@ export class Level {
   };
 
   tick = () => {
-    this.game.player.flashing = false;
+    this.game.player.startTick();
     for (const e of this.enemies) {
       e.tick();
     }
+    this.game.player.finishTick();
   };
 
   update = () => {

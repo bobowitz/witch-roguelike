@@ -26,6 +26,7 @@ export class Player {
   flashingFrame: number;
   healthBar: HealthBar;
   dead: boolean;
+  lastTickHealth: number;
   inventory: Inventory;
 
   constructor(game: Game, x: number, y: number) {
@@ -44,6 +45,7 @@ export class Player {
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
+    this.lastTickHealth = this.healthBar.health;
 
     this.inventory = new Inventory();
   }
@@ -117,17 +119,10 @@ export class Player {
   };
 
   heal = (amount: number) => {
-    this.game.level.textParticles.push(
-      new TextParticle("+" + amount, this.x + 0.5, this.y - 0.5, GameConstants.GREEN)
-    );
     this.healthBar.heal(amount);
   };
 
   hurt = (damage: number) => {
-    this.game.level.textParticles.push(
-      new TextParticle("-" + damage, this.x + 0.5, this.y - 0.5, GameConstants.RED)
-    );
-
     this.flashing = true;
     this.healthBar.hurt(damage);
     if (this.healthBar.health <= 0) {
@@ -166,6 +161,24 @@ export class Player {
   };
 
   update = () => {};
+
+  startTick = () => {};
+
+  finishTick = () => {
+    this.flashing = false;
+
+    let totalHealthDiff = this.healthBar.health - this.lastTickHealth;
+    this.lastTickHealth = this.healthBar.health; // update last tick health
+    if (totalHealthDiff < 0) {
+      this.game.level.textParticles.push(
+        new TextParticle("" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED)
+      );
+    } else if (totalHealthDiff > 0) {
+      this.game.level.textParticles.push(
+        new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.GREEN)
+      );
+    }
+  };
 
   draw = () => {
     this.flashingFrame += 4 / GameConstants.FPS;

@@ -21,7 +21,7 @@ export class Chest extends Collidable {
   open = () => {
     // DROP TABLES!
 
-    if (Game.rand(1, 7) === 1) this.game.level.items.push(new Key(this.x, this.y));
+    if (Game.rand(1, 5) === 1) this.game.level.items.push(new Key(this.x, this.y));
     else this.game.level.items.push(new Potion(this.x, this.y));
   };
 }
