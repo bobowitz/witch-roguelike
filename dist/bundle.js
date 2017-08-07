@@ -1874,10 +1874,12 @@ var Player = (function () {
                         _this.game.level.levelArray[x][y] = new floor_1.Floor(_this.game.level, x, y);
                         _this.drawX = (_this.x - x) * 0.5;
                         _this.drawY = (_this.y - y) * 0.5;
+                        _this.game.level.tick();
                     }
                     else if (other instanceof spike_1.Spike) {
                         _this.move(x, y);
                         other.onCollide(_this);
+                        _this.game.level.tick();
                     }
                 }
             }

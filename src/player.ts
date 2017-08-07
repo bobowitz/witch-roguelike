@@ -113,9 +113,11 @@ export class Player {
           this.game.level.levelArray[x][y] = new Floor(this.game.level, x, y);
           this.drawX = (this.x - x) * 0.5;
           this.drawY = (this.y - y) * 0.5;
+          this.game.level.tick();
         } else if (other instanceof Spike) {
           this.move(x, y);
           other.onCollide(this);
+          this.game.level.tick();
         }
       }
     }
