@@ -17,6 +17,7 @@ import { LockedDoor } from "./tile/lockedDoor";
 import { Spike } from "./tile/spike";
 import { TextParticle } from "./textParticle";
 import { GameConstants } from "./gameConstants";
+import { SkullEnemy } from "./enemy/skullEnemy";
 
 export class Level {
   levelArray: Tile[][];
@@ -335,7 +336,8 @@ export class Level {
         x = Game.rand(this.roomX, this.roomX + width - 1);
         y = Game.rand(this.roomY, this.roomY + height - 1);
       }
-      this.enemies.push(new KnightEnemy(this, this.game, x, y));
+      if (Game.rand(1, 2) === 1) this.enemies.push(new KnightEnemy(this, this.game, x, y));
+      else this.enemies.push(new SkullEnemy(this, this.game, x, y));
     }
 
     if (this.hasBottomDoor) {
