@@ -17,7 +17,7 @@ export class TextParticle {
     this.x = x * GameConstants.TILESIZE;
     this.y = y * GameConstants.TILESIZE;
     this.z = GameConstants.TILESIZE;
-    this.dz = 2;
+    this.dz = 1;
     this.color = color;
     this.dead = false;
     this.time = 0;
@@ -31,12 +31,12 @@ export class TextParticle {
       this.delay--;
     } else {
       let GRAVITY = 0.2;
-      let TIMEOUT = 2; // lasts for 2 seconds
+      let TIMEOUT = 1; // lasts for 1 second
 
       this.z += this.dz;
       if (this.z < 0) {
         this.z = 0;
-        this.dz *= -0.7;
+        this.dz *= -0.6;
       }
       this.dz -= GRAVITY;
 

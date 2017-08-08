@@ -111,7 +111,7 @@ var Game = (function () {
         };
         window.addEventListener("load", function () {
             Game.ctx = document.getElementById("gameCanvas").getContext("2d");
-            Game.ctx.font = "20px PixelFont";
+            Game.ctx.font = "12px PixelFont";
             Game.ctx.textBaseline = "top";
             Game.tileset = new Image();
             Game.tileset.src = "res/tileset.png";
@@ -2530,11 +2530,11 @@ var TextParticle = (function () {
             }
             else {
                 var GRAVITY = 0.2;
-                var TIMEOUT = 2; // lasts for 2 seconds
+                var TIMEOUT = 1; // lasts for 1 second
                 _this.z += _this.dz;
                 if (_this.z < 0) {
                     _this.z = 0;
-                    _this.dz *= -0.7;
+                    _this.dz *= -0.6;
                 }
                 _this.dz -= GRAVITY;
                 _this.time++;
@@ -2555,7 +2555,7 @@ var TextParticle = (function () {
         this.x = x * gameConstants_1.GameConstants.TILESIZE;
         this.y = y * gameConstants_1.GameConstants.TILESIZE;
         this.z = gameConstants_1.GameConstants.TILESIZE;
-        this.dz = 2;
+        this.dz = 1;
         this.color = color;
         this.dead = false;
         this.time = 0;
