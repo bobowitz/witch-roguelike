@@ -1776,7 +1776,7 @@ var Player = (function () {
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
-        this.healthBar = new healthbar_1.HealthBar(10);
+        this.healthBar = new healthbar_1.HealthBar(1000);
         this.dead = false;
         this.flashing = false;
         this.flashingFrame = 0;
@@ -2518,6 +2518,7 @@ var TreeNode = (function () {
         this.children = Array();
         this.width = 0;
         this.isCurrent = false;
+        this.deadEnd = false;
     }
     return TreeNode;
 }());
@@ -2560,8 +2561,10 @@ var Map = (function () {
             if (levelRoot === _this.game.level) {
                 parent.isCurrent = true;
             }
-            if (levelRoot.doors.length === 0)
+            if (levelRoot.doors.length === 0) {
+                parent.deadEnd = true;
                 return;
+            }
             for (var _i = 0, _a = levelRoot.doors; _i < _a.length; _i++) {
                 var d = _a[_i];
                 // if the door has already been opened, add the connected room to the tree
@@ -2615,6 +2618,8 @@ var Map = (function () {
                 childX += c.width;
             }
             game_1.Game.ctx.fillStyle = "white";
+            if (parent.deadEnd)
+                game_1.Game.ctx.fillStyle = "grey";
             if (parent.isCurrent)
                 game_1.Game.ctx.fillStyle = "red";
             _this.drawLeaf(x + parent.width / 2, y);
