@@ -19,6 +19,7 @@ import { Equippable } from "./item/equippable";
 import { Helmet } from "./item/helmet";
 import { LevelConstants } from "./levelConstants";
 import { Map } from "./map";
+import { Pickup } from "./item/pickup";
 
 export class Player {
   x: number;
@@ -50,7 +51,7 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.healthBar = new HealthBar(10);
+    this.healthBar = new HealthBar(50);
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
@@ -96,11 +97,19 @@ export class Player {
     } else if (!this.dead) this.tryMove(this.x, this.y + 1);
   };
 
+  hit = (): number => {
+    return Game.randTable([3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7, 8, 9, 10]);
+  };
+
   tryMove = (x: number, y: number) => {
     let hitEnemy = false;
     for (let e of this.game.level.enemies) {
       if (e.x === x && e.y === y) {
-        e.hurt(1);
+        let dmg = this.hit();
+        e.hurt(dmg);
+        this.game.level.textParticles.push(
+          new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
+        );
         hitEnemy = true;
       }
     }
@@ -144,6 +153,15 @@ export class Player {
     }
   };
 
+  buffHealth = (amount: number) => {
+    this.healthBar.fullHealth += amount;
+    //this.healthBar.health += amount;
+
+    this.game.level.textParticles.push(
+      new TextParticle("+" + amount, this.x + 0.5, this.y - 0.5, GameConstants.HEALTH_BUFF_COLOR, 0)
+    );
+  };
+
   heal = (amount: number) => {
     this.healthBar.heal(amount);
   };
@@ -183,8 +201,8 @@ export class Player {
 
     for (let i of this.game.level.items) {
       if (i.x === x && i.y === y) {
-        if (i instanceof Potion) {
-          this.heal(3);
+        if (i instanceof Pickup) {
+          i.onPickup(this);
         } else {
           this.inventory.addItem(i);
         }
@@ -212,11 +230,11 @@ export class Player {
     this.lastTickHealth = this.healthBar.health; // update last tick health
     if (totalHealthDiff < 0) {
       this.game.level.textParticles.push(
-        new TextParticle("" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED)
+        new TextParticle("" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED, 0)
       );
     } else if (totalHealthDiff > 0) {
       this.game.level.textParticles.push(
-        new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.GREEN)
+        new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.GREEN, 0)
       );
     } else {
       // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)

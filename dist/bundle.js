@@ -120,6 +120,7 @@ var Game = (function () {
             Game.itemset = new Image();
             Game.itemset.src = "res/itemset.png";
             sound_1.Sound.loadSounds();
+            sound_1.Sound.playMusic(); // loops forever
             _this.player = new player_1.Player(_this, 0, 0);
             _this.level = new level_1.Level(_this, null, false, level_1.Level.randEnv());
             _this.level.enterLevel();
@@ -193,7 +194,7 @@ var levelConstants_1 = __webpack_require__(3);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.9";
+    GameConstants.VERSION = "v0.0.10";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -203,6 +204,8 @@ var GameConstants = (function () {
     GameConstants.GREEN = "#6abe30";
     GameConstants.ARMOR_GREY = "#9badb7";
     GameConstants.OUTLINE = "#222034";
+    GameConstants.HIT_ENEMY_TEXT_COLOR = "#76428a";
+    GameConstants.HEALTH_BUFF_COLOR = "#d77bba";
     return GameConstants;
 }());
 exports.GameConstants = GameConstants;
@@ -286,17 +289,21 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var item_1 = __webpack_require__(9);
+var game_1 = __webpack_require__(0);
+var pickup_1 = __webpack_require__(34);
 var Potion = (function (_super) {
     __extends(Potion, _super);
     function Potion(x, y) {
         var _this = _super.call(this, x, y) || this;
+        _this.onPickup = function (player) {
+            player.heal(game_1.Game.randTable([9, 10, 10, 10, 10, 15]));
+        };
         _this.tileX = 2;
         _this.tileY = 0;
         return _this;
     }
     return Potion;
-}(item_1.Item));
+}(pickup_1.Pickup));
 exports.Potion = Potion;
 
 
@@ -1090,6 +1097,9 @@ var Enemy = (function (_super) {
                 _this.y = y;
             }
         };
+        _this.hit = function () {
+            return 0;
+        };
         _this.hurt = function (damage) { };
         _this.draw = function () {
             game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
@@ -1494,9 +1504,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var collidable_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
 var key_1 = __webpack_require__(18);
-var potion_1 = __webpack_require__(5);
 var armor_1 = __webpack_require__(19);
 var helmet_1 = __webpack_require__(20);
+var healthbuff_1 = __webpack_require__(35);
 var Chest = (function (_super) {
     __extends(Chest, _super);
     function Chest(level, game, x, y) {
@@ -1506,19 +1516,19 @@ var Chest = (function (_super) {
         };
         _this.open = function () {
             // DROP TABLES!
-            var drop = game_1.Game.randTable([2, 2, 3, 4]);
+            var drop = game_1.Game.randTable([1, 1, 1, 1, 2, 2, 3, 4]);
             switch (drop) {
                 case 1:
-                    _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
+                    _this.game.level.items.push(new healthbuff_1.HealthBuff(_this.x, _this.y));
                     break;
                 case 2:
                     _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
                     break;
                 case 3:
-                    _this.game.level.items.push(new armor_1.Armor(game_1.Game.randTable([3, 5, 5, 5, 10, 15]), _this.x, _this.y));
+                    _this.game.level.items.push(new armor_1.Armor(game_1.Game.randTable([25, 50, 50, 50, 50, 50, 50, 75]), _this.x, _this.y));
                     break;
                 case 4:
-                    _this.game.level.items.push(new helmet_1.Helmet(game_1.Game.randTable([3, 3, 5, 5, 10]), _this.x, _this.y));
+                    _this.game.level.items.push(new helmet_1.Helmet(game_1.Game.randTable([20, 30, 30, 30, 30, 30, 45]), _this.x, _this.y));
                     break;
             }
         };
@@ -1827,11 +1837,23 @@ var Sound = (function () {
         Sound.footsteps.push(new Audio("res/step2.wav"));
         Sound.footsteps.push(new Audio("res/step3.wav"));
         Sound.footsteps.push(new Audio("res/step4.wav"));
+        for (var _i = 0, _a = Sound.footsteps; _i < _a.length; _i++) {
+            var f = _a[_i];
+            f.volume = 0.1;
+        }
+        Sound.music = new Audio("res/bewitched.mp3");
     };
     Sound.footstep = function () {
         var i = game_1.Game.rand(0, Sound.footsteps.length - 1);
         Sound.footsteps[i].play();
         Sound.footsteps[i].currentTime = 0;
+    };
+    Sound.playMusic = function () {
+        Sound.music.addEventListener("ended", function () {
+            Sound.music.currentTime = 0;
+            Sound.music.play();
+        }, false);
+        Sound.music.play();
     };
     return Sound;
 }());
@@ -1937,6 +1959,9 @@ var KnightEnemy = (function (_super) {
     __extends(KnightEnemy, _super);
     function KnightEnemy(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
+        _this.hit = function () {
+            return game_1.Game.randTable([1, 1, 1, 2, 3]);
+        };
         _this.tick = function () {
             if (!_this.dead) {
                 _this.ticks++;
@@ -1947,7 +1972,7 @@ var KnightEnemy = (function (_super) {
                     if (_this.moves.length > 0) {
                         if (_this.game.player.x === _this.moves[0].pos.x &&
                             _this.game.player.y === _this.moves[0].pos.y) {
-                            _this.game.player.hurt(1);
+                            _this.game.player.hurt(_this.hit());
                         }
                         else {
                             _this.tryMove(_this.moves[0].pos.x, _this.moves[0].pos.y);
@@ -1986,7 +2011,7 @@ var KnightEnemy = (function (_super) {
         _this.level = level;
         _this.moves = new Array();
         _this.ticks = 0;
-        _this.healthBar = new healthbar_1.HealthBar(2);
+        _this.healthBar = new healthbar_1.HealthBar(10);
         return _this;
     }
     return KnightEnemy;
@@ -2049,6 +2074,9 @@ var SkullEnemy = (function (_super) {
     __extends(SkullEnemy, _super);
     function SkullEnemy(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
+        _this.hit = function () {
+            return game_1.Game.randTable([4, 5, 5, 5, 5, 5, 5, 6, 7, 8]);
+        };
         _this.tick = function () {
             _this.ticks++;
             if (_this.ticks % 2 === 0) {
@@ -2063,7 +2091,7 @@ var SkullEnemy = (function (_super) {
                                 _this.x = _this.moves[0].pos.x;
                                 _this.y = _this.moves[0].pos.y;
                             }
-                            _this.game.player.hurt(1);
+                            _this.game.player.hurt(_this.hit());
                         }
                         else {
                             _this.tryTwoMoves(_this.moves[0].pos.x, _this.moves[0].pos.y, _this.moves[1].pos.x, _this.moves[1].pos.y);
@@ -2072,7 +2100,7 @@ var SkullEnemy = (function (_super) {
                     else if (_this.moves.length > 0) {
                         if (_this.game.player.x === _this.moves[0].pos.x &&
                             _this.game.player.y === _this.moves[0].pos.y) {
-                            _this.game.player.hurt(1);
+                            _this.game.player.hurt(_this.hit());
                         }
                         else {
                             _this.tryMove(_this.moves[0].pos.x, _this.moves[0].pos.y);
@@ -2124,7 +2152,7 @@ var SkullEnemy = (function (_super) {
         _this.level = level;
         _this.moves = new Array();
         _this.ticks = 0;
-        _this.healthBar = new healthbar_1.HealthBar(2);
+        _this.healthBar = new healthbar_1.HealthBar(20);
         return _this;
     }
     return SkullEnemy;
@@ -2151,13 +2179,13 @@ var floor_1 = __webpack_require__(4);
 var inventory_1 = __webpack_require__(31);
 var lockedDoor_1 = __webpack_require__(21);
 var sound_1 = __webpack_require__(24);
-var potion_1 = __webpack_require__(5);
 var spike_1 = __webpack_require__(22);
 var textParticle_1 = __webpack_require__(32);
 var armor_1 = __webpack_require__(19);
 var helmet_1 = __webpack_require__(20);
 var levelConstants_1 = __webpack_require__(3);
 var map_1 = __webpack_require__(33);
+var pickup_1 = __webpack_require__(34);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
@@ -2202,12 +2230,17 @@ var Player = (function () {
             else if (!_this.dead)
                 _this.tryMove(_this.x, _this.y + 1);
         };
+        this.hit = function () {
+            return game_1.Game.randTable([3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7, 8, 9, 10]);
+        };
         this.tryMove = function (x, y) {
             var hitEnemy = false;
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
                 if (e.x === x && e.y === y) {
-                    e.hurt(1);
+                    var dmg = _this.hit();
+                    e.hurt(dmg);
+                    _this.game.level.textParticles.push(new textParticle_1.TextParticle("" + dmg, x + 0.5, y - 0.5, gameConstants_1.GameConstants.HIT_ENEMY_TEXT_COLOR, 5));
                     hitEnemy = true;
                 }
             }
@@ -2256,6 +2289,11 @@ var Player = (function () {
                 }
             }
         };
+        this.buffHealth = function (amount) {
+            _this.healthBar.fullHealth += amount;
+            //this.healthBar.health += amount;
+            _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + amount, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.HEALTH_BUFF_COLOR, 0));
+        };
         this.heal = function (amount) {
             _this.healthBar.heal(amount);
         };
@@ -2292,8 +2330,8 @@ var Player = (function () {
             _this.y = y;
             var _loop_1 = function (i) {
                 if (i.x === x && i.y === y) {
-                    if (i instanceof potion_1.Potion) {
-                        _this.heal(3);
+                    if (i instanceof pickup_1.Pickup) {
+                        i.onPickup(_this);
                     }
                     else {
                         _this.inventory.addItem(i);
@@ -2319,10 +2357,10 @@ var Player = (function () {
             var totalHealthDiff = _this.healthBar.health - _this.lastTickHealth;
             _this.lastTickHealth = _this.healthBar.health; // update last tick health
             if (totalHealthDiff < 0) {
-                _this.game.level.textParticles.push(new textParticle_1.TextParticle("" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.RED));
+                _this.game.level.textParticles.push(new textParticle_1.TextParticle("" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.RED, 0));
             }
             else if (totalHealthDiff > 0) {
-                _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.GREEN));
+                _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.GREEN, 0));
             }
             else {
                 // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)
@@ -2392,7 +2430,7 @@ var Player = (function () {
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
-        this.healthBar = new healthbar_1.HealthBar(10);
+        this.healthBar = new healthbar_1.HealthBar(50);
         this.dead = false;
         this.flashing = false;
         this.flashingFrame = 0;
@@ -2484,29 +2522,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var gameConstants_1 = __webpack_require__(2);
 var TextParticle = (function () {
-    function TextParticle(text, x, y, color) {
+    function TextParticle(text, x, y, color, delay) {
         var _this = this;
         this.draw = function () {
-            var GRAVITY = 0.2;
-            var TIMEOUT = 2; // lasts for 2 seconds
-            _this.z += _this.dz;
-            if (_this.z < 0) {
-                _this.z = 0;
-                _this.dz *= -0.7;
+            if (_this.delay > 0) {
+                _this.delay--;
             }
-            _this.dz -= GRAVITY;
-            _this.time++;
-            if (_this.time > gameConstants_1.GameConstants.FPS * TIMEOUT)
-                _this.dead = true;
-            var width = game_1.Game.ctx.measureText(_this.text).width;
-            for (var xx = -1; xx <= 1; xx++) {
-                for (var yy = -1; yy <= 1; yy++) {
-                    game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
-                    game_1.Game.ctx.fillText(_this.text, _this.x - width / 2 + xx, _this.y - _this.z + yy);
+            else {
+                var GRAVITY = 0.2;
+                var TIMEOUT = 2; // lasts for 2 seconds
+                _this.z += _this.dz;
+                if (_this.z < 0) {
+                    _this.z = 0;
+                    _this.dz *= -0.7;
                 }
+                _this.dz -= GRAVITY;
+                _this.time++;
+                if (_this.time > gameConstants_1.GameConstants.FPS * TIMEOUT)
+                    _this.dead = true;
+                var width = game_1.Game.ctx.measureText(_this.text).width;
+                for (var xx = -1; xx <= 1; xx++) {
+                    for (var yy = -1; yy <= 1; yy++) {
+                        game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
+                        game_1.Game.ctx.fillText(_this.text, _this.x - width / 2 + xx, _this.y - _this.z + yy);
+                    }
+                }
+                game_1.Game.ctx.fillStyle = _this.color;
+                game_1.Game.ctx.fillText(_this.text, _this.x - width / 2, _this.y - _this.z);
             }
-            game_1.Game.ctx.fillStyle = _this.color;
-            game_1.Game.ctx.fillText(_this.text, _this.x - width / 2, _this.y - _this.z);
         };
         this.text = text;
         this.x = x * gameConstants_1.GameConstants.TILESIZE;
@@ -2516,6 +2559,10 @@ var TextParticle = (function () {
         this.color = color;
         this.dead = false;
         this.time = 0;
+        if (delay === undefined)
+            this.delay = game_1.Game.rand(0, 10); // up to a 10 tick delay
+        else
+            this.delay = delay;
     }
     return TextParticle;
 }());
@@ -2663,6 +2710,71 @@ var Map = (function () {
     return Map;
 }());
 exports.Map = Map;
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var item_1 = __webpack_require__(9);
+var Pickup = (function (_super) {
+    __extends(Pickup, _super);
+    function Pickup() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.onPickup = function (player) { };
+        return _this;
+    }
+    return Pickup;
+}(item_1.Item));
+exports.Pickup = Pickup;
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var pickup_1 = __webpack_require__(34);
+var game_1 = __webpack_require__(0);
+var HealthBuff = (function (_super) {
+    __extends(HealthBuff, _super);
+    function HealthBuff(x, y) {
+        var _this = _super.call(this, x, y) || this;
+        _this.onPickup = function (player) {
+            player.buffHealth(game_1.Game.randTable([10, 10, 10, 10, 10, 50]));
+        };
+        _this.tileX = 7;
+        _this.tileY = 0;
+        return _this;
+    }
+    return HealthBuff;
+}(pickup_1.Pickup));
+exports.HealthBuff = HealthBuff;
 
 
 /***/ })

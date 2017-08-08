@@ -1,17 +1,16 @@
-import { Item } from "./item";
+import { Pickup } from "./pickup";
 import { Player } from "../player";
 import { Game } from "../game";
-import { Pickup } from "./pickup";
 
-export class Potion extends Pickup {
+export class HealthBuff extends Pickup {
   constructor(x: number, y: number) {
     super(x, y);
 
-    this.tileX = 2;
+    this.tileX = 7;
     this.tileY = 0;
   }
 
   onPickup = (player: Player) => {
-    player.heal(Game.randTable([9, 10, 10, 10, 10, 15]));
+    player.buffHealth(Game.randTable([10, 10, 10, 10, 10, 50]));
   };
 }

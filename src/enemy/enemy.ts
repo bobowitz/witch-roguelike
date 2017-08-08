@@ -27,6 +27,10 @@ export class Enemy extends Collidable {
     }
   };
 
+  hit = (): number => {
+    return 0;
+  };
+
   hurt = (damage: number) => {};
 
   draw = () => {

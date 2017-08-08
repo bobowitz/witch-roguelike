@@ -19,8 +19,12 @@ export class KnightEnemy extends Enemy {
     this.level = level;
     this.moves = new Array<astar.AStarData>();
     this.ticks = 0;
-    this.healthBar = new HealthBar(2);
+    this.healthBar = new HealthBar(10);
   }
+
+  hit = (): number => {
+    return Game.randTable([1, 1, 1, 2, 3]);
+  };
 
   tick = () => {
     if (!this.dead) {
@@ -34,7 +38,7 @@ export class KnightEnemy extends Enemy {
             this.game.player.x === this.moves[0].pos.x &&
             this.game.player.y === this.moves[0].pos.y
           ) {
-            this.game.player.hurt(1);
+            this.game.player.hurt(this.hit());
           } else {
             this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
           }

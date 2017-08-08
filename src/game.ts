@@ -40,6 +40,7 @@ export class Game {
       Game.itemset.src = "res/itemset.png";
 
       Sound.loadSounds();
+      Sound.playMusic(); // loops forever
 
       this.player = new Player(this, 0, 0);
       this.level = new Level(this, null, false, Level.randEnv());
