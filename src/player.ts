@@ -18,6 +18,7 @@ import { Item } from "./item/item";
 import { Equippable } from "./item/equippable";
 import { Helmet } from "./item/helmet";
 import { LevelConstants } from "./levelConstants";
+import { Map } from "./map";
 
 export class Player {
   x: number;
@@ -34,6 +35,7 @@ export class Player {
   lastTickHealth: number;
   inventory: Inventory;
   equipped: Array<Equippable>;
+  map: Map;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -55,6 +57,8 @@ export class Player {
 
     this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
+
+    this.map = new Map(game);
   }
 
   spaceListener = () => {
@@ -65,6 +69,7 @@ export class Player {
     //   this.x,
     //   this.y
     // );
+    this.map.generateTree();
   };
   leftListener = () => {
     if (!this.dead) this.tryMove(this.x - 1, this.y);
@@ -278,5 +283,9 @@ export class Player {
       );
     }
     this.inventory.draw();
+
+    if (Input.isDown(Input.SPACE)) {
+      this.map.draw();
+    }
   };
 }

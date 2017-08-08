@@ -61,7 +61,7 @@ export class KnightEnemy extends Enemy {
   kill = () => {
     this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
     this.dead = true;
-    if (Game.rand(1, 5) === 1) this.level.items.push(new Potion(this.x, this.y));
+    if (Game.rand(1, 4) === 1) this.level.items.push(new Potion(this.x, this.y));
     this.x = -10;
     this.y = -10;
   };

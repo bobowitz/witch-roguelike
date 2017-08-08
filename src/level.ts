@@ -18,11 +18,13 @@ import { Spike } from "./tile/spike";
 import { TextParticle } from "./textParticle";
 import { GameConstants } from "./gameConstants";
 import { SkullEnemy } from "./enemy/skullEnemy";
+import { Map } from "./map";
 
 export class Level {
   levelArray: Tile[][];
   enemies: Array<Enemy>;
   items: Array<Item>;
+  doors: Array<Door>; // just a reference for mapping, still access through levelArray
   textParticles: Array<TextParticle>;
   game: Game;
   bottomDoorX: number;
@@ -80,6 +82,7 @@ export class Level {
 
     this.items = Array<Item>();
     this.textParticles = Array<TextParticle>();
+    this.doors = Array<Door>();
 
     // if previousDoor is null, no bottom door
     this.hasBottomDoor = true;
@@ -271,21 +274,25 @@ export class Level {
       );
 
       // if there are multiple doors, roll to see if the first one should be a dead end
+      let d;
       if (i === 0 && numDoors > 1) {
         if (Game.rand(1, 5) === 1) {
           // locked (90% dead-end as well) door
-          this.levelArray[x][y] = new LockedDoor(this, x, y);
+          d = new LockedDoor(this, x, y);
         } else if (Game.rand(1, 4) >= 3) {
           // regular dead-end door
-          this.levelArray[x][y] = new Door(this, this.game, x, y, true);
+          d = new Door(this, this.game, x, y, true);
         } else {
-          this.levelArray[x][y] = new Door(this, this.game, x, y, true); // deadEnd
+          d = new Door(this, this.game, x, y, true); // deadEnd
         }
       } else {
         // otherwise, generate a non-dead end
-        this.levelArray[x][y] = new Door(this, this.game, x, y, true); // deadEnd
+        d = new Door(this, this.game, x, y, true); // deadEnd
       }
+      this.levelArray[x][y] = d;
+      if (!(d instanceof LockedDoor)) this.doors.push(d);
     }
+    this.doors.sort((a, b) => a.x - b.x); // sort by x, ascending, so the map makes sense
 
     // add chests
     let numChests = Game.rand(1, 8);

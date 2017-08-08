@@ -662,6 +662,7 @@ var Level = (function () {
         this.env = env;
         this.items = Array();
         this.textParticles = Array();
+        this.doors = Array();
         // if previousDoor is null, no bottom door
         this.hasBottomDoor = true;
         if (previousDoor === null) {
@@ -832,24 +833,29 @@ var Level = (function () {
                 this.getTile(x - 1, y) instanceof door_1.Door ||
                 this.getTile(x + 1, y) instanceof door_1.Door);
             // if there are multiple doors, roll to see if the first one should be a dead end
+            var d = void 0;
             if (i === 0 && numDoors > 1) {
                 if (game_1.Game.rand(1, 5) === 1) {
                     // locked (90% dead-end as well) door
-                    this.levelArray[x][y] = new lockedDoor_1.LockedDoor(this, x, y);
+                    d = new lockedDoor_1.LockedDoor(this, x, y);
                 }
                 else if (game_1.Game.rand(1, 4) >= 3) {
                     // regular dead-end door
-                    this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, true);
+                    d = new door_1.Door(this, this.game, x, y, true);
                 }
                 else {
-                    this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, true); // deadEnd
+                    d = new door_1.Door(this, this.game, x, y, true); // deadEnd
                 }
             }
             else {
                 // otherwise, generate a non-dead end
-                this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, true); // deadEnd
+                d = new door_1.Door(this, this.game, x, y, true); // deadEnd
             }
+            this.levelArray[x][y] = d;
+            if (!(d instanceof lockedDoor_1.LockedDoor))
+                this.doors.push(d);
         }
+        this.doors.sort(function (a, b) { return a.x - b.x; }); // sort by x, ascending, so the map makes sense
         // add chests
         var numChests = game_1.Game.rand(1, 8);
         if (numChests === 1 || numDoors === 0) {
@@ -1007,7 +1013,7 @@ var KnightEnemy = (function (_super) {
         _this.kill = function () {
             _this.level.levelArray[_this.x][_this.y] = new bones_1.Bones(_this.level, _this.x, _this.y);
             _this.dead = true;
-            if (game_1.Game.rand(1, 5) === 1)
+            if (game_1.Game.rand(1, 4) === 1)
                 _this.level.items.push(new potion_1.Potion(_this.x, _this.y));
             _this.x = -10;
             _this.y = -10;
@@ -1530,6 +1536,7 @@ var textParticle_1 = __webpack_require__(20);
 var armor_1 = __webpack_require__(21);
 var helmet_1 = __webpack_require__(22);
 var levelConstants_1 = __webpack_require__(2);
+var map_1 = __webpack_require__(34);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
@@ -1541,6 +1548,7 @@ var Player = (function () {
             //   this.x,
             //   this.y
             // );
+            _this.map.generateTree();
         };
         this.leftListener = function () {
             if (!_this.dead)
@@ -1737,6 +1745,9 @@ var Player = (function () {
                 game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + 10);
             }
             _this.inventory.draw();
+            if (input_1.Input.isDown(input_1.Input.SPACE)) {
+                _this.map.draw();
+            }
         };
         this.game = game;
         this.x = x;
@@ -1753,6 +1764,7 @@ var Player = (function () {
         this.lastTickHealth = this.healthBar.health;
         this.equipped = Array();
         this.inventory = new inventory_1.Inventory(game);
+        this.map = new map_1.Map(game);
     }
     return Player;
 }());
@@ -2442,7 +2454,7 @@ var SkullEnemy = (function (_super) {
         _this.kill = function () {
             _this.level.levelArray[_this.x][_this.y] = new bones_1.Bones(_this.level, _this.x, _this.y);
             _this.dead = true;
-            if (game_1.Game.rand(1, 5) === 1)
+            if (game_1.Game.rand(1, 2) === 1)
                 _this.level.items.push(new potion_1.Potion(_this.x, _this.y));
             _this.x = -10;
             _this.y = -10;
@@ -2468,6 +2480,113 @@ var SkullEnemy = (function (_super) {
     return SkullEnemy;
 }(enemy_1.Enemy));
 exports.SkullEnemy = SkullEnemy;
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var gameConstants_1 = __webpack_require__(1);
+var TreeNode = (function () {
+    function TreeNode() {
+        this.parent = null;
+        this.children = Array();
+        this.width = 0;
+        this.isCurrent = false;
+    }
+    return TreeNode;
+}());
+exports.TreeNode = TreeNode;
+var Map = (function () {
+    function Map(game) {
+        var _this = this;
+        this.generateTree = function () {
+            var currentLevel = _this.game.level;
+            while (currentLevel.hasBottomDoor) {
+                // search to the top of the tree
+                currentLevel = currentLevel.levelArray[currentLevel.bottomDoorX][currentLevel.bottomDoorY].linkedTopDoor.level;
+            }
+            _this.treeRoot = new TreeNode();
+            _this.copyTree(currentLevel, _this.treeRoot);
+            _this.getWidth(_this.treeRoot);
+            _this.depth = _this.getDepth(_this.treeRoot);
+        };
+        this.copyTree = function (levelRoot, parent) {
+            if (levelRoot === _this.game.level) {
+                parent.isCurrent = true;
+            }
+            if (levelRoot.doors.length === 0)
+                return;
+            for (var _i = 0, _a = levelRoot.doors; _i < _a.length; _i++) {
+                var d = _a[_i];
+                // if the door has already been opened, add the connected room to the tree
+                if (d.linkedLevel !== null) {
+                    var child = new TreeNode();
+                    child.parent = parent;
+                    parent.children.push(child);
+                    _this.copyTree(d.linkedLevel, child);
+                }
+            }
+        };
+        this.getWidth = function (parent) {
+            parent.width = 0;
+            for (var _i = 0, _a = parent.children; _i < _a.length; _i++) {
+                var c = _a[_i];
+                parent.width += _this.getWidth(c);
+            }
+            if (parent.width === 0)
+                parent.width = 1;
+            return parent.width;
+        };
+        this.getDepth = function (parent) {
+            var max = 0;
+            for (var _i = 0, _a = parent.children; _i < _a.length; _i++) {
+                var c = _a[_i];
+                var d = _this.getDepth(c);
+                if (d > max)
+                    max = d;
+            }
+            return max + 1;
+        };
+        this.drawLeaf = function (x, y) {
+            game_1.Game.ctx.fillRect(x * _this.gridSize + 4, y * _this.gridSize + 4, _this.gridSize - 8, _this.gridSize - 8);
+        };
+        this.drawLine = function (x1, y1, x2, y2) {
+            game_1.Game.ctx.strokeStyle = "white";
+            game_1.Game.ctx.beginPath();
+            game_1.Game.ctx.moveTo(x1 * _this.gridSize + _this.gridSize / 2, y1 * _this.gridSize + _this.gridSize / 2);
+            game_1.Game.ctx.lineTo(x2 * _this.gridSize + _this.gridSize / 2, y2 * _this.gridSize + _this.gridSize / 2);
+            game_1.Game.ctx.stroke();
+        };
+        this.drawTree = function (parent, x, y) {
+            var childX = x;
+            for (var _i = 0, _a = parent.children; _i < _a.length; _i++) {
+                var c = _a[_i];
+                _this.drawLine(x + parent.width / 2, y, childX + c.width / 2, y - 1);
+                _this.drawTree(c, childX, y - 1);
+                childX += c.width;
+            }
+            game_1.Game.ctx.fillStyle = "white";
+            if (parent.isCurrent)
+                game_1.Game.ctx.fillStyle = "red";
+            _this.drawLeaf(x + parent.width / 2, y);
+        };
+        this.draw = function () {
+            game_1.Game.ctx.fillStyle = "black";
+            game_1.Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
+            _this.drawTree(_this.treeRoot, gameConstants_1.GameConstants.WIDTH / _this.gridSize / 2 - _this.treeRoot.width / 2 - 0.5, gameConstants_1.GameConstants.HEIGHT / _this.gridSize / 2 + _this.depth / 2 - 1);
+        };
+        this.game = game;
+        this.gridSize = 16;
+        this.depth = 0;
+    }
+    return Map;
+}());
+exports.Map = Map;
 
 
 /***/ })
