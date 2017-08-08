@@ -824,7 +824,7 @@ var Level = (function () {
             this.levelArray[x][y] = new trapdoor_1.Trapdoor(this, this.game, x, y);
         }
         // add doors
-        var numDoors = game_1.Game.randTable([1, 1, 1, 2, 2, 2, 3]);
+        var numDoors = game_1.Game.randTable([1, 1, 1, 1, 1, 2, 2, 2, 3]);
         if (deadEnd && game_1.Game.rand(1, 3) === 1)
             numDoors = 0;
         for (var i = 0; i < numDoors; i++) {
