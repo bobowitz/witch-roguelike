@@ -1,6 +1,8 @@
 import { LevelConstants } from "./levelConstants";
 
 export class GameConstants {
+  static readonly VERSION = "v0.0.1";
+
   static readonly FPS = 60;
 
   static readonly TILESIZE = 16;

@@ -74,6 +74,7 @@ var gameConstants_1 = __webpack_require__(1);
 var level_1 = __webpack_require__(11);
 var player_1 = __webpack_require__(18);
 var sound_1 = __webpack_require__(10);
+var levelConstants_1 = __webpack_require__(2);
 var Game = (function () {
     function Game() {
         var _this = this;
@@ -102,6 +103,11 @@ var Game = (function () {
             _this.level.drawEntitiesInFrontOfPlayer();
             _this.level.drawTopLayer();
             _this.player.drawTopLayer();
+            // game version
+            Game.ctx.globalAlpha = 0.2;
+            Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
+            Game.ctx.fillText(gameConstants_1.GameConstants.VERSION, gameConstants_1.GameConstants.WIDTH - Game.ctx.measureText(gameConstants_1.GameConstants.VERSION).width - 2, gameConstants_1.GameConstants.HEIGHT - 20);
+            Game.ctx.globalAlpha = 1;
         };
         window.addEventListener("load", function () {
             Game.ctx = document.getElementById("gameCanvas").getContext("2d");
@@ -155,6 +161,7 @@ var levelConstants_1 = __webpack_require__(2);
 var GameConstants = (function () {
     function GameConstants() {
     }
+    GameConstants.VERSION = "v0.0.1";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;

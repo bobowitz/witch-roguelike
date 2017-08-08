@@ -3,6 +3,7 @@ import { Level } from "./level";
 import { Player } from "./player";
 import { Door } from "./tile/door";
 import { Sound } from "./sound";
+import { LevelConstants } from "./levelConstants";
 
 export class Game {
   static ctx: CanvasRenderingContext2D;
@@ -77,6 +78,16 @@ export class Game {
     this.level.drawEntitiesInFrontOfPlayer();
     this.level.drawTopLayer();
     this.player.drawTopLayer();
+
+    // game version
+    Game.ctx.globalAlpha = 0.2;
+    Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
+    Game.ctx.fillText(
+      GameConstants.VERSION,
+      GameConstants.WIDTH - Game.ctx.measureText(GameConstants.VERSION).width - 2,
+      GameConstants.HEIGHT - 20
+    );
+    Game.ctx.globalAlpha = 1;
   };
 
   static drawTile = (
