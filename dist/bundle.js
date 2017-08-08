@@ -193,7 +193,7 @@ var levelConstants_1 = __webpack_require__(3);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.8";
+    GameConstants.VERSION = "v0.0.9";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -725,19 +725,24 @@ var Level = (function () {
         }
         else
             numEnemies = 0;
-        for (var i = 0; i < numEnemies; i++) {
+        var _loop_1 = function (i) {
             var x = 0;
             var y = 0;
-            while (!(this.getTile(x, y) instanceof floor_1.Floor) ||
-                (x === this.bottomDoorX && y === this.bottomDoorY) ||
-                (x === this.bottomDoorX && y === this.bottomDoorY - 1)) {
-                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
-                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
+            while (!(this_1.getTile(x, y) instanceof floor_1.Floor) ||
+                this_1.enemies.filter(function (e) { return e.x === x && e.y === y; }).length > 0 ||
+                (x === this_1.bottomDoorX && y === this_1.bottomDoorY) ||
+                (x === this_1.bottomDoorX && y === this_1.bottomDoorY - 1)) {
+                x = game_1.Game.rand(this_1.roomX, this_1.roomX + width - 1);
+                y = game_1.Game.rand(this_1.roomY, this_1.roomY + height - 1);
             }
             if (game_1.Game.rand(1, 2) === 1)
-                this.enemies.push(new knightEnemy_1.KnightEnemy(this, this.game, x, y));
+                this_1.enemies.push(new knightEnemy_1.KnightEnemy(this_1, this_1.game, x, y));
             else
-                this.enemies.push(new skullEnemy_1.SkullEnemy(this, this.game, x, y));
+                this_1.enemies.push(new skullEnemy_1.SkullEnemy(this_1, this_1.game, x, y));
+        };
+        var this_1 = this;
+        for (var i = 0; i < numEnemies; i++) {
+            _loop_1(i);
         }
         if (this.hasBottomDoor) {
             var b = this.levelArray[this.bottomDoorX][this.bottomDoorY];
@@ -2616,7 +2621,7 @@ var Map = (function () {
             game_1.Game.ctx.fillRect(Math.floor(x * _this.gridSize + _this.border), Math.floor(y * _this.gridSize + _this.border), Math.floor(_this.gridSize - _this.border * 2), Math.floor(_this.gridSize - _this.border * 2));
         };
         this.drawLine = function (x1, y1, x2, y2) {
-            game_1.Game.ctx.strokeStyle = "grey";
+            game_1.Game.ctx.strokeStyle = "white";
             game_1.Game.ctx.lineWidth = 1;
             game_1.Game.ctx.beginPath();
             game_1.Game.ctx.translate(-0.5, -0.5);

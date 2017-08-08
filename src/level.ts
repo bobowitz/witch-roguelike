@@ -338,6 +338,7 @@ export class Level {
       let y = 0;
       while (
         !(this.getTile(x, y) instanceof Floor) ||
+        this.enemies.filter(e => e.x === x && e.y === y).length > 0 || // don't overlap other enemies!
         (x === this.bottomDoorX && y === this.bottomDoorY) ||
         (x === this.bottomDoorX && y === this.bottomDoorY - 1)
       ) {

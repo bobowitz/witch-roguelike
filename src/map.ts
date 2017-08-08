@@ -131,7 +131,7 @@ export class Map {
   };
 
   drawLine = (x1: number, y1: number, x2: number, y2: number) => {
-    Game.ctx.strokeStyle = "grey";
+    Game.ctx.strokeStyle = "white";
     Game.ctx.lineWidth = 1;
     Game.ctx.beginPath();
     Game.ctx.translate(-0.5, -0.5);
