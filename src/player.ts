@@ -44,12 +44,13 @@ export class Player {
     this.y = y;
 
     Input.spaceListener = this.spaceListener;
+    Input.spaceUpListener = this.spaceUpListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.healthBar = new HealthBar(10);
+    this.healthBar = new HealthBar(100);
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
@@ -69,19 +70,30 @@ export class Player {
     //   this.x,
     //   this.y
     // );
-    this.map.generateTree();
+    this.map.open();
+  };
+  spaceUpListener = () => {
+    this.map.close();
   };
   leftListener = () => {
-    if (!this.dead) this.tryMove(this.x - 1, this.y);
+    if (this.map.isOpen) {
+      this.map.leftListener();
+    } else if (!this.dead) this.tryMove(this.x - 1, this.y);
   };
   rightListener = () => {
-    if (!this.dead) this.tryMove(this.x + 1, this.y);
+    if (this.map.isOpen) {
+      this.map.rightListener();
+    } else if (!this.dead) this.tryMove(this.x + 1, this.y);
   };
   upListener = () => {
-    if (!this.dead) this.tryMove(this.x, this.y - 1);
+    if (this.map.isOpen) {
+      this.map.upListener();
+    } else if (!this.dead) this.tryMove(this.x, this.y - 1);
   };
   downListener = () => {
-    if (!this.dead) this.tryMove(this.x, this.y + 1);
+    if (this.map.isOpen) {
+      this.map.downListener();
+    } else if (!this.dead) this.tryMove(this.x, this.y + 1);
   };
 
   tryMove = (x: number, y: number) => {
@@ -284,8 +296,6 @@ export class Player {
     }
     this.inventory.draw();
 
-    if (Input.isDown(Input.SPACE)) {
-      this.map.draw();
-    }
+    this.map.draw();
   };
 }

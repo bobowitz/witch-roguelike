@@ -4,6 +4,7 @@ export const Input = {
   _pressed: {},
 
   spaceListener: function() {},
+  spaceUpListener: function() {},
   rightListener: function() {},
   leftListener: function() {},
   upListener: function() {},
@@ -24,7 +25,8 @@ export const Input = {
     Input._pressed[event.keyCode] = true;
     switch (event.keyCode) {
       case Input.SPACE:
-        Input.spaceListener();
+        // we don't want repeats for space specifically cause of map stuff
+        if (!event.repeat) Input.spaceListener();
         break;
       case Input.LEFT:
         Input.leftListener();
@@ -42,6 +44,7 @@ export const Input = {
   },
 
   onKeyup: function(event: KeyboardEvent) {
+    if (event.keyCode === Input.SPACE) Input.spaceUpListener();
     delete this._pressed[event.keyCode];
   },
 

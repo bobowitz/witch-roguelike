@@ -281,13 +281,13 @@ export class Level {
           d = new LockedDoor(this, x, y);
         } else if (Game.rand(1, 4) >= 3) {
           // regular dead-end door
-          d = new Door(this, this.game, x, y, true);
+          d = new Door(this, this.game, x, y, true); // make a new dead end
         } else {
-          d = new Door(this, this.game, x, y, true); // deadEnd
+          d = new Door(this, this.game, x, y, deadEnd); // deadEnd
         }
       } else {
         // otherwise, generate a non-dead end
-        d = new Door(this, this.game, x, y, true); // deadEnd
+        d = new Door(this, this.game, x, y, deadEnd); // deadEnd
       }
       this.levelArray[x][y] = d;
       if (!(d instanceof LockedDoor)) this.doors.push(d);

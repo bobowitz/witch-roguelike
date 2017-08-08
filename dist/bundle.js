@@ -161,7 +161,7 @@ var levelConstants_1 = __webpack_require__(2);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.4";
+    GameConstants.VERSION = "v0.0.5";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -389,6 +389,7 @@ var gameConstants_1 = __webpack_require__(1);
 exports.Input = {
     _pressed: {},
     spaceListener: function () { },
+    spaceUpListener: function () { },
     rightListener: function () { },
     leftListener: function () { },
     upListener: function () { },
@@ -406,7 +407,9 @@ exports.Input = {
         exports.Input._pressed[event.keyCode] = true;
         switch (event.keyCode) {
             case exports.Input.SPACE:
-                exports.Input.spaceListener();
+                // we don't want repeats for space specifically cause of map stuff
+                if (!event.repeat)
+                    exports.Input.spaceListener();
                 break;
             case exports.Input.LEFT:
                 exports.Input.leftListener();
@@ -423,6 +426,8 @@ exports.Input = {
         }
     },
     onKeyup: function (event) {
+        if (event.keyCode === exports.Input.SPACE)
+            exports.Input.spaceUpListener();
         delete this._pressed[event.keyCode];
     },
     mouseClickListener: function (event) {
@@ -841,15 +846,15 @@ var Level = (function () {
                 }
                 else if (game_1.Game.rand(1, 4) >= 3) {
                     // regular dead-end door
-                    d = new door_1.Door(this, this.game, x, y, true);
+                    d = new door_1.Door(this, this.game, x, y, true); // make a new dead end
                 }
                 else {
-                    d = new door_1.Door(this, this.game, x, y, true); // deadEnd
+                    d = new door_1.Door(this, this.game, x, y, deadEnd); // deadEnd
                 }
             }
             else {
                 // otherwise, generate a non-dead end
-                d = new door_1.Door(this, this.game, x, y, true); // deadEnd
+                d = new door_1.Door(this, this.game, x, y, deadEnd); // deadEnd
             }
             this.levelArray[x][y] = d;
             if (!(d instanceof lockedDoor_1.LockedDoor))
@@ -1548,22 +1553,37 @@ var Player = (function () {
             //   this.x,
             //   this.y
             // );
-            _this.map.generateTree();
+            _this.map.open();
+        };
+        this.spaceUpListener = function () {
+            _this.map.close();
         };
         this.leftListener = function () {
-            if (!_this.dead)
+            if (_this.map.isOpen) {
+                _this.map.leftListener();
+            }
+            else if (!_this.dead)
                 _this.tryMove(_this.x - 1, _this.y);
         };
         this.rightListener = function () {
-            if (!_this.dead)
+            if (_this.map.isOpen) {
+                _this.map.rightListener();
+            }
+            else if (!_this.dead)
                 _this.tryMove(_this.x + 1, _this.y);
         };
         this.upListener = function () {
-            if (!_this.dead)
+            if (_this.map.isOpen) {
+                _this.map.upListener();
+            }
+            else if (!_this.dead)
                 _this.tryMove(_this.x, _this.y - 1);
         };
         this.downListener = function () {
-            if (!_this.dead)
+            if (_this.map.isOpen) {
+                _this.map.downListener();
+            }
+            else if (!_this.dead)
                 _this.tryMove(_this.x, _this.y + 1);
         };
         this.tryMove = function (x, y) {
@@ -1745,19 +1765,18 @@ var Player = (function () {
                 game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + 10);
             }
             _this.inventory.draw();
-            if (input_1.Input.isDown(input_1.Input.SPACE)) {
-                _this.map.draw();
-            }
+            _this.map.draw();
         };
         this.game = game;
         this.x = x;
         this.y = y;
         input_1.Input.spaceListener = this.spaceListener;
+        input_1.Input.spaceUpListener = this.spaceUpListener;
         input_1.Input.leftListener = this.leftListener;
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
-        this.healthBar = new healthbar_1.HealthBar(10);
+        this.healthBar = new healthbar_1.HealthBar(100);
         this.dead = false;
         this.flashing = false;
         this.flashingFrame = 0;
@@ -2333,6 +2352,8 @@ var LockedDoor = (function (_super) {
                 player.inventory.items = player.inventory.items.filter(function (x) { return x !== k; });
                 var d = new door_1.Door(_this.level, _this.level.game, _this.x, _this.y, game_1.Game.rand(1, 10) !== 1);
                 _this.level.levelArray[_this.x][_this.y] = d; // replace this door in level
+                _this.level.doors.push(d); // add it to the door list so it can get rendered on the map
+                _this.level.doors.sort(function (a, b) { return a.x - b.x; });
             }
         };
         _this.draw = function () {
@@ -2504,6 +2525,26 @@ exports.TreeNode = TreeNode;
 var Map = (function () {
     function Map(game) {
         var _this = this;
+        this.SCROLL = 1;
+        this.open = function () {
+            _this.isOpen = true;
+            _this.generateTree();
+        };
+        this.close = function () {
+            _this.isOpen = false;
+        };
+        this.leftListener = function () {
+            _this.scrollX += _this.SCROLL;
+        };
+        this.rightListener = function () {
+            _this.scrollX -= _this.SCROLL;
+        };
+        this.upListener = function () {
+            _this.scrollY += _this.SCROLL;
+        };
+        this.downListener = function () {
+            _this.scrollY -= _this.SCROLL;
+        };
         this.generateTree = function () {
             var currentLevel = _this.game.level;
             while (currentLevel.hasBottomDoor) {
@@ -2553,14 +2594,17 @@ var Map = (function () {
             return max + 1;
         };
         this.drawLeaf = function (x, y) {
-            game_1.Game.ctx.fillRect(x * _this.gridSize + 4, y * _this.gridSize + 4, _this.gridSize - 8, _this.gridSize - 8);
+            game_1.Game.ctx.fillRect(Math.floor(x * _this.gridSize + _this.border), Math.floor(y * _this.gridSize + _this.border), Math.floor(_this.gridSize - _this.border * 2), Math.floor(_this.gridSize - _this.border * 2));
         };
         this.drawLine = function (x1, y1, x2, y2) {
-            game_1.Game.ctx.strokeStyle = "white";
+            game_1.Game.ctx.strokeStyle = "grey";
+            game_1.Game.ctx.lineWidth = 1;
             game_1.Game.ctx.beginPath();
-            game_1.Game.ctx.moveTo(x1 * _this.gridSize + _this.gridSize / 2, y1 * _this.gridSize + _this.gridSize / 2);
-            game_1.Game.ctx.lineTo(x2 * _this.gridSize + _this.gridSize / 2, y2 * _this.gridSize + _this.gridSize / 2);
+            game_1.Game.ctx.translate(-0.5, -0.5);
+            game_1.Game.ctx.moveTo(Math.floor(x1 * _this.gridSize + _this.gridSize / 2), Math.floor(y1 * _this.gridSize + _this.gridSize / 2));
+            game_1.Game.ctx.lineTo(Math.floor(x2 * _this.gridSize + _this.gridSize / 2), Math.floor(y2 * _this.gridSize + _this.gridSize / 2));
             game_1.Game.ctx.stroke();
+            game_1.Game.ctx.setTransform(1, 0, 0, 1, 0, 0);
         };
         this.drawTree = function (parent, x, y) {
             var childX = x;
@@ -2576,13 +2620,19 @@ var Map = (function () {
             _this.drawLeaf(x + parent.width / 2, y);
         };
         this.draw = function () {
-            game_1.Game.ctx.fillStyle = "black";
-            game_1.Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
-            _this.drawTree(_this.treeRoot, gameConstants_1.GameConstants.WIDTH / _this.gridSize / 2 - _this.treeRoot.width / 2 - 0.5, gameConstants_1.GameConstants.HEIGHT / _this.gridSize / 2 + _this.depth / 2 - 1);
+            if (_this.isOpen) {
+                game_1.Game.ctx.fillStyle = "black";
+                game_1.Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
+                _this.drawTree(_this.treeRoot, gameConstants_1.GameConstants.WIDTH / _this.gridSize / 2 - _this.treeRoot.width / 2 - 0.5 + _this.scrollX, gameConstants_1.GameConstants.HEIGHT / _this.gridSize / 2 + _this.depth / 2 - 1 + _this.scrollY);
+            }
         };
         this.game = game;
-        this.gridSize = 16;
+        this.gridSize = 8;
+        this.border = 1;
         this.depth = 0;
+        this.scrollX = 0;
+        this.scrollY = 0;
+        this.isOpen = false;
     }
     return Map;
 }());

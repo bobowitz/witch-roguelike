@@ -22,13 +22,44 @@ export class Map {
   game: Game;
   treeRoot: TreeNode;
   gridSize: number;
+  border: number;
   depth: number;
+  scrollX: number;
+  scrollY: number;
+  isOpen: boolean;
+  SCROLL = 1;
 
   constructor(game: Game) {
     this.game = game;
-    this.gridSize = 16;
+    this.gridSize = 8;
+    this.border = 1;
     this.depth = 0;
+    this.scrollX = 0;
+    this.scrollY = 0;
+    this.isOpen = false;
   }
+
+  open = () => {
+    this.isOpen = true;
+    this.generateTree();
+  };
+
+  close = () => {
+    this.isOpen = false;
+  };
+
+  leftListener = () => {
+    this.scrollX += this.SCROLL;
+  };
+  rightListener = () => {
+    this.scrollX -= this.SCROLL;
+  };
+  upListener = () => {
+    this.scrollY += this.SCROLL;
+  };
+  downListener = () => {
+    this.scrollY -= this.SCROLL;
+  };
 
   generateTree = () => {
     let currentLevel = this.game.level;
@@ -87,19 +118,28 @@ export class Map {
 
   drawLeaf = (x: number, y: number) => {
     Game.ctx.fillRect(
-      x * this.gridSize + 4,
-      y * this.gridSize + 4,
-      this.gridSize - 8,
-      this.gridSize - 8
+      Math.floor(x * this.gridSize + this.border),
+      Math.floor(y * this.gridSize + this.border),
+      Math.floor(this.gridSize - this.border * 2),
+      Math.floor(this.gridSize - this.border * 2)
     );
   };
 
   drawLine = (x1: number, y1: number, x2: number, y2: number) => {
-    Game.ctx.strokeStyle = "white";
+    Game.ctx.strokeStyle = "grey";
+    Game.ctx.lineWidth = 1;
     Game.ctx.beginPath();
-    Game.ctx.moveTo(x1 * this.gridSize + this.gridSize / 2, y1 * this.gridSize + this.gridSize / 2);
-    Game.ctx.lineTo(x2 * this.gridSize + this.gridSize / 2, y2 * this.gridSize + this.gridSize / 2);
+    Game.ctx.translate(-0.5, -0.5);
+    Game.ctx.moveTo(
+      Math.floor(x1 * this.gridSize + this.gridSize / 2),
+      Math.floor(y1 * this.gridSize + this.gridSize / 2)
+    );
+    Game.ctx.lineTo(
+      Math.floor(x2 * this.gridSize + this.gridSize / 2),
+      Math.floor(y2 * this.gridSize + this.gridSize / 2)
+    );
     Game.ctx.stroke();
+    Game.ctx.setTransform(1, 0, 0, 1, 0, 0);
   };
 
   drawTree = (parent: TreeNode, x: number, y: number) => {
@@ -116,13 +156,15 @@ export class Map {
   };
 
   draw = () => {
-    Game.ctx.fillStyle = "black";
-    Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
+    if (this.isOpen) {
+      Game.ctx.fillStyle = "black";
+      Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
-    this.drawTree(
-      this.treeRoot,
-      GameConstants.WIDTH / this.gridSize / 2 - this.treeRoot.width / 2 - 0.5,
-      GameConstants.HEIGHT / this.gridSize / 2 + this.depth / 2 - 1
-    );
+      this.drawTree(
+        this.treeRoot,
+        GameConstants.WIDTH / this.gridSize / 2 - this.treeRoot.width / 2 - 0.5 + this.scrollX,
+        GameConstants.HEIGHT / this.gridSize / 2 + this.depth / 2 - 1 + this.scrollY
+      );
+    }
   };
 }

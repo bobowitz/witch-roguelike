@@ -13,6 +13,8 @@ export class LockedDoor extends Collidable {
       player.inventory.items = player.inventory.items.filter(x => x !== k);
       let d = new Door(this.level, this.level.game, this.x, this.y, Game.rand(1, 10) !== 1);
       this.level.levelArray[this.x][this.y] = d; // replace this door in level
+      this.level.doors.push(d); // add it to the door list so it can get rendered on the map
+      this.level.doors.sort((a, b) => a.x - b.x);
     }
   };
 
