@@ -161,7 +161,7 @@ var levelConstants_1 = __webpack_require__(2);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.5";
+    GameConstants.VERSION = "v0.0.6";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -1776,7 +1776,7 @@ var Player = (function () {
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
-        this.healthBar = new healthbar_1.HealthBar(1000);
+        this.healthBar = new healthbar_1.HealthBar(10);
         this.dead = false;
         this.flashing = false;
         this.flashingFrame = 0;
