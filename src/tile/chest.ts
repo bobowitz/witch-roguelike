@@ -23,7 +23,7 @@ export class Chest extends Collidable {
   open = () => {
     // DROP TABLES!
 
-    let drop = Game.randTable([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4]);
+    let drop = Game.randTable([2, 2, 3, 4]);
 
     switch (drop) {
       case 1:

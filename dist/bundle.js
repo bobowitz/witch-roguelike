@@ -161,7 +161,7 @@ var levelConstants_1 = __webpack_require__(2);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.1";
+    GameConstants.VERSION = "v0.0.2";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -850,10 +850,10 @@ var Level = (function () {
             }
         }
         // add chests
-        var numChests = game_1.Game.rand(1, 3);
+        var numChests = game_1.Game.rand(1, 8);
         if (numChests === 1 || numDoors === 0) {
             // if it's a dead end, at least give them a chest
-            numChests = game_1.Game.randTable([0, 1, 1, 1, 2, 3, 4]);
+            numChests = game_1.Game.randTable([0, 1, 1, 2, 2, 3, 4]);
             // (but not guaranteed   ---^)
         }
         else
@@ -2224,7 +2224,7 @@ var Chest = (function (_super) {
         };
         _this.open = function () {
             // DROP TABLES!
-            var drop = game_1.Game.randTable([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4]);
+            var drop = game_1.Game.randTable([2, 2, 3, 4]);
             switch (drop) {
                 case 1:
                     _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
