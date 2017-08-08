@@ -50,7 +50,7 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.healthBar = new HealthBar(100);
+    this.healthBar = new HealthBar(10);
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
