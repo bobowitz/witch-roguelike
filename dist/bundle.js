@@ -834,12 +834,12 @@ var Level = (function () {
                     this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, true);
                 }
                 else {
-                    this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, deadEnd);
+                    this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, true); // deadEnd
                 }
             }
             else {
                 // otherwise, generate a non-dead end
-                this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, deadEnd);
+                this.levelArray[x][y] = new door_1.Door(this, this.game, x, y, true); // deadEnd
             }
         }
         // add chests
