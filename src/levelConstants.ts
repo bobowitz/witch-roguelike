@@ -10,7 +10,7 @@ export class LevelConstants {
   static readonly SCREEN_W = 17; // screen size in tiles
   static readonly SCREEN_H = 17; // screen size in tiles
 
-  static readonly ENVIRONMENTS = 4;
+  static readonly ENVIRONMENTS = 5;
 
   static LEVEL_TEXT_COLOR = "white"; // not actually a constant
 }

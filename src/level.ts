@@ -258,7 +258,7 @@ export class Level {
     }
 
     // add doors
-    let numDoors = Game.randTable([1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3]);
+    let numDoors = Game.randTable([1, 1, 1, 2, 2, 2, 3]);
     if (deadEnd && Game.rand(1, 3) === 1) numDoors = 0;
     for (let i = 0; i < numDoors; i++) {
       let x = 0;

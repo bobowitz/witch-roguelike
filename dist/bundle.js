@@ -161,7 +161,7 @@ var levelConstants_1 = __webpack_require__(2);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.6";
+    GameConstants.VERSION = "v0.0.7";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -192,7 +192,7 @@ var LevelConstants = (function () {
     LevelConstants.MAX_LEVEL_H = 13;
     LevelConstants.SCREEN_W = 17; // screen size in tiles
     LevelConstants.SCREEN_H = 17; // screen size in tiles
-    LevelConstants.ENVIRONMENTS = 4;
+    LevelConstants.ENVIRONMENTS = 5;
     LevelConstants.LEVEL_TEXT_COLOR = "white"; // not actually a constant
     return LevelConstants;
 }());
@@ -824,7 +824,7 @@ var Level = (function () {
             this.levelArray[x][y] = new trapdoor_1.Trapdoor(this, this.game, x, y);
         }
         // add doors
-        var numDoors = game_1.Game.randTable([1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3]);
+        var numDoors = game_1.Game.randTable([1, 1, 1, 2, 2, 2, 3]);
         if (deadEnd && game_1.Game.rand(1, 3) === 1)
             numDoors = 0;
         for (var i = 0; i < numDoors; i++) {
@@ -984,7 +984,7 @@ var bones_1 = __webpack_require__(32);
 var KnightEnemy = (function (_super) {
     __extends(KnightEnemy, _super);
     function KnightEnemy(level, game, x, y) {
-        var _this = _super.call(this, level, x, y) || this;
+        var _this = _super.call(this, level, game, x, y) || this;
         _this.tick = function () {
             if (!_this.dead) {
                 _this.ticks++;
@@ -998,10 +998,7 @@ var KnightEnemy = (function (_super) {
                             _this.game.player.hurt(1);
                         }
                         else {
-                            if (_this.game.level.getCollidable(_this.moves[0].pos.x, _this.moves[0].pos.y) === null) {
-                                _this.x = _this.moves[0].pos.x;
-                                _this.y = _this.moves[0].pos.y;
-                            }
+                            _this.tryMove(_this.moves[0].pos.x, _this.moves[0].pos.y);
                         }
                     }
                     _this.drawX = _this.x - oldX;
@@ -1034,7 +1031,6 @@ var KnightEnemy = (function (_super) {
         _this.drawTopLayer = function () {
             _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
         };
-        _this.game = game;
         _this.level = level;
         _this.moves = new Array();
         _this.ticks = 0;
@@ -1067,14 +1063,27 @@ var collidable_1 = __webpack_require__(23);
 var game_1 = __webpack_require__(0);
 var Enemy = (function (_super) {
     __extends(Enemy, _super);
-    function Enemy(level, x, y) {
+    function Enemy(level, game, x, y) {
         var _this = _super.call(this, level, x, y) || this;
+        _this.tryMove = function (x, y) {
+            for (var _i = 0, _a = _this.level.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                if (e !== _this && e.x === x && e.y === y) {
+                    return;
+                }
+            }
+            if (_this.game.level.getCollidable(x, y) === null) {
+                _this.x = x;
+                _this.y = y;
+            }
+        };
         _this.hurt = function (damage) { };
         _this.draw = function () {
             game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
         };
         _this.tick = function () { };
         _this.drawTopLayer = function () { };
+        _this.game = game;
         _this.drawX = 0;
         _this.drawY = 0;
         return _this;
@@ -1264,7 +1273,7 @@ var astar;
             for (var x = 0, xl = grid.length; x < xl; x++) {
                 this.grid[x] = [];
                 for (var y = 0, yl = grid[x].length; y < yl; y++) {
-                    var cost = grid[x][y] instanceof floor_1.Floor ? 1 : 10000;
+                    var cost = grid[x][y] instanceof floor_1.Floor ? 1 : 0;
                     this.grid[x][y] = {
                         org: grid[x][y],
                         f: 0,
@@ -2425,7 +2434,7 @@ var bones_1 = __webpack_require__(32);
 var SkullEnemy = (function (_super) {
     __extends(SkullEnemy, _super);
     function SkullEnemy(level, game, x, y) {
-        var _this = _super.call(this, level, x, y) || this;
+        var _this = _super.call(this, level, game, x, y) || this;
         _this.tick = function () {
             _this.ticks++;
             if (_this.ticks % 2 === 0) {
@@ -2443,10 +2452,7 @@ var SkullEnemy = (function (_super) {
                             _this.game.player.hurt(1);
                         }
                         else {
-                            if (_this.game.level.getCollidable(_this.moves[1].pos.x, _this.moves[1].pos.y) === null) {
-                                _this.x = _this.moves[1].pos.x;
-                                _this.y = _this.moves[1].pos.y;
-                            }
+                            _this.tryTwoMoves(_this.moves[0].pos.x, _this.moves[0].pos.y, _this.moves[1].pos.x, _this.moves[1].pos.y);
                         }
                     }
                     else if (_this.moves.length > 0) {
@@ -2455,10 +2461,7 @@ var SkullEnemy = (function (_super) {
                             _this.game.player.hurt(1);
                         }
                         else {
-                            if (_this.game.level.getCollidable(_this.moves[0].pos.x, _this.moves[0].pos.y) === null) {
-                                _this.x = _this.moves[0].pos.x;
-                                _this.y = _this.moves[0].pos.y;
-                            }
+                            _this.tryMove(_this.moves[0].pos.x, _this.moves[0].pos.y);
                         }
                     }
                     _this.drawX = _this.x - oldX;
@@ -2467,6 +2470,19 @@ var SkullEnemy = (function (_super) {
             }
             if (_this.healthBar.health <= 0) {
                 _this.kill();
+            }
+        };
+        _this.tryTwoMoves = function (x1, y1, x2, y2) {
+            for (var _i = 0, _a = _this.level.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                if (e !== _this && ((e.x === x1 && e.y === y1) || (e.x === x2 && e.y === y2))) {
+                    return;
+                }
+            }
+            if (_this.game.level.getCollidable(x1, y1) === null &&
+                _this.game.level.getCollidable(x2, y2) === null) {
+                _this.x = x2;
+                _this.y = y2;
             }
         };
         _this.hurt = function (damage) {
@@ -2491,7 +2507,6 @@ var SkullEnemy = (function (_super) {
         _this.drawTopLayer = function () {
             _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
         };
-        _this.game = game;
         _this.level = level;
         _this.moves = new Array();
         _this.ticks = 0;

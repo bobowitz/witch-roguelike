@@ -222,7 +222,7 @@ export namespace astar {
       for (var x = 0, xl = grid.length; x < xl; x++) {
         this.grid[x] = [];
         for (var y = 0, yl = grid[x].length; y < yl; y++) {
-          var cost = grid[x][y] instanceof Floor ? 1 : 10000;
+          var cost = grid[x][y] instanceof Floor ? 1 : 0;
           this.grid[x][y] = {
             org: grid[x][y],
             f: 0,

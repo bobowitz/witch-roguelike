@@ -6,12 +6,26 @@ export class Enemy extends Collidable {
   drawX: number;
   drawY: number;
   dead: boolean;
+  game: Game;
 
-  constructor(level: Level, x: number, y: number) {
+  constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
+    this.game = game;
     this.drawX = 0;
     this.drawY = 0;
   }
+
+  tryMove = (x: number, y: number) => {
+    for (const e of this.level.enemies) {
+      if (e !== this && e.x === x && e.y === y) {
+        return;
+      }
+    }
+    if (this.game.level.getCollidable(x, y) === null) {
+      this.x = x;
+      this.y = y;
+    }
+  };
 
   hurt = (damage: number) => {};
 

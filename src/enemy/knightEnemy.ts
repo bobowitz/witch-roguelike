@@ -9,15 +9,13 @@ import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
 
 export class KnightEnemy extends Enemy {
-  game: Game;
   level: Level;
   moves: Array<astar.AStarData>;
   ticks: number;
   healthBar: HealthBar;
 
   constructor(level: Level, game: Game, x: number, y: number) {
-    super(level, x, y);
-    this.game = game;
+    super(level, game, x, y);
     this.level = level;
     this.moves = new Array<astar.AStarData>();
     this.ticks = 0;
@@ -38,10 +36,7 @@ export class KnightEnemy extends Enemy {
           ) {
             this.game.player.hurt(1);
           } else {
-            if (this.game.level.getCollidable(this.moves[0].pos.x, this.moves[0].pos.y) === null) {
-              this.x = this.moves[0].pos.x;
-              this.y = this.moves[0].pos.y;
-            }
+            this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
           }
         }
         this.drawX = this.x - oldX;
