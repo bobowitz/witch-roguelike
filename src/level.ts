@@ -258,8 +258,11 @@ export class Level {
     }
 
     // add doors
-    let numDoors = Game.randTable([1, 1, 1, 1, 1, 2, 2, 2, 3]);
-    if (deadEnd && Game.rand(1, 3) === 1) numDoors = 0;
+    let numDoors = Game.randTable([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3]);
+    if (deadEnd) {
+      numDoors = Game.randTable([1, 1, 1, 2, 2]);
+      if (Game.rand(1, 2) === 1) numDoors = 0;
+    }
     for (let i = 0; i < numDoors; i++) {
       let x = 0;
       let y = 0;
@@ -273,17 +276,15 @@ export class Level {
         this.getTile(x + 1, y) instanceof Door
       );
 
-      // if there are multiple doors, roll to see if the first one should be a dead end
+      // if there are multiple doors, make all but one a dead end
       let d;
-      if (i === 0 && numDoors > 1) {
+      if (numDoors > 0 && i !== 0) {
         if (Game.rand(1, 5) === 1) {
           // locked (90% dead-end as well) door
           d = new LockedDoor(this, x, y);
-        } else if (Game.rand(1, 4) >= 3) {
+        } else {
           // regular dead-end door
           d = new Door(this, this.game, x, y, true); // make a new dead end
-        } else {
-          d = new Door(this, this.game, x, y, deadEnd); // deadEnd
         }
       } else {
         // otherwise, generate a non-dead end

@@ -9,14 +9,14 @@ export class TreeNode {
   children: Array<TreeNode>;
   width: number;
   isCurrent: boolean;
-  deadEnd: boolean;
+  unopened: boolean;
 
   constructor() {
     this.parent = null;
     this.children = Array<TreeNode>();
     this.width = 0;
     this.isCurrent = false;
-    this.deadEnd = false;
+    this.unopened = false;
   }
 }
 
@@ -85,18 +85,18 @@ export class Map {
     }
 
     if (levelRoot.doors.length === 0) {
-      parent.deadEnd = true;
       return;
     }
 
     for (const d of levelRoot.doors) {
       // if the door has already been opened, add the connected room to the tree
+      let child = new TreeNode();
+      child.parent = parent;
+      parent.children.push(child);
       if (d.linkedLevel !== null) {
-        let child = new TreeNode();
-        child.parent = parent;
-        parent.children.push(child);
-
         this.copyTree(d.linkedLevel, child);
+      } else {
+        child.unopened = true;
       }
     }
   };
@@ -156,7 +156,7 @@ export class Map {
     }
 
     Game.ctx.fillStyle = "white";
-    if (parent.deadEnd) Game.ctx.fillStyle = "grey";
+    if (parent.unopened) Game.ctx.fillStyle = "#404040";
     if (parent.isCurrent) Game.ctx.fillStyle = "red";
     this.drawLeaf(x + parent.width / 2, y);
   };
