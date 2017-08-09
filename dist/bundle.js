@@ -2488,7 +2488,6 @@ var helmet_1 = __webpack_require__(22);
 var levelConstants_1 = __webpack_require__(4);
 var map_1 = __webpack_require__(37);
 var pickup_1 = __webpack_require__(11);
-var crate_1 = __webpack_require__(25);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
@@ -2501,7 +2500,6 @@ var Player = (function () {
             //   this.y
             // );
             _this.map.open();
-            _this.game.level.enemies.push(new crate_1.Crate(_this.game.level, _this.game, _this.x, _this.y));
         };
         this.spaceUpListener = function () {
             _this.map.close();

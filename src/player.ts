@@ -76,7 +76,6 @@ export class Player {
     //   this.y
     // );
     this.map.open();
-    this.game.level.enemies.push(new Crate(this.game.level, this.game, this.x, this.y));
   };
   spaceUpListener = () => {
     this.map.close();
