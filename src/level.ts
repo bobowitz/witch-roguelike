@@ -24,6 +24,7 @@ import { Crate } from "./enemy/crate";
 
 export class Level {
   levelArray: Tile[][];
+  visibilityArray: number[][];
   enemies: Array<Enemy>;
   items: Array<Item>;
   doors: Array<Door>; // just a reference for mapping, still access through levelArray
@@ -102,6 +103,13 @@ export class Level {
     this.levelArray = [];
     for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
       this.levelArray[x] = [];
+    }
+    this.visibilityArray = [];
+    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
+      this.visibilityArray[x] = [];
+      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+        this.visibilityArray[x][y] = 0;
+      }
     }
 
     this.roomX = Math.floor(LevelConstants.SCREEN_W / 2 - width / 2);
@@ -435,11 +443,15 @@ export class Level {
     if (this.hasBottomDoor) {
       this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY);
     } else this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);
+
+    this.updateLighting();
   };
 
   enterLevelThroughDoor = (door: Door) => {
     this.updateLevelTextColor();
     this.game.player.moveNoSmooth(door.x, door.y + 1);
+
+    this.updateLighting();
   };
 
   getCollidable = (x: number, y: number) => {
@@ -460,6 +472,62 @@ export class Level {
     return null;
   };
 
+  updateLighting = () => {
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        this.visibilityArray[x][y] =
+          this.visibilityArray[x][y] === 0 ? 0 : LevelConstants.MIN_VISIBILITY;
+      }
+    }
+    let STEP = 1;
+    for (let i = 0; i < 360; i += STEP) {
+      this.castShadowsAtAngle(i);
+    }
+  };
+
+  castShadowsAtAngle = (angle: number, setVisibility?: number) => {
+    let dx = Math.cos(angle * Math.PI / 180);
+    let dy = Math.sin(angle * Math.PI / 180);
+    let px = this.game.player.x + 0.5;
+    let py = this.game.player.y + 0.5;
+    let returnVal = 0;
+    let i = 0;
+    let hitWall = false; // flag for if we already hit a wall. we'll keep scanning and see if there's more walls. if so, light them up!
+    for (; i < 6; i++) {
+      let tile = this.levelArray[Math.floor(px)][Math.floor(py)];
+      if (tile instanceof Wall && tile.type === 1) {
+        return returnVal;
+      }
+
+      if (tile instanceof Wall || tile instanceof WallSide) {
+        if (!hitWall) returnVal = i;
+        hitWall = true;
+      } else if (hitWall) {
+        // fun's over, we hit something that wasn't a wall
+        return returnVal;
+      }
+
+      this.visibilityArray[Math.floor(px)][Math.floor(py)] +=
+        setVisibility === undefined ? LevelConstants.VISIBILITY_STEP : setVisibility;
+      this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(
+        this.visibilityArray[Math.floor(px)][Math.floor(py)],
+        1
+      );
+
+      // crates can block visibility too!
+      for (const e of this.enemies) {
+        if (e instanceof Crate && e.x === Math.floor(px) && e.y === Math.floor(py)) {
+          if (!hitWall) returnVal = i;
+          hitWall = true;
+        }
+      }
+
+      px += dx;
+      py += dy;
+    }
+    return returnVal;
+  };
+
   tick = () => {
     this.game.player.startTick();
     for (const e of this.enemies) {
@@ -467,6 +535,7 @@ export class Level {
     }
     this.enemies = this.enemies.filter(e => !e.dead);
     this.game.player.finishTick();
+    this.updateLighting();
   };
 
   update = () => {
@@ -474,9 +543,20 @@ export class Level {
   };
 
   draw = () => {
-    for (const col of this.levelArray) {
-      for (const tile of col) {
-        if (tile !== null) tile.draw();
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        this.levelArray[x][y].draw();
+
+        // fill in shadows too
+        Game.ctx.globalAlpha = 1 - this.visibilityArray[x][y];
+        Game.ctx.fillStyle = "black";
+        Game.ctx.fillRect(
+          x * GameConstants.TILESIZE,
+          y * GameConstants.TILESIZE,
+          GameConstants.TILESIZE,
+          GameConstants.TILESIZE
+        );
+        Game.ctx.globalAlpha = 1;
       }
     }
   };
@@ -486,18 +566,18 @@ export class Level {
     this.items.sort((a, b) => a.y - b.y);
 
     for (const e of this.enemies) {
-      if (e.y <= this.game.player.y) e.draw();
+      if (e.y <= this.game.player.y && this.visibilityArray[e.x][e.y] > 0) e.draw();
     }
     for (const i of this.items) {
-      if (i.y <= this.game.player.y) i.draw();
+      if (i.y <= this.game.player.y && this.visibilityArray[i.x][i.y] > 0) i.draw();
     }
   };
   drawEntitiesInFrontOfPlayer = () => {
     for (const e of this.enemies) {
-      if (e.y > this.game.player.y) e.draw();
+      if (e.y > this.game.player.y && this.visibilityArray[e.x][e.y] > 0) e.draw();
     }
     for (const i of this.items) {
-      if (i.y > this.game.player.y) i.draw();
+      if (i.y > this.game.player.y && this.visibilityArray[i.x][i.y] > 0) i.draw();
     }
   };
 

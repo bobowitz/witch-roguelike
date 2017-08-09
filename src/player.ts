@@ -20,6 +20,7 @@ import { Helmet } from "./item/helmet";
 import { LevelConstants } from "./levelConstants";
 import { Map } from "./map";
 import { Pickup } from "./item/pickup";
+import { Crate } from "./enemy/crate";
 
 export class Player {
   x: number;
@@ -75,6 +76,7 @@ export class Player {
     //   this.y
     // );
     this.map.open();
+    this.game.level.enemies.push(new Crate(this.game.level, this.game, this.x, this.y));
   };
   spaceUpListener = () => {
     this.map.close();

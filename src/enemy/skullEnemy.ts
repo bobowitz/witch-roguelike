@@ -14,6 +14,7 @@ export class SkullEnemy extends Enemy {
   moves: Array<astar.AStarData>;
   ticks: number;
   healthBar: HealthBar;
+  seenPlayer: boolean;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
@@ -22,6 +23,7 @@ export class SkullEnemy extends Enemy {
     this.healthBar = new HealthBar(20);
     this.tileX = 2;
     this.tileY = 0;
+    this.seenPlayer = false;
   }
 
   hit = (): number => {
@@ -42,32 +44,35 @@ export class SkullEnemy extends Enemy {
 
   tick = () => {
     if (!this.dead) {
-      let oldX = this.x;
-      let oldY = this.y;
-      let enemyPositions = new Array<astar.Position>();
-      for (const e of this.level.enemies) {
-        if (e !== this) {
-          enemyPositions.push({ x: e.x, y: e.y });
+      if (this.seenPlayer || this.level.visibilityArray[this.x][this.y]) {
+        this.seenPlayer = true;
+        let oldX = this.x;
+        let oldY = this.y;
+        let enemyPositions = new Array<astar.Position>();
+        for (const e of this.level.enemies) {
+          if (e !== this) {
+            enemyPositions.push({ x: e.x, y: e.y });
+          }
         }
-      }
-      this.moves = astar.AStar.search(
-        this.level.levelArray,
-        this,
-        this.game.player,
-        enemyPositions
-      );
-      if (this.moves.length > 0) {
-        if (
-          this.game.player.x === this.moves[0].pos.x &&
-          this.game.player.y === this.moves[0].pos.y
-        ) {
-          this.game.player.hurt(this.hit());
-        } else {
-          this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
+        this.moves = astar.AStar.search(
+          this.level.levelArray,
+          this,
+          this.game.player,
+          enemyPositions
+        );
+        if (this.moves.length > 0) {
+          if (
+            this.game.player.x === this.moves[0].pos.x &&
+            this.game.player.y === this.moves[0].pos.y
+          ) {
+            this.game.player.hurt(this.hit());
+          } else {
+            this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
+          }
         }
+        this.drawX = this.x - oldX;
+        this.drawY = this.y - oldY;
       }
-      this.drawX = this.x - oldX;
-      this.drawY = this.y - oldY;
     }
   };
 

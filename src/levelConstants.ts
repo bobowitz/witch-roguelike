@@ -12,5 +12,8 @@ export class LevelConstants {
 
   static readonly ENVIRONMENTS = 5;
 
+  static readonly MIN_VISIBILITY = 0.2;
+  static readonly VISIBILITY_STEP = 0.1;
+
   static LEVEL_TEXT_COLOR = "white"; // not actually a constant
 }
