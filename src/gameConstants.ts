@@ -1,7 +1,7 @@
 import { LevelConstants } from "./levelConstants";
 
 export class GameConstants {
-  static readonly VERSION = "v0.0.10";
+  static readonly VERSION = "v0.0.11";
 
   static readonly FPS = 60;
 
@@ -17,4 +17,5 @@ export class GameConstants {
   static readonly OUTLINE = "#222034";
   static readonly HIT_ENEMY_TEXT_COLOR = "#76428a";
   static readonly HEALTH_BUFF_COLOR = "#d77bba";
+  static readonly MISS_COLOR = "#639bff";
 }

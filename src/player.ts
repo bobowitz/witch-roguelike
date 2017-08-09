@@ -37,6 +37,7 @@ export class Player {
   inventory: Inventory;
   equipped: Array<Equippable>;
   map: Map;
+  missProb: number;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -61,6 +62,8 @@ export class Player {
     this.inventory = new Inventory(game);
 
     this.map = new Map(game);
+
+    this.missProb = 0.1;
   }
 
   spaceListener = () => {
@@ -160,10 +163,14 @@ export class Player {
     this.game.level.textParticles.push(
       new TextParticle("+" + amount, this.x + 0.5, this.y - 0.5, GameConstants.HEALTH_BUFF_COLOR, 0)
     );
+
+    Sound.powerup();
   };
 
   heal = (amount: number) => {
     this.healthBar.heal(amount);
+
+    Sound.heal();
   };
 
   hurt = (damage: number) => {
@@ -240,10 +247,12 @@ export class Player {
       // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)
 
       let totalArmorDiff = 0;
+      this.missProb = 0.1; // check this here too
       for (const e of this.equipped) {
         if (e instanceof Armor || e instanceof Helmet) {
           totalArmorDiff += e.health - e.lastTickHealth;
           e.lastTickHealth = e.health;
+          this.missProb += 0.1; // for each equipped piece of armor, increase missProb by .1
         }
       }
       if (totalArmorDiff < 0) {

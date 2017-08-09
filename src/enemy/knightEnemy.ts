@@ -7,6 +7,8 @@ import { HealthBar } from "../healthbar";
 import { Potion } from "../item/potion";
 import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
+import { TextParticle } from "../textParticle";
+import { GameConstants } from "../gameConstants";
 
 export class KnightEnemy extends Enemy {
   level: Level;
@@ -23,7 +25,19 @@ export class KnightEnemy extends Enemy {
   }
 
   hit = (): number => {
-    return Game.randTable([1, 1, 1, 2, 3]);
+    let dmg = Game.randTable([1, 1, 1, 2, 3]);
+    if (Game.rand(1, 100) * 0.01 <= this.game.player.missProb) {
+      dmg = 0;
+      this.level.textParticles.push(
+        new TextParticle(
+          "miss",
+          this.game.player.x + 0.5,
+          this.game.player.y - 0.5,
+          GameConstants.MISS_COLOR
+        )
+      );
+    }
+    return dmg;
   };
 
   tick = () => {
