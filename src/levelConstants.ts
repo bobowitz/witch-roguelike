@@ -10,7 +10,7 @@ export class LevelConstants {
   static readonly SCREEN_W = 17; // screen size in tiles
   static readonly SCREEN_H = 17; // screen size in tiles
 
-  static readonly ENVIRONMENTS = 5;
+  static readonly ENVIRONMENTS = 6;
 
   static readonly MIN_VISIBILITY = 0.2;
   static readonly LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray

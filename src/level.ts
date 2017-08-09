@@ -435,7 +435,8 @@ export class Level {
 
     this.fixWalls();
 
-    let numTrapdoors = this.addTrapdoors();
+    /* add trapdoors back in after we figure out how they're gonna work */
+    let numTrapdoors = 0; // this.addTrapdoors();
     let numDoors = this.addDoors(deadEnd);
     let numChests = this.addChests(numDoors);
     let numSpikes = this.addSpikes();
@@ -543,6 +544,7 @@ export class Level {
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
       this.castShadowsAtAngle(i, this.game.player.sightRadius);
     }
+    this.visibilityArray = this.blur3x3(this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
   };
 
   castShadowsAtAngle = (angle: number, radius: number) => {
@@ -587,6 +589,31 @@ export class Level {
       py += dy;
     }
     return returnVal;
+  };
+
+  blur3x3 = (array: Array<Array<number>>, weights: Array<Array<number>>): Array<Array<number>> => {
+    let blurredArray = [];
+    for (let x = 0; x < array.length; x++) {
+      blurredArray[x] = [];
+      for (let y = 0; y < array[0].length; y++) {
+        if (array[x][y] === 0) {
+          blurredArray[x][y] = 0;
+          continue;
+        }
+        let total = 0;
+        let totalWeights = 0;
+        for (let xx = -1; xx <= 1; xx++) {
+          for (let yy = -1; yy <= 1; yy++) {
+            if (x + xx >= 0 && x + xx < array.length && y + yy >= 0 && y + yy < array[0].length) {
+              total += array[x + xx][y + yy] * weights[xx + 1][yy + 1];
+              totalWeights += weights[xx + 1][yy + 1];
+            }
+          }
+        }
+        blurredArray[x][y] = total / totalWeights;
+      }
+    }
+    return blurredArray;
   };
 
   tick = () => {

@@ -20,6 +20,7 @@ import { LevelConstants } from "./levelConstants";
 import { Map } from "./map";
 import { Pickup } from "./item/pickup";
 import { Crate } from "./enemy/crate";
+import { Stats } from "./stats";
 
 export class Player {
   x: number;
@@ -32,6 +33,7 @@ export class Player {
   flashing: boolean;
   flashingFrame: number;
   healthBar: HealthBar;
+  stats: Stats;
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
@@ -54,6 +56,7 @@ export class Player {
     Input.downListener = this.downListener;
 
     this.healthBar = new HealthBar(50);
+    this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;

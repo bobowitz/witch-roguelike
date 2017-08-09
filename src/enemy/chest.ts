@@ -14,6 +14,8 @@ export class Chest extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
 
+    this.tileX = 17;
+    this.tileY = 0;
     this.healthBar = new HealthBar(1);
   }
 
@@ -44,6 +46,17 @@ export class Chest extends Enemy {
   };
 
   draw = () => {
-    Game.drawTile(4, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+    if (!this.dead) {
+      Game.drawMob(
+        this.tileX,
+        this.tileY,
+        1,
+        2,
+        this.x - this.drawX,
+        this.y - 1 - this.drawY,
+        1,
+        2
+      );
+    }
   };
 }

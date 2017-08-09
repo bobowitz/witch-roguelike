@@ -162,7 +162,7 @@ var levelConstants_1 = __webpack_require__(4);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.16";
+    GameConstants.VERSION = "v0.0.17";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -286,7 +286,7 @@ var LevelConstants = (function () {
     LevelConstants.MAX_LEVEL_H = 13;
     LevelConstants.SCREEN_W = 17; // screen size in tiles
     LevelConstants.SCREEN_H = 17; // screen size in tiles
-    LevelConstants.ENVIRONMENTS = 5;
+    LevelConstants.ENVIRONMENTS = 6;
     LevelConstants.MIN_VISIBILITY = 0.2;
     LevelConstants.LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
     LevelConstants.VISIBILITY_STEP = 0.1; //* LevelConstants.LIGHTING_ANGLE_STEP;
@@ -567,6 +567,7 @@ var Level = (function () {
             for (var i = 0; i < 360; i += levelConstants_1.LevelConstants.LIGHTING_ANGLE_STEP) {
                 _this.castShadowsAtAngle(i, _this.game.player.sightRadius);
             }
+            _this.visibilityArray = _this.blur3x3(_this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
         };
         this.castShadowsAtAngle = function (angle, radius) {
             var dx = Math.cos(angle * Math.PI / 180);
@@ -605,6 +606,30 @@ var Level = (function () {
                 py += dy;
             }
             return returnVal;
+        };
+        this.blur3x3 = function (array, weights) {
+            var blurredArray = [];
+            for (var x = 0; x < array.length; x++) {
+                blurredArray[x] = [];
+                for (var y = 0; y < array[0].length; y++) {
+                    if (array[x][y] === 0) {
+                        blurredArray[x][y] = 0;
+                        continue;
+                    }
+                    var total = 0;
+                    var totalWeights = 0;
+                    for (var xx = -1; xx <= 1; xx++) {
+                        for (var yy = -1; yy <= 1; yy++) {
+                            if (x + xx >= 0 && x + xx < array.length && y + yy >= 0 && y + yy < array[0].length) {
+                                total += array[x + xx][y + yy] * weights[xx + 1][yy + 1];
+                                totalWeights += weights[xx + 1][yy + 1];
+                            }
+                        }
+                    }
+                    blurredArray[x][y] = total / totalWeights;
+                }
+            }
+            return blurredArray;
         };
         this.tick = function () {
             _this.game.player.startTick();
@@ -712,7 +737,8 @@ var Level = (function () {
             this.levelArray[this.bottomDoorX][this.bottomDoorY] = new bottomDoor_1.BottomDoor(this, this.game, previousDoor, this.bottomDoorX, this.bottomDoorY);
         }
         this.fixWalls();
-        var numTrapdoors = this.addTrapdoors();
+        /* add trapdoors back in after we figure out how they're gonna work */
+        var numTrapdoors = 0; // this.addTrapdoors();
         var numDoors = this.addDoors(deadEnd);
         var numChests = this.addChests(numDoors);
         var numSpikes = this.addSpikes();
@@ -2477,6 +2503,7 @@ var helmet_1 = __webpack_require__(22);
 var levelConstants_1 = __webpack_require__(4);
 var map_1 = __webpack_require__(37);
 var pickup_1 = __webpack_require__(11);
+var stats_1 = __webpack_require__(39);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
@@ -2719,6 +2746,7 @@ var Player = (function () {
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
         this.healthBar = new healthbar_1.HealthBar(50);
+        this.stats = new stats_1.Stats();
         this.dead = false;
         this.flashing = false;
         this.flashingFrame = 0;
@@ -2993,14 +3021,55 @@ var Chest = (function (_super) {
             }
         };
         _this.draw = function () {
-            game_1.Game.drawTile(4, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            if (!_this.dead) {
+                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+            }
         };
+        _this.tileX = 17;
+        _this.tileY = 0;
         _this.healthBar = new healthbar_1.HealthBar(1);
         return _this;
     }
     return Chest;
 }(enemy_1.Enemy));
 exports.Chest = Chest;
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var statconstants_1 = __webpack_require__(40);
+var Stats = (function () {
+    function Stats() {
+        this.xp = 0;
+        this.level = 1;
+        this.xpToLevelUp = statconstants_1.StatConstants.LEVEL_UP_TABLE[this.level - 1];
+    }
+    return Stats;
+}());
+exports.Stats = Stats;
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var StatConstants = (function () {
+    function StatConstants() {
+    }
+    StatConstants.LEVELS = 8;
+    // length should be LEVELS - 1
+    StatConstants.LEVEL_UP_TABLE = [100, 500, 2500, 10000, 50000, 250000, 1000000];
+    return StatConstants;
+}());
+exports.StatConstants = StatConstants;
 
 
 /***/ })
