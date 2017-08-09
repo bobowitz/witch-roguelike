@@ -18,3 +18,15 @@ canvas {
   font-family: PixelFont;
   src: url("./res/pixel.ttf");
 }
+
+.center-text {
+  text-align: center;
+}
+
+p {
+  font-family: "Courier New";
+}
+
+a {
+  text-decoration: none;
+}

@@ -660,7 +660,7 @@ var Level = (function () {
         var numChests = game_1.Game.rand(1, 8);
         if (numChests === 1 || numDoors === 0) {
             // if it's a dead end, at least give them a chest
-            numChests = game_1.Game.randTable([0, 1, 1, 2, 2, 3, 4]);
+            numChests = game_1.Game.randTable([0, 1, 1, 2, 3, 4, 5, 6]);
             // (but not guaranteed   ---^)
         }
         else
@@ -1604,7 +1604,7 @@ var Chest = (function (_super) {
         };
         _this.open = function () {
             // DROP TABLES!
-            var drop = game_1.Game.randTable([1, 1, 1, 1, 2, 2, 3, 4]);
+            var drop = game_1.Game.randTable([1, 1, 2, 3, 4]);
             switch (drop) {
                 case 1:
                     _this.game.level.items.push(new healthbuff_1.HealthBuff(_this.x, _this.y));

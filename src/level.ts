@@ -299,7 +299,7 @@ export class Level {
     let numChests = Game.rand(1, 8);
     if (numChests === 1 || numDoors === 0) {
       // if it's a dead end, at least give them a chest
-      numChests = Game.randTable([0, 1, 1, 2, 2, 3, 4]);
+      numChests = Game.randTable([0, 1, 1, 2, 3, 4, 5, 6]);
       // (but not guaranteed   ---^)
     } else numChests = 0;
     for (let i = 0; i < numChests; i++) {
