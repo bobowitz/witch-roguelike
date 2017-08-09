@@ -44,7 +44,18 @@ export class SkullEnemy extends Enemy {
     if (!this.dead) {
       let oldX = this.x;
       let oldY = this.y;
-      this.moves = astar.AStar.search(this.level.levelArray, this, this.game.player);
+      let enemyPositions = new Array<astar.Position>();
+      for (const e of this.level.enemies) {
+        if (e !== this) {
+          enemyPositions.push({ x: e.x, y: e.y });
+        }
+      }
+      this.moves = astar.AStar.search(
+        this.level.levelArray,
+        this,
+        this.game.player,
+        enemyPositions
+      );
       if (this.moves.length > 0) {
         if (
           this.game.player.x === this.moves[0].pos.x &&

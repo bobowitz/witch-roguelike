@@ -162,7 +162,7 @@ var levelConstants_1 = __webpack_require__(3);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.12";
+    GameConstants.VERSION = "v0.0.13";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -1384,7 +1384,7 @@ var astar;
             for (var x = 0, xl = grid.length; x < xl; x++) {
                 this.grid[x] = [];
                 for (var y = 0, yl = grid[x].length; y < yl; y++) {
-                    var cost = grid[x][y] instanceof floor_1.Floor ? 1 : 10000;
+                    var cost = grid[x][y] instanceof floor_1.Floor ? 1 : 99999999;
                     this.grid[x][y] = {
                         org: grid[x][y],
                         f: 0,
@@ -1403,7 +1403,7 @@ var astar;
             }
             if (disablePoints !== undefined) {
                 for (var i = 0; i < disablePoints.length; i++)
-                    this.grid[disablePoints[i].x][disablePoints[i].y].cost = 0;
+                    this.grid[disablePoints[i].x][disablePoints[i].y].cost = 99999999;
             }
         }
         AStar.prototype.heap = function () {
@@ -2110,7 +2110,14 @@ var KnightEnemy = (function (_super) {
                 if (_this.ticks % 2 === 0) {
                     var oldX = _this.x;
                     var oldY = _this.y;
-                    _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player);
+                    var enemyPositions = Array();
+                    for (var _i = 0, _a = _this.level.enemies; _i < _a.length; _i++) {
+                        var e = _a[_i];
+                        if (e !== _this) {
+                            enemyPositions.push({ x: e.x, y: e.y });
+                        }
+                    }
+                    _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player, enemyPositions);
                     if (_this.moves.length > 0) {
                         if (_this.game.player.x === _this.moves[0].pos.x &&
                             _this.game.player.y === _this.moves[0].pos.y) {
@@ -2247,7 +2254,14 @@ var SkullEnemy = (function (_super) {
             if (!_this.dead) {
                 var oldX = _this.x;
                 var oldY = _this.y;
-                _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player);
+                var enemyPositions = new Array();
+                for (var _i = 0, _a = _this.level.enemies; _i < _a.length; _i++) {
+                    var e = _a[_i];
+                    if (e !== _this) {
+                        enemyPositions.push({ x: e.x, y: e.y });
+                    }
+                }
+                _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player, enemyPositions);
                 if (_this.moves.length > 0) {
                     if (_this.game.player.x === _this.moves[0].pos.x &&
                         _this.game.player.y === _this.moves[0].pos.y) {
@@ -2799,12 +2813,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(15);
 var game_1 = __webpack_require__(0);
 var healthbar_1 = __webpack_require__(7);
+var potion_1 = __webpack_require__(17);
 var Barrel = (function (_super) {
     __extends(Barrel, _super);
     function Barrel(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.kill = function () {
             _this.dead = true;
+            if (game_1.Game.rand(1, 8) === 1)
+                _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
         };
         _this.draw = function () {
             if (!_this.dead) {
@@ -2843,12 +2860,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(15);
 var game_1 = __webpack_require__(0);
 var healthbar_1 = __webpack_require__(7);
+var potion_1 = __webpack_require__(17);
 var Crate = (function (_super) {
     __extends(Crate, _super);
     function Crate(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.kill = function () {
             _this.dead = true;
+            if (game_1.Game.rand(1, 8) === 1)
+                _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
         };
         _this.draw = function () {
             if (!_this.dead) {

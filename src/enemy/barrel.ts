@@ -2,6 +2,7 @@ import { Enemy } from "./enemy";
 import { Level } from "../level";
 import { Game } from "../game";
 import { HealthBar } from "../healthbar";
+import { Potion } from "../item/potion";
 
 export class Barrel extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -15,6 +16,7 @@ export class Barrel extends Enemy {
 
   kill = () => {
     this.dead = true;
+    if (Game.rand(1, 8) === 1) this.game.level.items.push(new Potion(this.x, this.y));
   };
 
   draw = () => {
