@@ -2227,53 +2227,24 @@ var SkullEnemy = (function (_super) {
             return dmg;
         };
         _this.tick = function () {
-            _this.ticks++;
-            if (_this.ticks % 2 === 0) {
-                if (!_this.dead) {
-                    var oldX = _this.x;
-                    var oldY = _this.y;
-                    _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player);
-                    if (_this.moves.length > 1) {
-                        if (_this.game.player.x === _this.moves[1].pos.x &&
-                            _this.game.player.y === _this.moves[1].pos.y) {
-                            if (_this.game.level.getCollidable(_this.moves[0].pos.x, _this.moves[0].pos.y) === null) {
-                                _this.x = _this.moves[0].pos.x;
-                                _this.y = _this.moves[0].pos.y;
-                            }
-                            _this.game.player.hurt(_this.hit());
-                        }
-                        else {
-                            _this.tryTwoMoves(_this.moves[0].pos.x, _this.moves[0].pos.y, _this.moves[1].pos.x, _this.moves[1].pos.y);
-                        }
+            if (!_this.dead) {
+                var oldX = _this.x;
+                var oldY = _this.y;
+                _this.moves = astarclass_1.astar.AStar.search(_this.level.levelArray, _this, _this.game.player);
+                if (_this.moves.length > 0) {
+                    if (_this.game.player.x === _this.moves[0].pos.x &&
+                        _this.game.player.y === _this.moves[0].pos.y) {
+                        _this.game.player.hurt(_this.hit());
                     }
-                    else if (_this.moves.length > 0) {
-                        if (_this.game.player.x === _this.moves[0].pos.x &&
-                            _this.game.player.y === _this.moves[0].pos.y) {
-                            _this.game.player.hurt(_this.hit());
-                        }
-                        else {
-                            _this.tryMove(_this.moves[0].pos.x, _this.moves[0].pos.y);
-                        }
+                    else {
+                        _this.tryMove(_this.moves[0].pos.x, _this.moves[0].pos.y);
                     }
-                    _this.drawX = _this.x - oldX;
-                    _this.drawY = _this.y - oldY;
                 }
+                _this.drawX = _this.x - oldX;
+                _this.drawY = _this.y - oldY;
             }
             if (_this.healthBar.health <= 0) {
                 _this.kill();
-            }
-        };
-        _this.tryTwoMoves = function (x1, y1, x2, y2) {
-            for (var _i = 0, _a = _this.level.enemies; _i < _a.length; _i++) {
-                var e = _a[_i];
-                if (e !== _this && ((e.x === x1 && e.y === y1) || (e.x === x2 && e.y === y2))) {
-                    return;
-                }
-            }
-            if (_this.game.level.getCollidable(x1, y1) === null &&
-                _this.game.level.getCollidable(x2, y2) === null) {
-                _this.x = x2;
-                _this.y = y2;
             }
         };
         _this.hurt = function (damage) {

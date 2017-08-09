@@ -41,62 +41,26 @@ export class SkullEnemy extends Enemy {
   };
 
   tick = () => {
-    this.ticks++;
-    if (this.ticks % 2 === 0) {
-      if (!this.dead) {
-        let oldX = this.x;
-        let oldY = this.y;
-        this.moves = astar.AStar.search(this.level.levelArray, this, this.game.player);
-        if (this.moves.length > 1) {
-          if (
-            this.game.player.x === this.moves[1].pos.x &&
-            this.game.player.y === this.moves[1].pos.y
-          ) {
-            if (this.game.level.getCollidable(this.moves[0].pos.x, this.moves[0].pos.y) === null) {
-              this.x = this.moves[0].pos.x;
-              this.y = this.moves[0].pos.y;
-            }
-            this.game.player.hurt(this.hit());
-          } else {
-            this.tryTwoMoves(
-              this.moves[0].pos.x,
-              this.moves[0].pos.y,
-              this.moves[1].pos.x,
-              this.moves[1].pos.y
-            );
-          }
-        } else if (this.moves.length > 0) {
-          if (
-            this.game.player.x === this.moves[0].pos.x &&
-            this.game.player.y === this.moves[0].pos.y
-          ) {
-            this.game.player.hurt(this.hit());
-          } else {
-            this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
-          }
+    if (!this.dead) {
+      let oldX = this.x;
+      let oldY = this.y;
+      this.moves = astar.AStar.search(this.level.levelArray, this, this.game.player);
+      if (this.moves.length > 0) {
+        if (
+          this.game.player.x === this.moves[0].pos.x &&
+          this.game.player.y === this.moves[0].pos.y
+        ) {
+          this.game.player.hurt(this.hit());
+        } else {
+          this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
         }
-        this.drawX = this.x - oldX;
-        this.drawY = this.y - oldY;
       }
+      this.drawX = this.x - oldX;
+      this.drawY = this.y - oldY;
     }
 
     if (this.healthBar.health <= 0) {
       this.kill();
-    }
-  };
-
-  tryTwoMoves = (x1: number, y1: number, x2: number, y2: number) => {
-    for (const e of this.level.enemies) {
-      if (e !== this && ((e.x === x1 && e.y === y1) || (e.x === x2 && e.y === y2))) {
-        return;
-      }
-    }
-    if (
-      this.game.level.getCollidable(x1, y1) === null &&
-      this.game.level.getCollidable(x2, y2) === null
-    ) {
-      this.x = x2;
-      this.y = y2;
     }
   };
 
