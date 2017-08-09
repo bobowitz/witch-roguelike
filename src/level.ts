@@ -19,6 +19,8 @@ import { TextParticle } from "./textParticle";
 import { GameConstants } from "./gameConstants";
 import { SkullEnemy } from "./enemy/skullEnemy";
 import { Map } from "./map";
+import { Barrel } from "./enemy/barrel";
+import { Crate } from "./enemy/crate";
 
 export class Level {
   levelArray: Tile[][];
@@ -345,8 +347,20 @@ export class Level {
         x = Game.rand(this.roomX, this.roomX + width - 1);
         y = Game.rand(this.roomY, this.roomY + height - 1);
       }
-      if (Game.rand(1, 2) === 1) this.enemies.push(new KnightEnemy(this, this.game, x, y));
-      else this.enemies.push(new SkullEnemy(this, this.game, x, y));
+      switch (Game.rand(1, 4)) {
+        case 1:
+          this.enemies.push(new KnightEnemy(this, this.game, x, y));
+          break;
+        case 2:
+          this.enemies.push(new SkullEnemy(this, this.game, x, y));
+          break;
+        case 3:
+          this.enemies.push(new Crate(this, this.game, x, y));
+          break;
+        case 4:
+          this.enemies.push(new Barrel(this, this.game, x, y));
+          break;
+      }
     }
 
     if (this.hasBottomDoor) {
