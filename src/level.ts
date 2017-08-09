@@ -499,12 +499,14 @@ export class Level {
         return returnVal;
       }
 
+      if (!(tile instanceof Wall) && hitWall) {
+        // fun's over, we hit something that wasn't a wall
+        return returnVal;
+      }
+
       if (tile instanceof Wall || tile instanceof WallSide) {
         if (!hitWall) returnVal = i;
         hitWall = true;
-      } else if (hitWall) {
-        // fun's over, we hit something that wasn't a wall
-        return returnVal;
       }
 
       this.visibilityArray[Math.floor(px)][Math.floor(py)] +=

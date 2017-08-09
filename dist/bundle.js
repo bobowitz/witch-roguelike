@@ -596,14 +596,14 @@ var Level = (function () {
                 if (tile instanceof wall_1.Wall && tile.type === 1) {
                     return returnVal;
                 }
+                if (!(tile instanceof wall_1.Wall) && hitWall) {
+                    // fun's over, we hit something that wasn't a wall
+                    return returnVal;
+                }
                 if (tile instanceof wall_1.Wall || tile instanceof wallSide_1.WallSide) {
                     if (!hitWall)
                         returnVal = i;
                     hitWall = true;
-                }
-                else if (hitWall) {
-                    // fun's over, we hit something that wasn't a wall
-                    return returnVal;
                 }
                 _this.visibilityArray[Math.floor(px)][Math.floor(py)] +=
                     setVisibility === undefined ? levelConstants_1.LevelConstants.VISIBILITY_STEP : setVisibility;
