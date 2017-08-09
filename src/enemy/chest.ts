@@ -1,4 +1,4 @@
-import { Collidable } from "./collidable";
+import { Collidable } from "../tile/collidable";
 import { Item } from "../item/item";
 import { Game } from "../game";
 import { Key } from "../item/key";
@@ -7,21 +7,18 @@ import { Potion } from "../item/potion";
 import { Armor } from "../item/armor";
 import { Helmet } from "../item/helmet";
 import { HealthBuff } from "../item/healthbuff";
+import { Enemy } from "./enemy";
+import { HealthBar } from "../healthbar";
 
-export class Chest extends Collidable {
-  game: Game;
-
+export class Chest extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
-    super(level, x, y);
-    this.level = level;
-    this.game = game;
+    super(level, game, x, y);
+
+    this.healthBar = new HealthBar(1);
   }
 
-  draw = () => {
-    Game.drawTile(4, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
-  };
-
-  open = () => {
+  kill = () => {
+    this.dead = true;
     // DROP TABLES!
 
     let drop = Game.randTable([1, 1, 2, 3, 4]);
@@ -44,5 +41,9 @@ export class Chest extends Collidable {
         );
         break;
     }
+  };
+
+  draw = () => {
+    Game.drawTile(4, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
   };
 }

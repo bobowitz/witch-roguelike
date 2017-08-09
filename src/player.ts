@@ -5,7 +5,6 @@ import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { Trapdoor } from "./tile/trapdoor";
 import { HealthBar } from "./healthbar";
-import { Chest } from "./tile/chest";
 import { Floor } from "./tile/floor";
 import { Inventory } from "./inventory";
 import { LockedDoor } from "./tile/lockedDoor";
@@ -39,6 +38,7 @@ export class Player {
   equipped: Array<Equippable>;
   map: Map;
   missProb: number;
+  sightRadius: number;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -65,6 +65,8 @@ export class Player {
     this.map = new Map(game);
 
     this.missProb = 0.1;
+
+    this.sightRadius = 6; // maybe can be manipulated by items? e.g. better torch
   }
 
   spaceListener = () => {
@@ -142,12 +144,6 @@ export class Player {
         } else if (other instanceof BottomDoor || other instanceof Trapdoor) {
           this.move(x, y);
           other.onCollide(this);
-        } else if (other instanceof Chest) {
-          other.open();
-          this.game.level.levelArray[x][y] = new Floor(this.game.level, x, y);
-          this.drawX = (this.x - x) * 0.5;
-          this.drawY = (this.y - y) * 0.5;
-          this.game.level.tick();
         } else if (other instanceof Spike) {
           this.move(x, y);
           other.onCollide(this);

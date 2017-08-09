@@ -288,7 +288,8 @@ var LevelConstants = (function () {
     LevelConstants.SCREEN_H = 17; // screen size in tiles
     LevelConstants.ENVIRONMENTS = 5;
     LevelConstants.MIN_VISIBILITY = 0.2;
-    LevelConstants.VISIBILITY_STEP = 0.1;
+    LevelConstants.LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
+    LevelConstants.VISIBILITY_STEP = 0.1; //* LevelConstants.LIGHTING_ANGLE_STEP;
     LevelConstants.LEVEL_TEXT_COLOR = "white"; // not actually a constant
     return LevelConstants;
 }());
@@ -462,7 +463,7 @@ var bottomDoor_1 = __webpack_require__(16);
 var wallSide_1 = __webpack_require__(29);
 var trapdoor_1 = __webpack_require__(17);
 var knightEnemy_1 = __webpack_require__(30);
-var chest_1 = __webpack_require__(19);
+var chest_1 = __webpack_require__(38);
 var spawnfloor_1 = __webpack_require__(32);
 var lockedDoor_1 = __webpack_require__(23);
 var spike_1 = __webpack_require__(24);
@@ -474,22 +475,7 @@ var Level = (function () {
     function Level(game, previousDoor, deadEnd, env) {
         var _this = this;
         // name this level
-        this.classify = function (width, height, numEnemies) {
-            var numDoors = 0;
-            var numTrapdoors = 0;
-            var numChests = 0;
-            for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
-                var col = _a[_i];
-                for (var _b = 0, col_1 = col; _b < col_1.length; _b++) {
-                    var t = col_1[_b];
-                    if (t instanceof door_1.Door)
-                        numDoors++;
-                    if (t instanceof trapdoor_1.Trapdoor)
-                        numTrapdoors++;
-                    if (t instanceof chest_1.Chest)
-                        numChests++;
-                }
-            }
+        this.classify = function (numDoors, numTrapdoors, numChests, numEnemies) {
             _this.name = "";
             if (numChests >= 2)
                 _this.name = "Treasure";
@@ -552,8 +538,8 @@ var Level = (function () {
         this.getCollidable = function (x, y) {
             for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
                 var col = _a[_i];
-                for (var _b = 0, col_2 = col; _b < col_2.length; _b++) {
-                    var tile = col_2[_b];
+                for (var _b = 0, col_1 = col; _b < col_1.length; _b++) {
+                    var tile = col_1[_b];
                     if (tile instanceof collidable_1.Collidable && tile.x === x && tile.y === y)
                         return tile;
                 }
@@ -563,8 +549,8 @@ var Level = (function () {
         this.getTile = function (x, y) {
             for (var _i = 0, _a = _this.levelArray; _i < _a.length; _i++) {
                 var col = _a[_i];
-                for (var _b = 0, col_3 = col; _b < col_3.length; _b++) {
-                    var tile = col_3[_b];
+                for (var _b = 0, col_2 = col; _b < col_2.length; _b++) {
+                    var tile = col_2[_b];
                     if (tile !== null && tile.x === x && tile.y === y)
                         return tile;
                 }
@@ -578,12 +564,11 @@ var Level = (function () {
                         _this.visibilityArray[x][y] === 0 ? 0 : levelConstants_1.LevelConstants.MIN_VISIBILITY;
                 }
             }
-            var STEP = 1;
-            for (var i = 0; i < 360; i += STEP) {
-                _this.castShadowsAtAngle(i);
+            for (var i = 0; i < 360; i += levelConstants_1.LevelConstants.LIGHTING_ANGLE_STEP) {
+                _this.castShadowsAtAngle(i, _this.game.player.sightRadius);
             }
         };
-        this.castShadowsAtAngle = function (angle, setVisibility) {
+        this.castShadowsAtAngle = function (angle, radius) {
             var dx = Math.cos(angle * Math.PI / 180);
             var dy = Math.sin(angle * Math.PI / 180);
             var px = _this.game.player.x + 0.5;
@@ -591,7 +576,7 @@ var Level = (function () {
             var returnVal = 0;
             var i = 0;
             var hitWall = false; // flag for if we already hit a wall. we'll keep scanning and see if there's more walls. if so, light them up!
-            for (; i < 6; i++) {
+            for (; i < radius; i++) {
                 var tile = _this.levelArray[Math.floor(px)][Math.floor(py)];
                 if (tile instanceof wall_1.Wall && tile.type === 1) {
                     return returnVal;
@@ -605,8 +590,7 @@ var Level = (function () {
                         returnVal = i;
                     hitWall = true;
                 }
-                _this.visibilityArray[Math.floor(px)][Math.floor(py)] +=
-                    setVisibility === undefined ? levelConstants_1.LevelConstants.VISIBILITY_STEP : setVisibility;
+                _this.visibilityArray[Math.floor(px)][Math.floor(py)] += levelConstants_1.LevelConstants.VISIBILITY_STEP;
                 _this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(_this.visibilityArray[Math.floor(px)][Math.floor(py)], 1);
                 // crates can block visibility too!
                 for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
@@ -693,6 +677,7 @@ var Level = (function () {
         this.items = Array();
         this.textParticles = Array();
         this.doors = Array();
+        this.enemies = Array();
         // if previousDoor is null, no bottom door
         this.hasBottomDoor = true;
         if (previousDoor === null) {
@@ -700,10 +685,10 @@ var Level = (function () {
             this.parentLevel = null;
         }
         this.game = game;
-        var width = game_1.Game.randTable([5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 9, 11, 13]);
-        var height = width + game_1.Game.rand(-2, 2);
-        height = Math.min(height, levelConstants_1.LevelConstants.MAX_LEVEL_H);
-        height = Math.max(height, levelConstants_1.LevelConstants.MIN_LEVEL_H);
+        this.width = game_1.Game.randTable([5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 9, 11, 13]);
+        this.height = this.width + game_1.Game.rand(-2, 2);
+        this.height = Math.min(this.height, levelConstants_1.LevelConstants.MAX_LEVEL_H);
+        this.height = Math.max(this.height, levelConstants_1.LevelConstants.MIN_LEVEL_H);
         this.levelArray = [];
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             this.levelArray[x] = [];
@@ -715,10 +700,58 @@ var Level = (function () {
                 this.visibilityArray[x][y] = 0;
             }
         }
-        this.roomX = Math.floor(levelConstants_1.LevelConstants.SCREEN_W / 2 - width / 2);
-        this.roomY = Math.floor(levelConstants_1.LevelConstants.SCREEN_H / 2 - height / 2);
-        this.bottomDoorX = Math.floor(this.roomX + width / 2);
-        this.bottomDoorY = this.roomY + height;
+        this.roomX = Math.floor(levelConstants_1.LevelConstants.SCREEN_W / 2 - this.width / 2);
+        this.roomY = Math.floor(levelConstants_1.LevelConstants.SCREEN_H / 2 - this.height / 2);
+        this.bottomDoorX = Math.floor(this.roomX + this.width / 2);
+        this.bottomDoorY = this.roomY + this.height;
+        this.buildEmptyRoom();
+        this.addWallBlocks();
+        this.addFingers();
+        this.levelArray[this.bottomDoorX][this.bottomDoorY - 1] = new spawnfloor_1.SpawnFloor(this, this.bottomDoorX, this.bottomDoorY - 1);
+        if (previousDoor !== null) {
+            this.levelArray[this.bottomDoorX][this.bottomDoorY] = new bottomDoor_1.BottomDoor(this, this.game, previousDoor, this.bottomDoorX, this.bottomDoorY);
+        }
+        this.fixWalls();
+        var numTrapdoors = this.addTrapdoors();
+        var numDoors = this.addDoors(deadEnd);
+        var numChests = this.addChests(numDoors);
+        var numSpikes = this.addSpikes();
+        var numEnemies = this.addEnemies();
+        var numObstacles = this.addObstacles();
+        if (this.hasBottomDoor) {
+            var b = this.levelArray[this.bottomDoorX][this.bottomDoorY];
+            this.parentLevel = b.linkedTopDoor.level;
+        }
+        this.classify(numDoors, numTrapdoors, numChests, numEnemies);
+    }
+    Level.prototype.pointInside = function (x, y, rX, rY, rW, rH) {
+        if (x < rX || x >= rX + rW)
+            return false;
+        if (y < rY || y >= rY + rH)
+            return false;
+        return true;
+    };
+    Level.prototype.fixWalls = function () {
+        for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
+            for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
+                if (this.levelArray[x][y] instanceof wall_1.Wall) {
+                    if (this.levelArray[x][y + 1] instanceof floor_1.Floor ||
+                        this.levelArray[x][y + 1] instanceof spawnfloor_1.SpawnFloor) {
+                        if (this.levelArray[x][y + 2] instanceof floor_1.Floor ||
+                            this.levelArray[x][y + 2] instanceof spawnfloor_1.SpawnFloor)
+                            this.levelArray[x][y + 1] = new wallSide_1.WallSide(this, x, y + 1);
+                        else {
+                            if (this.levelArray[x][y - 1] instanceof wall_1.Wall)
+                                this.levelArray[x][y] = new wallSide_1.WallSide(this, x, y);
+                            else
+                                this.levelArray[x][y] = new floor_1.Floor(this, x, y);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    Level.prototype.buildEmptyRoom = function () {
         // fill in outside walls
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
@@ -728,7 +761,7 @@ var Level = (function () {
         // put in floors
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
-                if (this.pointInside(x, y, this.roomX, this.roomY, width, height)) {
+                if (this.pointInside(x, y, this.roomX, this.roomY, this.width, this.height)) {
                     this.levelArray[x][y] = new floor_1.Floor(this, x, y);
                 }
             }
@@ -736,31 +769,35 @@ var Level = (function () {
         // outer ring walls
         for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
             for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
-                if (this.pointInside(x, y, this.roomX - 1, this.roomY - 1, width + 2, height + 2)) {
-                    if (!this.pointInside(x, y, this.roomX, this.roomY, width, height)) {
+                if (this.pointInside(x, y, this.roomX - 1, this.roomY - 1, this.width + 2, this.height + 2)) {
+                    if (!this.pointInside(x, y, this.roomX, this.roomY, this.width, this.height)) {
                         this.levelArray[x][y] = new wall_1.Wall(this, x, y, 0);
                     }
                 }
             }
         }
+    };
+    Level.prototype.addWallBlocks = function () {
         // put some random wall blocks in the room
         var numBlocks = game_1.Game.randTable([0, 1, 1, 2, 2, 2, 2, 3, 3]);
         for (var i = 0; i < numBlocks; i++) {
-            var blockW = Math.min(game_1.Game.randTable([2, 2, 2, 5, 7, 9]), width - 2);
-            var blockH = Math.min(blockW + game_1.Game.rand(-1, 1), height - 3);
-            var x = game_1.Game.rand(this.roomX + 1, this.roomX + width - blockW - 1);
-            var y = game_1.Game.rand(this.roomY + 2, this.roomY + height - blockH - 2);
+            var blockW = Math.min(game_1.Game.randTable([2, 2, 2, 5, 7, 9]), this.width - 2);
+            var blockH = Math.min(blockW + game_1.Game.rand(-1, 1), this.height - 3);
+            var x = game_1.Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 1);
+            var y = game_1.Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2);
             for (var xx = x; xx < x + blockW; xx++) {
                 for (var yy = y; yy < y + blockH; yy++) {
                     this.levelArray[xx][yy] = new wall_1.Wall(this, xx, yy, 0);
                 }
             }
         }
+    };
+    Level.prototype.addFingers = function () {
         // add "finger" blocks extending from ring walls inward
         var numFingers = game_1.Game.randTable([0, 1, 1, 2, 2, 3, 4, 5]);
-        if (game_1.Game.rand(1, 13) > width)
-            numFingers += width * 0.3;
-        var FINGER_LENGTH = height - 3;
+        if (game_1.Game.rand(1, 13) > this.width)
+            numFingers += this.width * 0.3;
+        var FINGER_LENGTH = this.height - 3;
         for (var i = 0; i < numFingers; i++) {
             var x = 0;
             var y = 0;
@@ -773,7 +810,7 @@ var Level = (function () {
                 if (game_1.Game.rand(0, 1) === 0) {
                     // left
                     x = this.roomX;
-                    y = game_1.Game.rand(this.roomY + 2, this.roomY + height - 3);
+                    y = game_1.Game.rand(this.roomY + 2, this.roomY + this.height - 3);
                     for (var xx = x; xx < x + blockW + 1; xx++) {
                         for (var yy = y - 2; yy < y + blockH + 2; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -786,8 +823,8 @@ var Level = (function () {
                     }
                 }
                 else {
-                    x = this.roomX + width - blockW;
-                    y = game_1.Game.rand(this.roomY + 2, this.roomY + height - 3);
+                    x = this.roomX + this.width - blockW;
+                    y = game_1.Game.rand(this.roomY + 2, this.roomY + this.height - 3);
                     for (var xx = x - 1; xx < x + blockW; xx++) {
                         for (var yy = y - 2; yy < y + blockH + 2; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -806,7 +843,7 @@ var Level = (function () {
                 if (game_1.Game.rand(0, 1) === 0) {
                     // top
                     y = this.roomY;
-                    x = game_1.Game.rand(this.roomX + 2, this.roomX + width - 3);
+                    x = game_1.Game.rand(this.roomX + 2, this.roomX + this.width - 3);
                     for (var xx = x - 1; xx < x + blockW + 1; xx++) {
                         for (var yy = y + 1; yy < y + blockH + 2; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -819,8 +856,8 @@ var Level = (function () {
                     }
                 }
                 else {
-                    y = this.roomY + height - blockH;
-                    x = game_1.Game.rand(this.roomX + 2, this.roomX + width - 3);
+                    y = this.roomY + this.height - blockH;
+                    x = game_1.Game.rand(this.roomX + 2, this.roomX + this.width - 3);
                     for (var xx = x - 1; xx < x + blockW + 1; xx++) {
                         for (var yy = y - 2; yy < y + blockH; yy++) {
                             this.levelArray[xx][yy] = new floor_1.Floor(this, xx, yy);
@@ -834,11 +871,8 @@ var Level = (function () {
                 }
             }
         }
-        this.levelArray[this.bottomDoorX][this.bottomDoorY - 1] = new spawnfloor_1.SpawnFloor(this, this.bottomDoorX, this.bottomDoorY - 1);
-        if (previousDoor !== null) {
-            this.levelArray[this.bottomDoorX][this.bottomDoorY] = new bottomDoor_1.BottomDoor(this, this.game, previousDoor, this.bottomDoorX, this.bottomDoorY);
-        }
-        this.fixWalls();
+    };
+    Level.prototype.addTrapdoors = function () {
         // add trapdoors
         var numTrapdoors = game_1.Game.rand(1, 10);
         if (numTrapdoors === 1) {
@@ -850,11 +884,14 @@ var Level = (function () {
             var x = 0;
             var y = 0;
             while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
-                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
-                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
+                x = game_1.Game.rand(this.roomX, this.roomX + this.width - 1);
+                y = game_1.Game.rand(this.roomY, this.roomY + this.height - 1);
             }
             this.levelArray[x][y] = new trapdoor_1.Trapdoor(this, this.game, x, y);
         }
+        return numTrapdoors;
+    };
+    Level.prototype.addDoors = function (deadEnd) {
         // add doors
         var numDoors = game_1.Game.randTable([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3]);
         if (deadEnd) {
@@ -893,6 +930,9 @@ var Level = (function () {
                 this.doors.push(d);
         }
         this.doors.sort(function (a, b) { return a.x - b.x; }); // sort by x, ascending, so the map makes sense
+        return numDoors;
+    };
+    Level.prototype.addChests = function (numDoors) {
         // add chests
         var numChests = game_1.Game.rand(1, 8);
         if (numChests === 1 || numDoors === 0) {
@@ -902,15 +942,24 @@ var Level = (function () {
         }
         else
             numChests = 0;
-        for (var i = 0; i < numChests; i++) {
+        var _loop_1 = function (i) {
             var x = 0;
             var y = 0;
-            while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
-                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
-                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
+            while (!(this_1.getTile(x, y) instanceof floor_1.Floor) ||
+                this_1.enemies.filter(function (e) { return e.x === x && e.y === y; }).length > 0 // don't overlap other enemies!
+            ) {
+                x = game_1.Game.rand(this_1.roomX, this_1.roomX + this_1.width - 1);
+                y = game_1.Game.rand(this_1.roomY, this_1.roomY + this_1.height - 1);
             }
-            this.levelArray[x][y] = new chest_1.Chest(this, this.game, x, y);
+            this_1.enemies.push(new chest_1.Chest(this_1, this_1.game, x, y));
+        };
+        var this_1 = this;
+        for (var i = 0; i < numChests; i++) {
+            _loop_1(i);
         }
+        return numChests;
+    };
+    Level.prototype.addSpikes = function () {
         // add spikes
         var numSpikes = game_1.Game.rand(1, 10);
         if (numSpikes === 1) {
@@ -922,80 +971,78 @@ var Level = (function () {
             var x = 0;
             var y = 0;
             while (!(this.getTile(x, y) instanceof floor_1.Floor)) {
-                x = game_1.Game.rand(this.roomX, this.roomX + width - 1);
-                y = game_1.Game.rand(this.roomY, this.roomY + height - 1);
+                x = game_1.Game.rand(this.roomX, this.roomX + this.width - 1);
+                y = game_1.Game.rand(this.roomY, this.roomY + this.height - 1);
             }
             this.levelArray[x][y] = new spike_1.Spike(this, x, y);
         }
-        this.enemies = Array();
+        return numSpikes;
+    };
+    Level.prototype.addEnemies = function () {
         // add enemies
         var numEnemies = game_1.Game.rand(1, 2);
-        if (numEnemies === 1 || width * height > 8 * 8) {
-            numEnemies = game_1.Game.randTable([1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5]);
+        if (numEnemies === 1 || this.width * this.height > 8 * 8) {
+            numEnemies = game_1.Game.randTable([1, 2, 2, 3, 3, 3, 4, 4, 4]);
         }
         else
             numEnemies = 0;
-        var _loop_1 = function (i) {
+        var _loop_2 = function (i) {
             var x = 0;
             var y = 0;
-            while (!(this_1.getTile(x, y) instanceof floor_1.Floor) ||
-                this_1.enemies.filter(function (e) { return e.x === x && e.y === y; }).length > 0 ||
-                (x === this_1.bottomDoorX && y === this_1.bottomDoorY) ||
-                (x === this_1.bottomDoorX && y === this_1.bottomDoorY - 1)) {
-                x = game_1.Game.rand(this_1.roomX, this_1.roomX + width - 1);
-                y = game_1.Game.rand(this_1.roomY, this_1.roomY + height - 1);
+            while (!(this_2.getTile(x, y) instanceof floor_1.Floor) ||
+                this_2.enemies.filter(function (e) { return e.x === x && e.y === y; }).length > 0 ||
+                (x === this_2.bottomDoorX && y === this_2.bottomDoorY) ||
+                (x === this_2.bottomDoorX && y === this_2.bottomDoorY - 1)) {
+                x = game_1.Game.rand(this_2.roomX, this_2.roomX + this_2.width - 1);
+                y = game_1.Game.rand(this_2.roomY, this_2.roomY + this_2.height - 1);
             }
-            switch (game_1.Game.rand(1, 4)) {
+            switch (game_1.Game.rand(1, 2)) {
                 case 1:
-                    this_1.enemies.push(new knightEnemy_1.KnightEnemy(this_1, this_1.game, x, y));
+                    this_2.enemies.push(new knightEnemy_1.KnightEnemy(this_2, this_2.game, x, y));
                     break;
                 case 2:
-                    this_1.enemies.push(new skullEnemy_1.SkullEnemy(this_1, this_1.game, x, y));
-                    break;
-                case 3:
-                    this_1.enemies.push(new crate_1.Crate(this_1, this_1.game, x, y));
-                    break;
-                case 4:
-                    this_1.enemies.push(new barrel_1.Barrel(this_1, this_1.game, x, y));
+                    this_2.enemies.push(new skullEnemy_1.SkullEnemy(this_2, this_2.game, x, y));
                     break;
             }
         };
-        var this_1 = this;
+        var this_2 = this;
         for (var i = 0; i < numEnemies; i++) {
-            _loop_1(i);
+            _loop_2(i);
         }
-        if (this.hasBottomDoor) {
-            var b = this.levelArray[this.bottomDoorX][this.bottomDoorY];
-            this.parentLevel = b.linkedTopDoor.level;
-        }
-        this.classify(width, height, numEnemies);
-    }
-    Level.prototype.pointInside = function (x, y, rX, rY, rW, rH) {
-        if (x < rX || x >= rX + rW)
-            return false;
-        if (y < rY || y >= rY + rH)
-            return false;
-        return true;
+        return numEnemies;
     };
-    Level.prototype.fixWalls = function () {
-        for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
-            for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
-                if (this.levelArray[x][y] instanceof wall_1.Wall) {
-                    if (this.levelArray[x][y + 1] instanceof floor_1.Floor ||
-                        this.levelArray[x][y + 1] instanceof spawnfloor_1.SpawnFloor) {
-                        if (this.levelArray[x][y + 2] instanceof floor_1.Floor ||
-                            this.levelArray[x][y + 2] instanceof spawnfloor_1.SpawnFloor)
-                            this.levelArray[x][y + 1] = new wallSide_1.WallSide(this, x, y + 1);
-                        else {
-                            if (this.levelArray[x][y - 1] instanceof wall_1.Wall)
-                                this.levelArray[x][y] = new wallSide_1.WallSide(this, x, y);
-                            else
-                                this.levelArray[x][y] = new floor_1.Floor(this, x, y);
-                        }
-                    }
-                }
-            }
+    Level.prototype.addObstacles = function () {
+        // add crates/barrels
+        var numObstacles = game_1.Game.rand(1, 2);
+        if (numObstacles === 1 || this.width * this.height > 8 * 8) {
+            numObstacles = game_1.Game.randTable([1, 1, 1, 2, 2, 3, 3]);
         }
+        else
+            numObstacles = 0;
+        var _loop_3 = function (i) {
+            var x = 0;
+            var y = 0;
+            while (!(this_3.getTile(x, y) instanceof floor_1.Floor) ||
+                this_3.enemies.filter(function (e) { return e.x === x && e.y === y; }).length > 0 ||
+                (x === this_3.bottomDoorX && y === this_3.bottomDoorY) ||
+                (x === this_3.bottomDoorX && y === this_3.bottomDoorY - 1)) {
+                x = game_1.Game.rand(this_3.roomX, this_3.roomX + this_3.width - 1);
+                y = game_1.Game.rand(this_3.roomY, this_3.roomY + this_3.height - 1);
+            }
+            switch (game_1.Game.rand(1, 2)) {
+                case 1:
+                    this_3.enemies.push(new crate_1.Crate(this_3, this_3.game, x, y));
+                    break;
+                case 2:
+                    this_3.enemies.push(new barrel_1.Barrel(this_3, this_3.game, x, y));
+                    break;
+            }
+        };
+        var this_3 = this;
+        for (var i = 0; i < numObstacles; i++) {
+            _loop_3(i);
+        }
+        return numObstacles;
     };
     Level.randEnv = function () {
         return game_1.Game.rand(0, levelConstants_1.LevelConstants.ENVIRONMENTS - 1);
@@ -1673,63 +1720,7 @@ var astar;
 
 
 /***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var collidable_1 = __webpack_require__(2);
-var game_1 = __webpack_require__(0);
-var key_1 = __webpack_require__(20);
-var armor_1 = __webpack_require__(21);
-var helmet_1 = __webpack_require__(22);
-var healthbuff_1 = __webpack_require__(31);
-var Chest = (function (_super) {
-    __extends(Chest, _super);
-    function Chest(level, game, x, y) {
-        var _this = _super.call(this, level, x, y) || this;
-        _this.draw = function () {
-            game_1.Game.drawTile(4, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
-        };
-        _this.open = function () {
-            // DROP TABLES!
-            var drop = game_1.Game.randTable([1, 1, 2, 3, 4]);
-            switch (drop) {
-                case 1:
-                    _this.game.level.items.push(new healthbuff_1.HealthBuff(_this.x, _this.y));
-                    break;
-                case 2:
-                    _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
-                    break;
-                case 3:
-                    _this.game.level.items.push(new armor_1.Armor(game_1.Game.randTable([25, 50, 50, 50, 50, 50, 50, 75]), _this.x, _this.y));
-                    break;
-                case 4:
-                    _this.game.level.items.push(new helmet_1.Helmet(game_1.Game.randTable([20, 30, 30, 30, 30, 30, 45]), _this.x, _this.y));
-                    break;
-            }
-        };
-        _this.level = level;
-        _this.game = game;
-        return _this;
-    }
-    return Chest;
-}(collidable_1.Collidable));
-exports.Chest = Chest;
-
-
-/***/ }),
+/* 19 */,
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2476,8 +2467,6 @@ var door_1 = __webpack_require__(9);
 var bottomDoor_1 = __webpack_require__(16);
 var trapdoor_1 = __webpack_require__(17);
 var healthbar_1 = __webpack_require__(3);
-var chest_1 = __webpack_require__(19);
-var floor_1 = __webpack_require__(5);
 var inventory_1 = __webpack_require__(36);
 var lockedDoor_1 = __webpack_require__(23);
 var sound_1 = __webpack_require__(27);
@@ -2575,13 +2564,6 @@ var Player = (function () {
                     else if (other instanceof bottomDoor_1.BottomDoor || other instanceof trapdoor_1.Trapdoor) {
                         _this.move(x, y);
                         other.onCollide(_this);
-                    }
-                    else if (other instanceof chest_1.Chest) {
-                        other.open();
-                        _this.game.level.levelArray[x][y] = new floor_1.Floor(_this.game.level, x, y);
-                        _this.drawX = (_this.x - x) * 0.5;
-                        _this.drawY = (_this.y - y) * 0.5;
-                        _this.game.level.tick();
                     }
                     else if (other instanceof spike_1.Spike) {
                         _this.move(x, y);
@@ -2745,6 +2727,7 @@ var Player = (function () {
         this.inventory = new inventory_1.Inventory(game);
         this.map = new map_1.Map(game);
         this.missProb = 0.1;
+        this.sightRadius = 6; // maybe can be manipulated by items? e.g. better torch
     }
     return Player;
 }());
@@ -2960,6 +2943,64 @@ var Map = (function () {
     return Map;
 }());
 exports.Map = Map;
+
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var key_1 = __webpack_require__(20);
+var armor_1 = __webpack_require__(21);
+var helmet_1 = __webpack_require__(22);
+var healthbuff_1 = __webpack_require__(31);
+var enemy_1 = __webpack_require__(6);
+var healthbar_1 = __webpack_require__(3);
+var Chest = (function (_super) {
+    __extends(Chest, _super);
+    function Chest(level, game, x, y) {
+        var _this = _super.call(this, level, game, x, y) || this;
+        _this.kill = function () {
+            _this.dead = true;
+            // DROP TABLES!
+            var drop = game_1.Game.randTable([1, 1, 2, 3, 4]);
+            switch (drop) {
+                case 1:
+                    _this.game.level.items.push(new healthbuff_1.HealthBuff(_this.x, _this.y));
+                    break;
+                case 2:
+                    _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
+                    break;
+                case 3:
+                    _this.game.level.items.push(new armor_1.Armor(game_1.Game.randTable([25, 50, 50, 50, 50, 50, 50, 75]), _this.x, _this.y));
+                    break;
+                case 4:
+                    _this.game.level.items.push(new helmet_1.Helmet(game_1.Game.randTable([20, 30, 30, 30, 30, 30, 45]), _this.x, _this.y));
+                    break;
+            }
+        };
+        _this.draw = function () {
+            game_1.Game.drawTile(4, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+        };
+        _this.healthBar = new healthbar_1.HealthBar(1);
+        return _this;
+    }
+    return Chest;
+}(enemy_1.Enemy));
+exports.Chest = Chest;
 
 
 /***/ })

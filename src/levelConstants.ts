@@ -13,7 +13,8 @@ export class LevelConstants {
   static readonly ENVIRONMENTS = 5;
 
   static readonly MIN_VISIBILITY = 0.2;
-  static readonly VISIBILITY_STEP = 0.1;
+  static readonly LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
+  static readonly VISIBILITY_STEP = 0.1; //* LevelConstants.LIGHTING_ANGLE_STEP;
 
   static LEVEL_TEXT_COLOR = "white"; // not actually a constant
 }
