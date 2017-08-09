@@ -532,8 +532,8 @@ var Level = (function () {
         };
         this.updateLevelTextColor = function () {
             levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR = "white";
-            if (_this.env === 3)
-                levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR = "black";
+            // no more color backgrounds:
+            // if (this.env === 3) LevelConstants.LEVEL_TEXT_COLOR = "black";
         };
         this.enterLevel = function () {
             _this.updateLevelTextColor();

@@ -435,7 +435,8 @@ export class Level {
 
   updateLevelTextColor = () => {
     LevelConstants.LEVEL_TEXT_COLOR = "white";
-    if (this.env === 3) LevelConstants.LEVEL_TEXT_COLOR = "black";
+    // no more color backgrounds:
+    // if (this.env === 3) LevelConstants.LEVEL_TEXT_COLOR = "black";
   };
 
   enterLevel = () => {
