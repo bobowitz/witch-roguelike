@@ -16,4 +16,19 @@ export class Crate extends Enemy {
   kill = () => {
     this.dead = true;
   };
+
+  draw = () => {
+    if (!this.dead) {
+      Game.drawMob(
+        this.tileX,
+        this.tileY,
+        1,
+        2,
+        this.x - this.drawX,
+        this.y - 1 - this.drawY,
+        1,
+        2
+      );
+    }
+  };
 }

@@ -2797,6 +2797,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(15);
+var game_1 = __webpack_require__(0);
 var healthbar_1 = __webpack_require__(7);
 var Barrel = (function (_super) {
     __extends(Barrel, _super);
@@ -2804,6 +2805,11 @@ var Barrel = (function (_super) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.kill = function () {
             _this.dead = true;
+        };
+        _this.draw = function () {
+            if (!_this.dead) {
+                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+            }
         };
         _this.level = level;
         _this.healthBar = new healthbar_1.HealthBar(8);
@@ -2835,6 +2841,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(15);
+var game_1 = __webpack_require__(0);
 var healthbar_1 = __webpack_require__(7);
 var Crate = (function (_super) {
     __extends(Crate, _super);
@@ -2842,6 +2849,11 @@ var Crate = (function (_super) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.kill = function () {
             _this.dead = true;
+        };
+        _this.draw = function () {
+            if (!_this.dead) {
+                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+            }
         };
         _this.level = level;
         _this.healthBar = new healthbar_1.HealthBar(8);
