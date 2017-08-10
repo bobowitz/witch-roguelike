@@ -377,6 +377,7 @@ export class Level {
   };
 
   constructor(game: Game, previousDoor: Door, deadEnd: boolean, env: number) {
+    // smooth lighting handler
     Input.sListener = () => {
       LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
       this.updateLighting();

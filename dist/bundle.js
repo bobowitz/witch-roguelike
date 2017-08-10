@@ -701,6 +701,7 @@ var Level = (function () {
             game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
             game_1.Game.ctx.fillText(_this.name, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(_this.name).width / 2, (_this.roomY - 2) * gameConstants_1.GameConstants.TILESIZE);
         };
+        // smooth lighting handler
         input_1.Input.sListener = function () {
             levelConstants_1.LevelConstants.SMOOTH_LIGHTING = !levelConstants_1.LevelConstants.SMOOTH_LIGHTING;
             _this.updateLighting();
