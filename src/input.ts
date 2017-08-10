@@ -3,6 +3,7 @@ import { GameConstants } from "./gameConstants";
 export const Input = {
   _pressed: {},
 
+  sListener: function() {},
   spaceListener: function() {},
   spaceUpListener: function() {},
   rightListener: function() {},
@@ -40,12 +41,14 @@ export const Input = {
       case Input.DOWN:
         Input.downListener();
         break;
+      case 83:
+        Input.sListener();
     }
   },
 
   onKeyup: function(event: KeyboardEvent) {
-    if (event.keyCode === Input.SPACE) Input.spaceUpListener();
     delete this._pressed[event.keyCode];
+    if (event.keyCode === Input.SPACE) Input.spaceUpListener();
   },
 
   mouseClickListener: function(event: MouseEvent) {

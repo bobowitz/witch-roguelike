@@ -287,6 +287,7 @@ var LevelConstants = (function () {
     LevelConstants.SCREEN_W = 17; // screen size in tiles
     LevelConstants.SCREEN_H = 17; // screen size in tiles
     LevelConstants.ENVIRONMENTS = 6;
+    LevelConstants.SMOOTH_LIGHTING = false;
     LevelConstants.MIN_VISIBILITY = 0.2;
     LevelConstants.LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
     LevelConstants.VISIBILITY_STEP = 0.1; //* LevelConstants.LIGHTING_ANGLE_STEP;
@@ -471,6 +472,7 @@ var gameConstants_1 = __webpack_require__(1);
 var skullEnemy_1 = __webpack_require__(33);
 var barrel_1 = __webpack_require__(34);
 var crate_1 = __webpack_require__(25);
+var input_1 = __webpack_require__(26);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd, env) {
         var _this = this;
@@ -567,7 +569,8 @@ var Level = (function () {
             for (var i = 0; i < 360; i += levelConstants_1.LevelConstants.LIGHTING_ANGLE_STEP) {
                 _this.castShadowsAtAngle(i, _this.game.player.sightRadius);
             }
-            _this.visibilityArray = _this.blur3x3(_this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
+            if (levelConstants_1.LevelConstants.SMOOTH_LIGHTING)
+                _this.visibilityArray = _this.blur3x3(_this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
         };
         this.castShadowsAtAngle = function (angle, radius) {
             var dx = Math.cos(angle * Math.PI / 180);
@@ -697,6 +700,10 @@ var Level = (function () {
             // room name
             game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
             game_1.Game.ctx.fillText(_this.name, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(_this.name).width / 2, (_this.roomY - 2) * gameConstants_1.GameConstants.TILESIZE);
+        };
+        input_1.Input.sListener = function () {
+            levelConstants_1.LevelConstants.SMOOTH_LIGHTING = !levelConstants_1.LevelConstants.SMOOTH_LIGHTING;
+            _this.updateLighting();
         };
         this.env = env;
         this.items = Array();
@@ -2010,6 +2017,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var gameConstants_1 = __webpack_require__(1);
 exports.Input = {
     _pressed: {},
+    sListener: function () { },
     spaceListener: function () { },
     spaceUpListener: function () { },
     rightListener: function () { },
@@ -2045,12 +2053,14 @@ exports.Input = {
             case exports.Input.DOWN:
                 exports.Input.downListener();
                 break;
+            case 83:
+                exports.Input.sListener();
         }
     },
     onKeyup: function (event) {
+        delete this._pressed[event.keyCode];
         if (event.keyCode === exports.Input.SPACE)
             exports.Input.spaceUpListener();
-        delete this._pressed[event.keyCode];
     },
     mouseClickListener: function (event) {
         if (event.button === 0) {

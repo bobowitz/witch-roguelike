@@ -21,6 +21,7 @@ import { SkullEnemy } from "./enemy/skullEnemy";
 import { Map } from "./map";
 import { Barrel } from "./enemy/barrel";
 import { Crate } from "./enemy/crate";
+import { Input } from "./input";
 
 export class Level {
   levelArray: Tile[][];
@@ -376,6 +377,11 @@ export class Level {
   };
 
   constructor(game: Game, previousDoor: Door, deadEnd: boolean, env: number) {
+    Input.sListener = () => {
+      LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
+      this.updateLighting();
+    };
+
     this.env = env;
 
     this.items = Array<Item>();
@@ -544,7 +550,8 @@ export class Level {
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
       this.castShadowsAtAngle(i, this.game.player.sightRadius);
     }
-    this.visibilityArray = this.blur3x3(this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
+    if (LevelConstants.SMOOTH_LIGHTING)
+      this.visibilityArray = this.blur3x3(this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
   };
 
   castShadowsAtAngle = (angle: number, radius: number) => {
