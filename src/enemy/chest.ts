@@ -9,6 +9,7 @@ import { Helmet } from "../item/helmet";
 import { HealthBuff } from "../item/healthbuff";
 import { Enemy } from "./enemy";
 import { HealthBar } from "../healthbar";
+import { LevelConstants } from "../levelConstants";
 
 export class Chest extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -47,9 +48,11 @@ export class Chest extends Enemy {
 
   draw = () => {
     if (!this.dead) {
+      let darkOffset =
+        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
       Game.drawMob(
         this.tileX,
-        this.tileY,
+        this.tileY + darkOffset,
         1,
         2,
         this.x - this.drawX,

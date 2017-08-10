@@ -3,6 +3,7 @@ import { Level } from "../level";
 import { Game } from "../game";
 import { HealthBar } from "../healthbar";
 import { Potion } from "../item/potion";
+import { LevelConstants } from "../levelConstants";
 
 export class Barrel extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -21,9 +22,11 @@ export class Barrel extends Enemy {
 
   draw = () => {
     if (!this.dead) {
+      let darkOffset =
+        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
       Game.drawMob(
         this.tileX,
-        this.tileY,
+        this.tileY + darkOffset,
         1,
         2,
         this.x - this.drawX,

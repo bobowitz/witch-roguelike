@@ -73,8 +73,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var gameConstants_1 = __webpack_require__(1);
 var level_1 = __webpack_require__(8);
 var player_1 = __webpack_require__(35);
-var sound_1 = __webpack_require__(27);
-var levelConstants_1 = __webpack_require__(4);
+var sound_1 = __webpack_require__(25);
+var levelConstants_1 = __webpack_require__(2);
 var Game = (function () {
     function Game() {
         var _this = this;
@@ -158,7 +158,7 @@ var game = new Game();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var levelConstants_1 = __webpack_require__(4);
+var levelConstants_1 = __webpack_require__(2);
 var GameConstants = (function () {
     function GameConstants() {
     }
@@ -186,6 +186,34 @@ exports.GameConstants = GameConstants;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var LevelConstants = (function () {
+    function LevelConstants() {
+    }
+    LevelConstants.MIN_LEVEL_W = 5;
+    LevelConstants.MIN_LEVEL_H = 5;
+    LevelConstants.MAX_LEVEL_W = 13;
+    LevelConstants.MAX_LEVEL_H = 13;
+    LevelConstants.SCREEN_W = 17; // screen size in tiles
+    LevelConstants.SCREEN_H = 17; // screen size in tiles
+    LevelConstants.ENVIRONMENTS = 6;
+    LevelConstants.VISIBILITY_CUTOFF = 0.8;
+    LevelConstants.SMOOTH_LIGHTING = false;
+    LevelConstants.MIN_VISIBILITY = 0.2;
+    LevelConstants.LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
+    LevelConstants.VISIBILITY_STEP = 0.1; //* LevelConstants.LIGHTING_ANGLE_STEP;
+    LevelConstants.LEVEL_TEXT_COLOR = "white"; // not actually a constant
+    return LevelConstants;
+}());
+exports.LevelConstants = LevelConstants;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -197,7 +225,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var tile_1 = __webpack_require__(15);
+var tile_1 = __webpack_require__(16);
 var Collidable = (function (_super) {
     __extends(Collidable, _super);
     function Collidable(level, x, y) {
@@ -213,7 +241,7 @@ exports.Collidable = Collidable;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -271,33 +299,6 @@ exports.HealthBar = HealthBar;
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var LevelConstants = (function () {
-    function LevelConstants() {
-    }
-    LevelConstants.MIN_LEVEL_W = 5;
-    LevelConstants.MIN_LEVEL_H = 5;
-    LevelConstants.MAX_LEVEL_W = 13;
-    LevelConstants.MAX_LEVEL_H = 13;
-    LevelConstants.SCREEN_W = 17; // screen size in tiles
-    LevelConstants.SCREEN_H = 17; // screen size in tiles
-    LevelConstants.ENVIRONMENTS = 6;
-    LevelConstants.SMOOTH_LIGHTING = false;
-    LevelConstants.MIN_VISIBILITY = 0.2;
-    LevelConstants.LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
-    LevelConstants.VISIBILITY_STEP = 0.1; //* LevelConstants.LIGHTING_ANGLE_STEP;
-    LevelConstants.LEVEL_TEXT_COLOR = "white"; // not actually a constant
-    return LevelConstants;
-}());
-exports.LevelConstants = LevelConstants;
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -314,48 +315,11 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var collidable_1 = __webpack_require__(3);
 var game_1 = __webpack_require__(0);
-var tile_1 = __webpack_require__(15);
-var Floor = (function (_super) {
-    __extends(Floor, _super);
-    function Floor(level, x, y) {
-        var _this = _super.call(this, level, x, y) || this;
-        _this.draw = function () {
-            game_1.Game.drawTile(_this.variation, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
-        };
-        _this.w = 1;
-        _this.h = 1;
-        _this.variation = 1;
-        if (game_1.Game.rand(1, 20) == 1)
-            _this.variation = game_1.Game.randTable([8, 9, 10, 12]);
-        return _this;
-    }
-    return Floor;
-}(tile_1.Tile));
-exports.Floor = Floor;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var collidable_1 = __webpack_require__(2);
-var game_1 = __webpack_require__(0);
-var healthbar_1 = __webpack_require__(3);
+var healthbar_1 = __webpack_require__(4);
 var bones_1 = __webpack_require__(10);
+var levelConstants_1 = __webpack_require__(2);
 var Enemy = (function (_super) {
     __extends(Enemy, _super);
     function Enemy(level, game, x, y) {
@@ -387,11 +351,15 @@ var Enemy = (function (_super) {
         };
         _this.draw = function () {
             if (!_this.dead) {
+                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF &&
+                    _this.hasDarkVersion
+                    ? 2
+                    : 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
-                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
             }
         };
         _this.tick = function () { };
@@ -405,11 +373,50 @@ var Enemy = (function (_super) {
         _this.tileX = 0;
         _this.tileY = 0;
         _this.hasShadow = true;
+        _this.hasDarkVersion = true;
         return _this;
     }
     return Enemy;
 }(collidable_1.Collidable));
 exports.Enemy = Enemy;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var tile_1 = __webpack_require__(16);
+var Floor = (function (_super) {
+    __extends(Floor, _super);
+    function Floor(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.draw = function () {
+            game_1.Game.drawTile(_this.variation, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+        };
+        _this.w = 1;
+        _this.h = 1;
+        _this.variation = 1;
+        if (game_1.Game.rand(1, 20) == 1)
+            _this.variation = game_1.Game.randTable([8, 9, 10, 12]);
+        return _this;
+    }
+    return Floor;
+}(tile_1.Tile));
+exports.Floor = Floor;
 
 
 /***/ }),
@@ -454,25 +461,25 @@ exports.Potion = Potion;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var wall_1 = __webpack_require__(28);
-var levelConstants_1 = __webpack_require__(4);
-var floor_1 = __webpack_require__(5);
+var wall_1 = __webpack_require__(26);
+var levelConstants_1 = __webpack_require__(2);
+var floor_1 = __webpack_require__(6);
 var game_1 = __webpack_require__(0);
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var door_1 = __webpack_require__(9);
-var bottomDoor_1 = __webpack_require__(16);
-var wallSide_1 = __webpack_require__(29);
-var trapdoor_1 = __webpack_require__(17);
-var knightEnemy_1 = __webpack_require__(30);
-var chest_1 = __webpack_require__(38);
-var spawnfloor_1 = __webpack_require__(32);
+var bottomDoor_1 = __webpack_require__(17);
+var wallSide_1 = __webpack_require__(27);
+var trapdoor_1 = __webpack_require__(18);
+var knightEnemy_1 = __webpack_require__(28);
+var chest_1 = __webpack_require__(29);
+var spawnfloor_1 = __webpack_require__(31);
 var lockedDoor_1 = __webpack_require__(23);
 var spike_1 = __webpack_require__(24);
 var gameConstants_1 = __webpack_require__(1);
-var skullEnemy_1 = __webpack_require__(33);
-var barrel_1 = __webpack_require__(34);
-var crate_1 = __webpack_require__(25);
-var input_1 = __webpack_require__(26);
+var skullEnemy_1 = __webpack_require__(32);
+var barrel_1 = __webpack_require__(33);
+var crate_1 = __webpack_require__(34);
+var input_1 = __webpack_require__(15);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd, env) {
         var _this = this;
@@ -596,10 +603,12 @@ var Level = (function () {
                 }
                 _this.visibilityArray[Math.floor(px)][Math.floor(py)] += levelConstants_1.LevelConstants.VISIBILITY_STEP;
                 _this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(_this.visibilityArray[Math.floor(px)][Math.floor(py)], 1);
-                // crates can block visibility too!
+                // crates and chests can block visibility too!
                 for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
                     var e = _a[_i];
-                    if (e instanceof crate_1.Crate && e.x === Math.floor(px) && e.y === Math.floor(py)) {
+                    if ((e instanceof crate_1.Crate || e instanceof chest_1.Chest) &&
+                        e.x === Math.floor(px) &&
+                        e.y === Math.floor(py)) {
                         if (!hitWall)
                             returnVal = i;
                         hitWall = true;
@@ -1103,7 +1112,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var game_1 = __webpack_require__(0);
 var level_1 = __webpack_require__(8);
 var Door = (function (_super) {
@@ -1151,7 +1160,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
-var floor_1 = __webpack_require__(5);
+var floor_1 = __webpack_require__(6);
 var Bones = (function (_super) {
     __extends(Bones, _super);
     function Bones() {
@@ -1330,6 +1339,82 @@ exports.Equippable = Equippable;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var gameConstants_1 = __webpack_require__(1);
+exports.Input = {
+    _pressed: {},
+    sListener: function () { },
+    spaceListener: function () { },
+    spaceUpListener: function () { },
+    rightListener: function () { },
+    leftListener: function () { },
+    upListener: function () { },
+    downListener: function () { },
+    mouseLeftClickListener: function (x, y) { },
+    SPACE: 32,
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
+    isDown: function (keyCode) {
+        return this._pressed[keyCode];
+    },
+    onKeydown: function (event) {
+        exports.Input._pressed[event.keyCode] = true;
+        switch (event.keyCode) {
+            case exports.Input.SPACE:
+                // we don't want repeats for space specifically cause of map stuff
+                if (!event.repeat)
+                    exports.Input.spaceListener();
+                break;
+            case exports.Input.LEFT:
+                exports.Input.leftListener();
+                break;
+            case exports.Input.RIGHT:
+                exports.Input.rightListener();
+                break;
+            case exports.Input.UP:
+                exports.Input.upListener();
+                break;
+            case exports.Input.DOWN:
+                exports.Input.downListener();
+                break;
+            case 83:
+                exports.Input.sListener();
+                break;
+        }
+    },
+    onKeyup: function (event) {
+        delete this._pressed[event.keyCode];
+        if (event.keyCode === exports.Input.SPACE)
+            exports.Input.spaceUpListener();
+    },
+    mouseClickListener: function (event) {
+        if (event.button === 0) {
+            var rect = window.document.getElementById("gameCanvas").getBoundingClientRect();
+            var x = event.clientX - rect.left;
+            var y = event.clientY - rect.top;
+            exports.Input.mouseLeftClickListener(Math.floor(x / gameConstants_1.GameConstants.SCALE), Math.floor(y / gameConstants_1.GameConstants.SCALE));
+        }
+    },
+};
+window.addEventListener("keyup", function (event) {
+    exports.Input.onKeyup(event);
+}, false);
+window.addEventListener("keydown", function (event) {
+    exports.Input.onKeydown(event);
+}, false);
+window.document
+    .getElementById("gameCanvas")
+    .addEventListener("click", function (event) { return exports.Input.mouseClickListener(event); }, false);
+
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 var Tile = (function () {
     function Tile(level, x, y) {
         this.draw = function () { };
@@ -1343,7 +1428,7 @@ exports.Tile = Tile;
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1359,7 +1444,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var game_1 = __webpack_require__(0);
 var BottomDoor = (function (_super) {
     __extends(BottomDoor, _super);
@@ -1381,7 +1466,7 @@ exports.BottomDoor = BottomDoor;
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1397,7 +1482,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var game_1 = __webpack_require__(0);
 var level_1 = __webpack_require__(8);
 var Trapdoor = (function (_super) {
@@ -1419,13 +1504,13 @@ exports.Trapdoor = Trapdoor;
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var floor_1 = __webpack_require__(5);
+var floor_1 = __webpack_require__(6);
 var astar;
 (function (astar_1) {
     //================== start graph js
@@ -1754,7 +1839,6 @@ var astar;
 
 
 /***/ }),
-/* 19 */,
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1896,7 +1980,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var game_1 = __webpack_require__(0);
 var door_1 = __webpack_require__(9);
 var key_1 = __webpack_require__(20);
@@ -1942,7 +2026,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var game_1 = __webpack_require__(0);
 var Spike = (function (_super) {
     __extends(Spike, _super);
@@ -1963,129 +2047,6 @@ exports.Spike = Spike;
 
 /***/ }),
 /* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var enemy_1 = __webpack_require__(6);
-var game_1 = __webpack_require__(0);
-var healthbar_1 = __webpack_require__(3);
-var potion_1 = __webpack_require__(7);
-var Crate = (function (_super) {
-    __extends(Crate, _super);
-    function Crate(level, game, x, y) {
-        var _this = _super.call(this, level, game, x, y) || this;
-        _this.kill = function () {
-            _this.dead = true;
-            if (game_1.Game.rand(1, 8) === 1)
-                _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
-        };
-        _this.draw = function () {
-            if (!_this.dead) {
-                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
-            }
-        };
-        _this.level = level;
-        _this.healthBar = new healthbar_1.HealthBar(8);
-        _this.tileX = 13;
-        _this.tileY = 0;
-        _this.hasShadow = false;
-        return _this;
-    }
-    return Crate;
-}(enemy_1.Enemy));
-exports.Crate = Crate;
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var gameConstants_1 = __webpack_require__(1);
-exports.Input = {
-    _pressed: {},
-    sListener: function () { },
-    spaceListener: function () { },
-    spaceUpListener: function () { },
-    rightListener: function () { },
-    leftListener: function () { },
-    upListener: function () { },
-    downListener: function () { },
-    mouseLeftClickListener: function (x, y) { },
-    SPACE: 32,
-    LEFT: 37,
-    UP: 38,
-    RIGHT: 39,
-    DOWN: 40,
-    isDown: function (keyCode) {
-        return this._pressed[keyCode];
-    },
-    onKeydown: function (event) {
-        exports.Input._pressed[event.keyCode] = true;
-        switch (event.keyCode) {
-            case exports.Input.SPACE:
-                // we don't want repeats for space specifically cause of map stuff
-                if (!event.repeat)
-                    exports.Input.spaceListener();
-                break;
-            case exports.Input.LEFT:
-                exports.Input.leftListener();
-                break;
-            case exports.Input.RIGHT:
-                exports.Input.rightListener();
-                break;
-            case exports.Input.UP:
-                exports.Input.upListener();
-                break;
-            case exports.Input.DOWN:
-                exports.Input.downListener();
-                break;
-            case 83:
-                exports.Input.sListener();
-                break;
-        }
-    },
-    onKeyup: function (event) {
-        delete this._pressed[event.keyCode];
-        if (event.keyCode === exports.Input.SPACE)
-            exports.Input.spaceUpListener();
-    },
-    mouseClickListener: function (event) {
-        if (event.button === 0) {
-            var rect = window.document.getElementById("gameCanvas").getBoundingClientRect();
-            var x = event.clientX - rect.left;
-            var y = event.clientY - rect.top;
-            exports.Input.mouseLeftClickListener(Math.floor(x / gameConstants_1.GameConstants.SCALE), Math.floor(y / gameConstants_1.GameConstants.SCALE));
-        }
-    },
-};
-window.addEventListener("keyup", function (event) {
-    exports.Input.onKeyup(event);
-}, false);
-window.addEventListener("keydown", function (event) {
-    exports.Input.onKeydown(event);
-}, false);
-window.document
-    .getElementById("gameCanvas")
-    .addEventListener("click", function (event) { return exports.Input.mouseClickListener(event); }, false);
-
-
-/***/ }),
-/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2137,7 +2098,7 @@ exports.Sound = Sound;
 
 
 /***/ }),
-/* 28 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2154,7 +2115,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var Wall = (function (_super) {
     __extends(Wall, _super);
     function Wall(level, x, y, type) {
@@ -2176,7 +2137,7 @@ exports.Wall = Wall;
 
 
 /***/ }),
-/* 29 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2193,7 +2154,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
-var collidable_1 = __webpack_require__(2);
+var collidable_1 = __webpack_require__(3);
 var WallSide = (function (_super) {
     __extends(WallSide, _super);
     function WallSide() {
@@ -2209,7 +2170,7 @@ exports.WallSide = WallSide;
 
 
 /***/ }),
-/* 30 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2225,10 +2186,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var enemy_1 = __webpack_require__(6);
+var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
-var astarclass_1 = __webpack_require__(18);
-var healthbar_1 = __webpack_require__(3);
+var astarclass_1 = __webpack_require__(19);
+var healthbar_1 = __webpack_require__(4);
 var potion_1 = __webpack_require__(7);
 var bones_1 = __webpack_require__(10);
 var textParticle_1 = __webpack_require__(13);
@@ -2298,7 +2259,71 @@ exports.KnightEnemy = KnightEnemy;
 
 
 /***/ }),
-/* 31 */
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var key_1 = __webpack_require__(20);
+var armor_1 = __webpack_require__(21);
+var helmet_1 = __webpack_require__(22);
+var healthbuff_1 = __webpack_require__(30);
+var enemy_1 = __webpack_require__(5);
+var healthbar_1 = __webpack_require__(4);
+var levelConstants_1 = __webpack_require__(2);
+var Chest = (function (_super) {
+    __extends(Chest, _super);
+    function Chest(level, game, x, y) {
+        var _this = _super.call(this, level, game, x, y) || this;
+        _this.kill = function () {
+            _this.dead = true;
+            // DROP TABLES!
+            var drop = game_1.Game.randTable([1, 1, 2, 3, 4]);
+            switch (drop) {
+                case 1:
+                    _this.game.level.items.push(new healthbuff_1.HealthBuff(_this.x, _this.y));
+                    break;
+                case 2:
+                    _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
+                    break;
+                case 3:
+                    _this.game.level.items.push(new armor_1.Armor(game_1.Game.randTable([25, 50, 50, 50, 50, 50, 50, 75]), _this.x, _this.y));
+                    break;
+                case 4:
+                    _this.game.level.items.push(new helmet_1.Helmet(game_1.Game.randTable([20, 30, 30, 30, 30, 30, 45]), _this.x, _this.y));
+                    break;
+            }
+        };
+        _this.draw = function () {
+            if (!_this.dead) {
+                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
+                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+            }
+        };
+        _this.tileX = 17;
+        _this.tileY = 0;
+        _this.healthBar = new healthbar_1.HealthBar(1);
+        return _this;
+    }
+    return Chest;
+}(enemy_1.Enemy));
+exports.Chest = Chest;
+
+
+/***/ }),
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2333,6 +2358,34 @@ exports.HealthBuff = HealthBuff;
 
 
 /***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var floor_1 = __webpack_require__(6);
+var SpawnFloor = (function (_super) {
+    __extends(SpawnFloor, _super);
+    function SpawnFloor() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return SpawnFloor;
+}(floor_1.Floor));
+exports.SpawnFloor = SpawnFloor;
+
+
+/***/ }),
 /* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2349,38 +2402,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var floor_1 = __webpack_require__(5);
-var SpawnFloor = (function (_super) {
-    __extends(SpawnFloor, _super);
-    function SpawnFloor() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return SpawnFloor;
-}(floor_1.Floor));
-exports.SpawnFloor = SpawnFloor;
-
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var enemy_1 = __webpack_require__(6);
+var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
-var astarclass_1 = __webpack_require__(18);
-var healthbar_1 = __webpack_require__(3);
+var astarclass_1 = __webpack_require__(19);
+var healthbar_1 = __webpack_require__(4);
 var potion_1 = __webpack_require__(7);
 var bones_1 = __webpack_require__(10);
 var textParticle_1 = __webpack_require__(13);
@@ -2445,6 +2470,55 @@ exports.SkullEnemy = SkullEnemy;
 
 
 /***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var enemy_1 = __webpack_require__(5);
+var game_1 = __webpack_require__(0);
+var healthbar_1 = __webpack_require__(4);
+var potion_1 = __webpack_require__(7);
+var levelConstants_1 = __webpack_require__(2);
+var Barrel = (function (_super) {
+    __extends(Barrel, _super);
+    function Barrel(level, game, x, y) {
+        var _this = _super.call(this, level, game, x, y) || this;
+        _this.kill = function () {
+            _this.dead = true;
+            if (game_1.Game.rand(1, 8) === 1)
+                _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
+        };
+        _this.draw = function () {
+            if (!_this.dead) {
+                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
+                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+            }
+        };
+        _this.level = level;
+        _this.healthBar = new healthbar_1.HealthBar(8);
+        _this.tileX = 14;
+        _this.tileY = 0;
+        _this.hasShadow = false;
+        return _this;
+    }
+    return Barrel;
+}(enemy_1.Enemy));
+exports.Barrel = Barrel;
+
+
+/***/ }),
 /* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2461,13 +2535,14 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var enemy_1 = __webpack_require__(6);
+var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
-var healthbar_1 = __webpack_require__(3);
+var healthbar_1 = __webpack_require__(4);
 var potion_1 = __webpack_require__(7);
-var Barrel = (function (_super) {
-    __extends(Barrel, _super);
-    function Barrel(level, game, x, y) {
+var levelConstants_1 = __webpack_require__(2);
+var Crate = (function (_super) {
+    __extends(Crate, _super);
+    function Crate(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.kill = function () {
             _this.dead = true;
@@ -2476,19 +2551,20 @@ var Barrel = (function (_super) {
         };
         _this.draw = function () {
             if (!_this.dead) {
-                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
+                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
             }
         };
         _this.level = level;
         _this.healthBar = new healthbar_1.HealthBar(8);
-        _this.tileX = 14;
+        _this.tileX = 13;
         _this.tileY = 0;
         _this.hasShadow = false;
         return _this;
     }
-    return Barrel;
+    return Crate;
 }(enemy_1.Enemy));
-exports.Barrel = Barrel;
+exports.Crate = Crate;
 
 
 /***/ }),
@@ -2498,24 +2574,24 @@ exports.Barrel = Barrel;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var input_1 = __webpack_require__(26);
+var input_1 = __webpack_require__(15);
 var gameConstants_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
 var door_1 = __webpack_require__(9);
-var bottomDoor_1 = __webpack_require__(16);
-var trapdoor_1 = __webpack_require__(17);
-var healthbar_1 = __webpack_require__(3);
+var bottomDoor_1 = __webpack_require__(17);
+var trapdoor_1 = __webpack_require__(18);
+var healthbar_1 = __webpack_require__(4);
 var inventory_1 = __webpack_require__(36);
 var lockedDoor_1 = __webpack_require__(23);
-var sound_1 = __webpack_require__(27);
+var sound_1 = __webpack_require__(25);
 var spike_1 = __webpack_require__(24);
 var textParticle_1 = __webpack_require__(13);
 var armor_1 = __webpack_require__(21);
 var helmet_1 = __webpack_require__(22);
-var levelConstants_1 = __webpack_require__(4);
+var levelConstants_1 = __webpack_require__(2);
 var map_1 = __webpack_require__(37);
 var pickup_1 = __webpack_require__(11);
-var stats_1 = __webpack_require__(39);
+var stats_1 = __webpack_require__(38);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
@@ -2781,9 +2857,9 @@ exports.Player = Player;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var levelConstants_1 = __webpack_require__(4);
+var levelConstants_1 = __webpack_require__(2);
 var game_1 = __webpack_require__(0);
-var input_1 = __webpack_require__(26);
+var input_1 = __webpack_require__(15);
 var gameConstants_1 = __webpack_require__(1);
 var equippable_1 = __webpack_require__(14);
 var Inventory = (function () {
@@ -2991,70 +3067,8 @@ exports.Map = Map;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var key_1 = __webpack_require__(20);
-var armor_1 = __webpack_require__(21);
-var helmet_1 = __webpack_require__(22);
-var healthbuff_1 = __webpack_require__(31);
-var enemy_1 = __webpack_require__(6);
-var healthbar_1 = __webpack_require__(3);
-var Chest = (function (_super) {
-    __extends(Chest, _super);
-    function Chest(level, game, x, y) {
-        var _this = _super.call(this, level, game, x, y) || this;
-        _this.kill = function () {
-            _this.dead = true;
-            // DROP TABLES!
-            var drop = game_1.Game.randTable([1, 1, 2, 3, 4]);
-            switch (drop) {
-                case 1:
-                    _this.game.level.items.push(new healthbuff_1.HealthBuff(_this.x, _this.y));
-                    break;
-                case 2:
-                    _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
-                    break;
-                case 3:
-                    _this.game.level.items.push(new armor_1.Armor(game_1.Game.randTable([25, 50, 50, 50, 50, 50, 50, 75]), _this.x, _this.y));
-                    break;
-                case 4:
-                    _this.game.level.items.push(new helmet_1.Helmet(game_1.Game.randTable([20, 30, 30, 30, 30, 30, 45]), _this.x, _this.y));
-                    break;
-            }
-        };
-        _this.draw = function () {
-            if (!_this.dead) {
-                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
-            }
-        };
-        _this.tileX = 17;
-        _this.tileY = 0;
-        _this.healthBar = new healthbar_1.HealthBar(1);
-        return _this;
-    }
-    return Chest;
-}(enemy_1.Enemy));
-exports.Chest = Chest;
-
-
-/***/ }),
-/* 39 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var statconstants_1 = __webpack_require__(40);
+var statconstants_1 = __webpack_require__(39);
 var Stats = (function () {
     function Stats() {
         this.xp = 0;
@@ -3067,7 +3081,7 @@ exports.Stats = Stats;
 
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

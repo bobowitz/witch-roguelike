@@ -3,6 +3,7 @@ import { Game } from "../game";
 import { Level } from "../level";
 import { HealthBar } from "../healthbar";
 import { Bones } from "../tile/bones";
+import { LevelConstants } from "../levelConstants";
 
 export class Enemy extends Collidable {
   drawX: number;
@@ -13,6 +14,7 @@ export class Enemy extends Collidable {
   tileX: number;
   tileY: number;
   hasShadow: boolean;
+  hasDarkVersion: boolean;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
@@ -23,6 +25,7 @@ export class Enemy extends Collidable {
     this.tileX = 0;
     this.tileY = 0;
     this.hasShadow = true;
+    this.hasDarkVersion = true;
   }
 
   tryMove = (x: number, y: number) => {
@@ -55,12 +58,17 @@ export class Enemy extends Collidable {
 
   draw = () => {
     if (!this.dead) {
+      let darkOffset =
+        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF &&
+        this.hasDarkVersion
+          ? 2
+          : 0;
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
       if (this.hasShadow) Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
       Game.drawMob(
         this.tileX,
-        this.tileY,
+        this.tileY + darkOffset,
         1,
         2,
         this.x - this.drawX,

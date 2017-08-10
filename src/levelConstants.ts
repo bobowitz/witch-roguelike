@@ -12,6 +12,7 @@ export class LevelConstants {
 
   static readonly ENVIRONMENTS = 6;
 
+  static readonly VISIBILITY_CUTOFF = 0.8;
   static SMOOTH_LIGHTING = false;
   static readonly MIN_VISIBILITY = 0.2;
   static readonly LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray

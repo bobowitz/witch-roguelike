@@ -585,9 +585,13 @@ export class Level {
         1
       );
 
-      // crates can block visibility too!
+      // crates and chests can block visibility too!
       for (const e of this.enemies) {
-        if (e instanceof Crate && e.x === Math.floor(px) && e.y === Math.floor(py)) {
+        if (
+          (e instanceof Crate || e instanceof Chest) &&
+          e.x === Math.floor(px) &&
+          e.y === Math.floor(py)
+        ) {
           if (!hitWall) returnVal = i;
           hitWall = true;
         }
