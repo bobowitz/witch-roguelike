@@ -567,10 +567,12 @@ var Level = (function () {
             return null;
         };
         this.updateLighting = function () {
+            var oldVisibilityArray = [];
             for (var x = 0; x < _this.levelArray.length; x++) {
+                oldVisibilityArray[x] = [];
                 for (var y = 0; y < _this.levelArray[0].length; y++) {
-                    _this.visibilityArray[x][y] =
-                        _this.visibilityArray[x][y] === 0 ? 0 : levelConstants_1.LevelConstants.MIN_VISIBILITY;
+                    oldVisibilityArray[x][y] = _this.visibilityArray[x][y] !== 0;
+                    _this.visibilityArray[x][y] = 0;
                 }
             }
             for (var i = 0; i < 360; i += levelConstants_1.LevelConstants.LIGHTING_ANGLE_STEP) {
@@ -580,6 +582,9 @@ var Level = (function () {
                 _this.visibilityArray = _this.blur3x3(_this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
             for (var x = 0; x < _this.visibilityArray.length; x++) {
                 for (var y = 0; y < _this.visibilityArray[0].length; y++) {
+                    if (_this.visibilityArray[x][y] === 0 && oldVisibilityArray[x][y]) {
+                        _this.visibilityArray[x][y] = levelConstants_1.LevelConstants.MIN_VISIBILITY; // once a tile has been viewed, it won't go below MIN_VISIBILITY
+                    }
                     _this.visibilityArray[x][y] = Math.round(_this.visibilityArray[x][y]);
                 }
             }

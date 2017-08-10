@@ -542,10 +542,12 @@ export class Level {
   };
 
   updateLighting = () => {
+    let oldVisibilityArray = [];
     for (let x = 0; x < this.levelArray.length; x++) {
+      oldVisibilityArray[x] = [];
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        this.visibilityArray[x][y] =
-          this.visibilityArray[x][y] === 0 ? 0 : LevelConstants.MIN_VISIBILITY;
+        oldVisibilityArray[x][y] = this.visibilityArray[x][y] !== 0;
+        this.visibilityArray[x][y] = 0;
       }
     }
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
@@ -556,6 +558,9 @@ export class Level {
 
     for (let x = 0; x < this.visibilityArray.length; x++) {
       for (let y = 0; y < this.visibilityArray[0].length; y++) {
+        if (this.visibilityArray[x][y] === 0 && oldVisibilityArray[x][y]) {
+          this.visibilityArray[x][y] = LevelConstants.MIN_VISIBILITY; // once a tile has been viewed, it won't go below MIN_VISIBILITY
+        }
         this.visibilityArray[x][y] = Math.round(this.visibilityArray[x][y]);
       }
     }
