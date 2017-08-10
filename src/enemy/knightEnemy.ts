@@ -46,7 +46,7 @@ export class KnightEnemy extends Enemy {
     if (!this.dead) {
       this.ticks++;
       if (this.ticks % 2 === 0) {
-        if (this.seenPlayer || this.level.visibilityArray[this.x][this.y]) {
+        if (this.seenPlayer || this.level.visibilityArray[this.x][this.y] > 0) {
           // visible to player, chase them
 
           // now that we've seen the player, we can keep chasing them even if we lose line of sight

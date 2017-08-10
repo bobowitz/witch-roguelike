@@ -44,7 +44,7 @@ export class SkullEnemy extends Enemy {
 
   tick = () => {
     if (!this.dead) {
-      if (this.seenPlayer || this.level.visibilityArray[this.x][this.y]) {
+      if (this.seenPlayer || this.level.visibilityArray[this.x][this.y] > 0) {
         this.seenPlayer = true;
         let oldX = this.x;
         let oldY = this.y;

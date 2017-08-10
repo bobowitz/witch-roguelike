@@ -25,7 +25,7 @@ import { Input } from "./input";
 
 export class Level {
   levelArray: Tile[][];
-  visibilityArray: number[][];
+  visibilityArray: number[][]; // visibility is 0, 1, or 2 (0 = black, 2 = fully lit)
   enemies: Array<Enemy>;
   items: Array<Item>;
   doors: Array<Door>; // just a reference for mapping, still access through levelArray
@@ -379,7 +379,7 @@ export class Level {
   constructor(game: Game, previousDoor: Door, deadEnd: boolean, env: number) {
     // smooth lighting handler
     Input.sListener = () => {
-      LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
+      // LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
       this.updateLighting();
     };
 
@@ -553,6 +553,12 @@ export class Level {
     }
     if (LevelConstants.SMOOTH_LIGHTING)
       this.visibilityArray = this.blur3x3(this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
+
+    for (let x = 0; x < this.visibilityArray.length; x++) {
+      for (let y = 0; y < this.visibilityArray[0].length; y++) {
+        this.visibilityArray[x][y] = Math.round(this.visibilityArray[x][y]);
+      }
+    }
   };
 
   castShadowsAtAngle = (angle: number, radius: number) => {
@@ -582,7 +588,7 @@ export class Level {
       this.visibilityArray[Math.floor(px)][Math.floor(py)] += LevelConstants.VISIBILITY_STEP;
       this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(
         this.visibilityArray[Math.floor(px)][Math.floor(py)],
-        1
+        2
       );
 
       // crates and chests can block visibility too!
@@ -648,7 +654,17 @@ export class Level {
         this.levelArray[x][y].draw();
 
         // fill in shadows too
-        Game.ctx.globalAlpha = 1 - this.visibilityArray[x][y];
+        switch (this.visibilityArray[x][y]) {
+          case 0:
+            Game.ctx.globalAlpha = 1;
+            break;
+          case 1:
+            Game.ctx.globalAlpha = 0.6;
+            break;
+          case 2:
+            Game.ctx.globalAlpha = 0;
+            break;
+        }
         Game.ctx.fillStyle = "black";
         Game.ctx.fillRect(
           x * GameConstants.TILESIZE,

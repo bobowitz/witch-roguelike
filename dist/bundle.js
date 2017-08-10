@@ -197,11 +197,11 @@ var LevelConstants = (function () {
     LevelConstants.SCREEN_W = 17; // screen size in tiles
     LevelConstants.SCREEN_H = 17; // screen size in tiles
     LevelConstants.ENVIRONMENTS = 6;
-    LevelConstants.VISIBILITY_CUTOFF = 0.8;
+    LevelConstants.VISIBILITY_CUTOFF = 1;
     LevelConstants.SMOOTH_LIGHTING = false;
-    LevelConstants.MIN_VISIBILITY = 0.2;
+    LevelConstants.MIN_VISIBILITY = 1; // visibility level of places you've already seen
     LevelConstants.LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
-    LevelConstants.VISIBILITY_STEP = 0.1; //* LevelConstants.LIGHTING_ANGLE_STEP;
+    LevelConstants.VISIBILITY_STEP = 0.1;
     LevelConstants.LEVEL_TEXT_COLOR = "white"; // not actually a constant
     return LevelConstants;
 }());
@@ -578,6 +578,11 @@ var Level = (function () {
             }
             if (levelConstants_1.LevelConstants.SMOOTH_LIGHTING)
                 _this.visibilityArray = _this.blur3x3(_this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
+            for (var x = 0; x < _this.visibilityArray.length; x++) {
+                for (var y = 0; y < _this.visibilityArray[0].length; y++) {
+                    _this.visibilityArray[x][y] = Math.round(_this.visibilityArray[x][y]);
+                }
+            }
         };
         this.castShadowsAtAngle = function (angle, radius) {
             var dx = Math.cos(angle * Math.PI / 180);
@@ -602,7 +607,7 @@ var Level = (function () {
                     hitWall = true;
                 }
                 _this.visibilityArray[Math.floor(px)][Math.floor(py)] += levelConstants_1.LevelConstants.VISIBILITY_STEP;
-                _this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(_this.visibilityArray[Math.floor(px)][Math.floor(py)], 1);
+                _this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(_this.visibilityArray[Math.floor(px)][Math.floor(py)], 2);
                 // crates and chests can block visibility too!
                 for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
                     var e = _a[_i];
@@ -661,7 +666,17 @@ var Level = (function () {
                 for (var y = 0; y < _this.levelArray[0].length; y++) {
                     _this.levelArray[x][y].draw();
                     // fill in shadows too
-                    game_1.Game.ctx.globalAlpha = 1 - _this.visibilityArray[x][y];
+                    switch (_this.visibilityArray[x][y]) {
+                        case 0:
+                            game_1.Game.ctx.globalAlpha = 1;
+                            break;
+                        case 1:
+                            game_1.Game.ctx.globalAlpha = 0.6;
+                            break;
+                        case 2:
+                            game_1.Game.ctx.globalAlpha = 0;
+                            break;
+                    }
                     game_1.Game.ctx.fillStyle = "black";
                     game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
                     game_1.Game.ctx.globalAlpha = 1;
@@ -712,7 +727,7 @@ var Level = (function () {
         };
         // smooth lighting handler
         input_1.Input.sListener = function () {
-            levelConstants_1.LevelConstants.SMOOTH_LIGHTING = !levelConstants_1.LevelConstants.SMOOTH_LIGHTING;
+            // LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
             _this.updateLighting();
         };
         this.env = env;
@@ -2210,7 +2225,7 @@ var KnightEnemy = (function (_super) {
             if (!_this.dead) {
                 _this.ticks++;
                 if (_this.ticks % 2 === 0) {
-                    if (_this.seenPlayer || _this.level.visibilityArray[_this.x][_this.y]) {
+                    if (_this.seenPlayer || _this.level.visibilityArray[_this.x][_this.y] > 0) {
                         // visible to player, chase them
                         // now that we've seen the player, we can keep chasing them even if we lose line of sight
                         _this.seenPlayer = true;
@@ -2424,7 +2439,7 @@ var SkullEnemy = (function (_super) {
         };
         _this.tick = function () {
             if (!_this.dead) {
-                if (_this.seenPlayer || _this.level.visibilityArray[_this.x][_this.y]) {
+                if (_this.seenPlayer || _this.level.visibilityArray[_this.x][_this.y] > 0) {
                     _this.seenPlayer = true;
                     var oldX = _this.x;
                     var oldY = _this.y;
