@@ -2056,6 +2056,7 @@ exports.Input = {
                 break;
             case 83:
                 exports.Input.sListener();
+                break;
         }
     },
     onKeyup: function (event) {

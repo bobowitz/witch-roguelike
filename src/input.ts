@@ -43,6 +43,7 @@ export const Input = {
         break;
       case 83:
         Input.sListener();
+        break;
     }
   },
 
