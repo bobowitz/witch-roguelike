@@ -201,7 +201,7 @@ var LevelConstants = (function () {
     LevelConstants.SMOOTH_LIGHTING = false;
     LevelConstants.MIN_VISIBILITY = 1; // visibility level of places you've already seen
     LevelConstants.LIGHTING_ANGLE_STEP = 1; // how many degrees between each ray
-    LevelConstants.VISIBILITY_STEP = 0.1;
+    LevelConstants.VISIBILITY_STEP = 0.4;
     LevelConstants.LEVEL_TEXT_COLOR = "white"; // not actually a constant
     return LevelConstants;
 }());
@@ -582,10 +582,10 @@ var Level = (function () {
                 _this.visibilityArray = _this.blur3x3(_this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
             for (var x = 0; x < _this.visibilityArray.length; x++) {
                 for (var y = 0; y < _this.visibilityArray[0].length; y++) {
+                    _this.visibilityArray[x][y] = Math.floor(_this.visibilityArray[x][y]);
                     if (_this.visibilityArray[x][y] === 0 && oldVisibilityArray[x][y]) {
                         _this.visibilityArray[x][y] = levelConstants_1.LevelConstants.MIN_VISIBILITY; // once a tile has been viewed, it won't go below MIN_VISIBILITY
                     }
-                    _this.visibilityArray[x][y] = Math.round(_this.visibilityArray[x][y]);
                 }
             }
         };
