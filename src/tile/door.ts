@@ -7,20 +7,39 @@ export class Door extends Collidable {
   linkedLevel: Level;
   game: Game;
   deadEnd: boolean;
+  goldenKey: boolean;
+  distFromStart: number;
   opened: boolean;
 
-  constructor(level: Level, game: Game, x: number, y: number, deadEnd: boolean) {
+  constructor(
+    level: Level,
+    game: Game,
+    x: number,
+    y: number,
+    deadEnd: boolean,
+    goldenKey: boolean,
+    distFromStart: number
+  ) {
     super(level, x, y);
     this.game = game;
     this.linkedLevel = null;
     this.deadEnd = deadEnd;
+    this.goldenKey = goldenKey;
+    this.distFromStart = distFromStart;
     this.opened = false;
   }
 
   onCollide = (player: Player) => {
     this.opened = true;
     if (this.linkedLevel === null)
-      this.linkedLevel = new Level(this.game, this, this.deadEnd, this.level.env);
+      this.linkedLevel = new Level(
+        this.game,
+        this,
+        this.deadEnd,
+        this.goldenKey,
+        this.distFromStart,
+        this.level.env
+      );
     this.game.changeLevel(this.linkedLevel);
   };
 

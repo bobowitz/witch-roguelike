@@ -1,10 +1,12 @@
 import { Collidable } from "./collidable";
-import { Game } from "../game";
-import { Level } from "../level";
 import { Player } from "../player";
-import { LevelConstants } from "../levelConstants";
+import { Level } from "../level";
+import { Game } from "../game";
+import { Door } from "./door";
+import { Key } from "../item/key";
+import { GoldenKey } from "../item/goldenKey";
 
-export class Trapdoor extends Collidable {
+export class UnlockedGoldenDoor extends Collidable {
   game: Game;
 
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -13,7 +15,7 @@ export class Trapdoor extends Collidable {
   }
 
   draw = () => {
-    Game.drawTile(13, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(6, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
   };
 
   onCollide = (player: Player) => {

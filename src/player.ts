@@ -21,6 +21,8 @@ import { Map } from "./map";
 import { Pickup } from "./item/pickup";
 import { Crate } from "./enemy/crate";
 import { Stats } from "./stats";
+import { GoldenDoor } from "./tile/goldenDoor";
+import { UnlockedGoldenDoor } from "./tile/unlockedGoldenDoor";
 
 export class Player {
   x: number;
@@ -137,7 +139,19 @@ export class Player {
             this.move(x, y);
             other.onCollide(this);
           }
+        } else if (other instanceof UnlockedGoldenDoor) {
+          if (x - this.x === 0) {
+            this.move(x, y);
+            other.onCollide(this);
+          }
         } else if (other instanceof LockedDoor) {
+          if (x - this.x === 0) {
+            this.drawX = (this.x - x) * 0.5;
+            this.drawY = (this.y - y) * 0.5;
+            other.unlock(this);
+            this.game.level.tick();
+          }
+        } else if (other instanceof GoldenDoor) {
           if (x - this.x === 0) {
             this.drawX = (this.x - x) * 0.5;
             this.drawY = (this.y - y) * 0.5;
@@ -305,20 +319,20 @@ export class Player {
         }
       }
       healthArmorString += totalArmor === 0 ? "" : "+" + totalArmor + " armor";
-      Game.ctx.fillText(healthArmorString, 3, GameConstants.HEIGHT - 20);
+      Game.ctx.fillText(healthArmorString, 3, GameConstants.HEIGHT - (GameConstants.FONT_SIZE - 1));
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
       Game.ctx.fillText(
         gameOverString,
         GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
-        GameConstants.HEIGHT / 2 - 10
+        GameConstants.HEIGHT / 2
       );
       let refreshString = "[refresh to restart]";
       Game.ctx.fillText(
         refreshString,
         GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
-        GameConstants.HEIGHT / 2 + 10
+        GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
       );
     }
     this.inventory.draw();

@@ -7,6 +7,7 @@ import { GameConstants } from "./gameConstants";
 import { Equippable } from "./item/equippable";
 import { Armor } from "./item/armor";
 import { Helmet } from "./item/helmet";
+import { GoldenKey } from "./item/goldenKey";
 
 export class Inventory {
   items: Array<Item>;

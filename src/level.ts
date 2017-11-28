@@ -12,8 +12,10 @@ import { KnightEnemy } from "./enemy/knightEnemy";
 import { Enemy } from "./enemy/enemy";
 import { Chest } from "./enemy/chest";
 import { Item } from "./item/item";
+import { GoldenKey } from "./item/goldenKey";
 import { SpawnFloor } from "./tile/spawnfloor";
 import { LockedDoor } from "./tile/lockedDoor";
+import { GoldenDoor } from "./tile/goldenDoor";
 import { Spike } from "./tile/spike";
 import { TextParticle } from "./textParticle";
 import { GameConstants } from "./gameConstants";
@@ -38,6 +40,8 @@ export class Level {
   width: number;
   height: number;
   hasBottomDoor: boolean;
+  goldenKeyRoom: boolean;
+  distFromStart: number;
   parentLevel: Level;
   env: number; // which environment is this level?
   difficulty: number;
@@ -225,12 +229,16 @@ export class Level {
     return numTrapdoors;
   }
 
-  private addDoors(deadEnd: boolean): number {
+  private addDoors(deadEnd: boolean, goldenKey: boolean): number {
     // add doors
     let numDoors = Game.randTable([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3]);
     if (deadEnd) {
       numDoors = Game.randTable([1, 1, 1, 2, 2]);
       if (Game.rand(1, 2) === 1) numDoors = 0;
+    }
+    if (!this.hasBottomDoor) {
+      // first level has a regular door and a golden door
+      numDoors = 2;
     }
     for (let i = 0; i < numDoors; i++) {
       let x = 0;
@@ -247,20 +255,22 @@ export class Level {
 
       // if there are multiple doors, make all but one a dead end
       let d;
-      if (numDoors > 0 && i !== 0) {
+      if (!this.hasBottomDoor && i == 1) {
+        d = new GoldenDoor(this, x, y);
+      } else if (numDoors > 0 && i !== 0) {
         if (Game.rand(1, 5) === 1) {
           // locked (90% dead-end as well) door
           d = new LockedDoor(this, x, y);
         } else {
           // regular dead-end door
-          d = new Door(this, this.game, x, y, true); // make a new dead end
+          d = new Door(this, this.game, x, y, true, false, this.distFromStart + 1); // make a new dead end
         }
       } else {
-        // otherwise, generate a non-dead end
-        d = new Door(this, this.game, x, y, deadEnd); // deadEnd
+        // otherwise, generate a non-dead end (will eventually end with golden key)
+        d = new Door(this, this.game, x, y, deadEnd, goldenKey, this.distFromStart + 1); // deadEnd
       }
       this.levelArray[x][y] = d;
-      if (!(d instanceof LockedDoor)) this.doors.push(d);
+      if (!(d instanceof LockedDoor) && !(d instanceof GoldenDoor)) this.doors.push(d);
     }
     this.doors.sort((a, b) => a.x - b.x); // sort by x, ascending, so the map makes sense
 
@@ -376,13 +386,21 @@ export class Level {
     return Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
   };
 
-  constructor(game: Game, previousDoor: Door, deadEnd: boolean, env: number) {
+  constructor(
+    game: Game,
+    previousDoor: Door,
+    deadEnd: boolean,
+    goldenKey: boolean,
+    distFromStart: number,
+    env: number
+  ) {
     // smooth lighting handler
     Input.sListener = () => {
       // LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
       this.updateLighting();
     };
 
+    this.distFromStart = distFromStart;
     this.env = env;
 
     this.items = Array<Item>();
@@ -422,8 +440,21 @@ export class Level {
     this.bottomDoorY = this.roomY + this.height;
 
     this.buildEmptyRoom();
-    this.addWallBlocks();
-    this.addFingers();
+    this.goldenKeyRoom = false;
+    if (goldenKey && distFromStart > 4 && Game.rand(1, 5) === 1) {
+      // if it's a golden key room
+      this.items.push(
+        new GoldenKey(
+          Math.floor(this.roomX + this.width / 2),
+          Math.floor(this.roomY + this.height / 2)
+        )
+      );
+      this.goldenKeyRoom = true;
+    } else {
+      // otherwise, generate a normal room
+      this.addWallBlocks();
+      this.addFingers();
+    }
 
     this.levelArray[this.bottomDoorX][this.bottomDoorY - 1] = new SpawnFloor(
       this,
@@ -442,27 +473,41 @@ export class Level {
 
     this.fixWalls();
 
-    /* add trapdoors back in after we figure out how they're gonna work */
-    let numTrapdoors = 0; // this.addTrapdoors();
-    let numDoors = this.addDoors(deadEnd);
-    let numChests = this.addChests(numDoors);
-    let numSpikes = this.addSpikes();
-    let numEnemies = this.addEnemies();
-    let numObstacles = this.addObstacles();
+    let numTrapdoors = 0,
+      numDoors = 0,
+      numChests = 0,
+      numSpikes = 0,
+      numEnemies = 0,
+      numObstacles = 0;
+    if (!this.goldenKeyRoom) {
+      /* add trapdoors back in after we figure out how they're gonna work */
+      numTrapdoors = 0; // this.addTrapdoors();
+      numDoors = this.addDoors(deadEnd, goldenKey);
+      numChests = this.addChests(numDoors);
+      numSpikes = this.addSpikes();
+      numEnemies = this.addEnemies();
+      numObstacles = this.addObstacles();
+    }
+    this.classify(numDoors, numTrapdoors, numChests, numEnemies, this.goldenKeyRoom);
 
     if (this.hasBottomDoor) {
       let b = this.levelArray[this.bottomDoorX][this.bottomDoorY] as BottomDoor;
       this.parentLevel = b.linkedTopDoor.level;
     }
-
-    this.classify(numDoors, numTrapdoors, numChests, numEnemies);
   }
 
   // name this level
-  classify = (numDoors: number, numTrapdoors: number, numChests: number, numEnemies: number) => {
+  classify = (
+    numDoors: number,
+    numTrapdoors: number,
+    numChests: number,
+    numEnemies: number,
+    goldenKeyRoom: boolean
+  ) => {
     this.name = "";
 
-    if (numChests >= 2) this.name = "Treasure";
+    if (goldenKeyRoom) this.name = "Key Room";
+    else if (numChests >= 2) this.name = "Treasure";
     else if (numDoors >= 3) this.name = "Passageway";
     else if (numTrapdoors > 0) this.name = "Trick Room";
     else if (Game.rand(1, 10) === 1) {
@@ -493,7 +538,7 @@ export class Level {
       "Lonely",
       "Spooky",
     ];
-    if (this.name !== "")
+    if (this.name !== "" && !goldenKeyRoom)
       this.name = adjectiveList[Game.rand(0, adjectiveList.length - 1)] + " " + this.name;
   };
 
@@ -720,7 +765,7 @@ export class Level {
     Game.ctx.fillText(
       this.name,
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
-      (this.roomY - 2) * GameConstants.TILESIZE
+      (this.roomY - 1) * GameConstants.TILESIZE - (GameConstants.FONT_SIZE - 1)
     );
   };
 }
