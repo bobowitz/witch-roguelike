@@ -688,11 +688,7 @@ export class Level {
 
   tick = () => {
     this.game.player.startTick();
-    for (const i of this.game.player.inventory.items) {
-      if (i instanceof Armor) {
-        i.tick();
-      }
-    }
+    if (this.game.player.armor) this.game.player.armor.tick();
     for (const e of this.enemies) {
       e.tick();
     }

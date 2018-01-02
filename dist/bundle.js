@@ -354,7 +354,6 @@ var skullEnemy_1 = __webpack_require__(35);
 var barrel_1 = __webpack_require__(36);
 var crate_1 = __webpack_require__(37);
 var input_1 = __webpack_require__(16);
-var armor_1 = __webpack_require__(22);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd, goldenKey, distFromStart, env, difficulty) {
         var _this = this;
@@ -528,14 +527,10 @@ var Level = (function () {
         };
         this.tick = function () {
             _this.game.player.startTick();
-            for (var _i = 0, _a = _this.game.player.inventory.items; _i < _a.length; _i++) {
-                var i = _a[_i];
-                if (i instanceof armor_1.Armor) {
-                    i.tick();
-                }
-            }
-            for (var _b = 0, _c = _this.enemies; _b < _c.length; _b++) {
-                var e = _c[_b];
+            if (_this.game.player.armor)
+                _this.game.player.armor.tick();
+            for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
                 e.tick();
             }
             _this.enemies = _this.enemies.filter(function (e) { return !e.dead; });
@@ -1886,9 +1881,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var item_1 = __webpack_require__(8);
 var game_1 = __webpack_require__(0);
 var levelConstants_1 = __webpack_require__(3);
+var pickup_1 = __webpack_require__(13);
 var Armor = (function (_super) {
     __extends(Armor, _super);
     function Armor(x, y) {
@@ -1926,6 +1921,14 @@ var Armor = (function (_super) {
                 }
             }
         };
+        _this.onPickup = function (player) {
+            if (player.armor === null)
+                player.armor = _this;
+            else {
+                player.armor.health = 1;
+                player.armor.rechargeTurnCounter = -1;
+            }
+        };
         _this.health = 1;
         _this.rechargeTurnCounter = -1;
         _this.tileX = 5;
@@ -1933,7 +1936,7 @@ var Armor = (function (_super) {
         return _this;
     }
     return Armor;
-}(item_1.Item));
+}(pickup_1.Pickup));
 exports.Armor = Armor;
 
 
@@ -2372,7 +2375,7 @@ var Chest = (function (_super) {
         _this.kill = function () {
             _this.dead = true;
             // DROP TABLES!
-            var drop = game_1.Game.randTable([1, 1, 2, 3, 4]);
+            var drop = game_1.Game.randTable([1, 1, 2, 3]);
             switch (drop) {
                 case 1:
                     _this.game.level.items.push(new heart_1.Heart(_this.x, _this.y));
@@ -2595,7 +2598,6 @@ var lockedDoor_1 = __webpack_require__(25);
 var sound_1 = __webpack_require__(29);
 var spike_1 = __webpack_require__(28);
 var textParticle_1 = __webpack_require__(14);
-var armor_1 = __webpack_require__(22);
 var levelConstants_1 = __webpack_require__(3);
 var map_1 = __webpack_require__(40);
 var pickup_1 = __webpack_require__(13);
@@ -2713,17 +2715,8 @@ var Player = (function () {
             }
         };
         this.hurt = function (damage) {
-            var armor = null;
-            for (var _i = 0, _a = _this.inventory.items; _i < _a.length; _i++) {
-                var i = _a[_i];
-                if (i instanceof armor_1.Armor) {
-                    armor = i;
-                    break;
-                }
-            }
-            if (armor !== null && armor.health > 0) {
-                var totalDamage = 0;
-                armor.hurt(damage);
+            if (_this.armor !== null && _this.armor.health > 0) {
+                _this.armor.hurt(damage);
             }
             else {
                 _this.flashing = true;
@@ -2791,11 +2784,8 @@ var Player = (function () {
                 for (var i = 0; i < _this.health; i++) {
                     game_1.Game.drawItem(8, 0, 1, 2, i, levelConstants_1.LevelConstants.SCREEN_H - 2, 1, 2);
                 }
-                for (var _i = 0, _a = _this.inventory.items; _i < _a.length; _i++) {
-                    var i = _a[_i];
-                    if (i instanceof armor_1.Armor)
-                        i.drawGUI(_this.health);
-                }
+                if (_this.armor)
+                    _this.armor.drawGUI(_this.health);
                 // this.stats.drawGUI(); TODO
             }
             else {
@@ -2827,6 +2817,7 @@ var Player = (function () {
         this.inventory = new inventory_1.Inventory(game);
         this.map = new map_1.Map(game);
         this.missProb = 0.1;
+        this.armor = null;
         this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
     }
     return Player;

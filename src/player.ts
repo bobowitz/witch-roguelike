@@ -39,6 +39,7 @@ export class Player {
   inventory: Inventory;
   equipped: Array<Equippable>;
   map: Map;
+  armor: Armor;
   missProb: number;
   sightRadius: number;
 
@@ -68,6 +69,8 @@ export class Player {
     this.map = new Map(game);
 
     this.missProb = 0.1;
+
+    this.armor = null;
 
     this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
   }
@@ -169,16 +172,8 @@ export class Player {
   };
 
   hurt = (damage: number) => {
-    let armor = null;
-    for (const i of this.inventory.items) {
-      if (i instanceof Armor) {
-        armor = i;
-        break;
-      }
-    }
-    if (armor !== null && armor.health > 0) {
-      let totalDamage = 0;
-      armor.hurt(damage);
+    if (this.armor !== null && this.armor.health > 0) {
+      this.armor.hurt(damage);
     } else {
       this.flashing = true;
       this.health -= damage;
@@ -255,10 +250,8 @@ export class Player {
       for (let i = 0; i < this.health; i++) {
         Game.drawItem(8, 0, 1, 2, i, LevelConstants.SCREEN_H - 2, 1, 2);
       }
-      for (const i of this.inventory.items) {
-        if (i instanceof Armor)
-          i.drawGUI(this.health);
-      }
+      if (this.armor)
+        this.armor.drawGUI(this.health);
       // this.stats.drawGUI(); TODO
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;

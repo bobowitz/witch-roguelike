@@ -21,7 +21,7 @@ export class Chest extends Enemy {
     this.dead = true;
     // DROP TABLES!
 
-    let drop = Game.randTable([1, 1, 2, 3, 4]);
+    let drop = Game.randTable([1, 1, 2, 3]);
 
     switch (drop) {
       case 1:

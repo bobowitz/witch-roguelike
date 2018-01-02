@@ -1,8 +1,10 @@
 import { Item } from "./item";
 import { Game } from "../game";
 import { LevelConstants } from "../levelConstants";
+import { Pickup } from "./pickup";
+import { Player } from "../player";
 
-export class Armor extends Item {
+export class Armor extends Pickup {
   health: number;
   rechargeTurnCounter: number;
   readonly RECHARGE_TURNS = 18;
@@ -46,6 +48,14 @@ export class Armor extends Item {
       } else {
         Game.drawItem(4, 0, 1, 2, playerHealth, LevelConstants.SCREEN_H - 2, 1, 2);
       }
+    }
+  }
+
+  onPickup = (player: Player) => {
+    if (player.armor === null) player.armor = this;
+    else {
+      player.armor.health = 1;
+      player.armor.rechargeTurnCounter = -1;
     }
   }
 }
