@@ -171,9 +171,11 @@ export class Player {
   hurt = (damage: number) => {
     let armor = null;
     for (const i of this.inventory.items) {
-      if (i instanceof Armor) armor = i;
+      if (i instanceof Armor) {
+        armor = i;
+        break;
+      }
     }
-    console.log(armor);
     if (armor !== null && armor.health > 0) {
       let totalDamage = 0;
       armor.hurt(damage);

@@ -2716,10 +2716,11 @@ var Player = (function () {
             var armor = null;
             for (var _i = 0, _a = _this.inventory.items; _i < _a.length; _i++) {
                 var i = _a[_i];
-                if (i instanceof armor_1.Armor)
+                if (i instanceof armor_1.Armor) {
                     armor = i;
+                    break;
+                }
             }
-            console.log(armor);
             if (armor !== null && armor.health > 0) {
                 var totalDamage = 0;
                 armor.hurt(damage);
