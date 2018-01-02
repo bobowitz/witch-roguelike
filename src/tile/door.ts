@@ -38,7 +38,8 @@ export class Door extends Collidable {
         this.deadEnd,
         this.goldenKey,
         this.distFromStart,
-        this.level.env
+        this.level.env,
+        this.level.difficulty
       );
     this.game.changeLevel(this.linkedLevel);
   };

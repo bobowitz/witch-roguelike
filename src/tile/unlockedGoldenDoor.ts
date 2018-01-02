@@ -19,6 +19,6 @@ export class UnlockedGoldenDoor extends Collidable {
   };
 
   onCollide = (player: Player) => {
-    this.game.changeLevel(new Level(this.game, null, false, true, 0, Level.randEnv()));
+    this.game.changeLevel(new Level(this.game, null, false, true, 0, Level.randEnv(), this.level.difficulty + 1));
   };
 }

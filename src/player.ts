@@ -71,7 +71,7 @@ export class Player {
 
     this.missProb = 0.1;
 
-    this.sightRadius = 6; // maybe can be manipulated by items? e.g. better torch
+    this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
   }
 
   spaceListener = () => {
@@ -109,7 +109,7 @@ export class Player {
   };
 
   hit = (): number => {
-    return Game.randTable([3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7, 8, 9, 10]);
+    return Math.pow(2, this.stats.level - 1) * Game.randTable([3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7]);
   };
 
   tryMove = (x: number, y: number) => {
@@ -117,7 +117,7 @@ export class Player {
     for (let e of this.game.level.enemies) {
       if (e.x === x && e.y === y) {
         let dmg = this.hit();
-        e.hurt(dmg);
+        e.hurt(this, dmg);
         this.game.level.textParticles.push(
           new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
         );
@@ -240,9 +240,9 @@ export class Player {
     this.drawY = 0;
   };
 
-  update = () => {};
+  update = () => { };
 
-  startTick = () => {};
+  startTick = () => { };
 
   finishTick = () => {
     this.flashing = false;
@@ -310,6 +310,22 @@ export class Player {
   drawTopLayer = () => {
     if (!this.dead) {
       this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
+
+      Game.ctx.fillStyle = GameConstants.OUTLINE;
+      Game.ctx.fillRect(
+        1,
+        GameConstants.HEIGHT - 15,
+        GameConstants.WIDTH - 2,
+        14
+      );
+      Game.ctx.fillStyle = GameConstants.RED;
+      Game.ctx.fillRect(2, GameConstants.HEIGHT - 14, GameConstants.WIDTH - 4, 12);
+
+      Game.ctx.fillStyle = GameConstants.GREEN;
+      Game.ctx.fillRect(
+        2, GameConstants.HEIGHT - 14, Math.floor((this.healthBar.health / this.healthBar.fullHealth) * (GameConstants.WIDTH - 4)), 12
+      );
+
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let healthArmorString = this.healthBar.health + "/" + this.healthBar.fullHealth;
       let totalArmor = 0;
@@ -320,6 +336,8 @@ export class Player {
       }
       healthArmorString += totalArmor === 0 ? "" : "+" + totalArmor + " armor";
       Game.ctx.fillText(healthArmorString, 3, GameConstants.HEIGHT - (GameConstants.FONT_SIZE - 1));
+
+      this.stats.drawGUI();
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";

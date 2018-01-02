@@ -4,6 +4,7 @@ import { Level } from "../level";
 import { HealthBar } from "../healthbar";
 import { Bones } from "../tile/bones";
 import { LevelConstants } from "../levelConstants";
+import { Player } from "../player";
 
 export class Enemy extends Collidable {
   drawX: number;
@@ -44,9 +45,14 @@ export class Enemy extends Collidable {
     return 0;
   };
 
-  hurt = (damage: number) => {
+  dropXP = () => {
+    return 0;
+  }
+
+  hurt = (player: Player, damage: number) => {
     this.healthBar.hurt(damage);
     if (this.healthBar.health <= 0) {
+      player.stats.getXP(this.dropXP());
       this.kill();
     }
   };
@@ -60,7 +66,7 @@ export class Enemy extends Collidable {
     if (!this.dead) {
       let darkOffset =
         this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF &&
-        this.hasDarkVersion
+          this.hasDarkVersion
           ? 2
           : 0;
       this.drawX += -0.5 * this.drawX;
@@ -78,7 +84,7 @@ export class Enemy extends Collidable {
       );
     }
   };
-  tick = () => {};
+  tick = () => { };
   drawTopLayer = () => {
     this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
   };

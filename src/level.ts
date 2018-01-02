@@ -331,14 +331,14 @@ export class Level {
       let y = 0;
       while (
         !(this.getTile(x, y) instanceof Floor) ||
-        this.enemies.filter(e => e.x === x && e.y === y).length > 0 || // don't overlap other enemies!
+        this.enemies.some(e => e.x === x && e.y === y) || // don't overlap other enemies!
         (x === this.bottomDoorX && y === this.bottomDoorY) ||
         (x === this.bottomDoorX && y === this.bottomDoorY - 1)
       ) {
         x = Game.rand(this.roomX, this.roomX + this.width - 1);
         y = Game.rand(this.roomY, this.roomY + this.height - 1);
       }
-      switch (Game.rand(1, 2)) {
+      switch (this.difficulty === 1 ? 1 : Game.rand(1, 2)) {
         case 1:
           this.enemies.push(new KnightEnemy(this, this.game, x, y));
           break;
@@ -392,13 +392,16 @@ export class Level {
     deadEnd: boolean,
     goldenKey: boolean,
     distFromStart: number,
-    env: number
+    env: number,
+    difficulty: number
   ) {
     // smooth lighting handler
     Input.sListener = () => {
       // LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
       this.updateLighting();
     };
+
+    this.difficulty = difficulty;
 
     this.distFromStart = distFromStart;
     this.env = env;
@@ -554,9 +557,7 @@ export class Level {
 
   enterLevel = () => {
     this.updateLevelTextColor();
-    if (this.hasBottomDoor) {
-      this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY);
-    } else this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);
+    this.game.player.moveNoSmooth(this.bottomDoorX, this.bottomDoorY - 1);
 
     this.updateLighting();
   };

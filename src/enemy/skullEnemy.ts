@@ -76,6 +76,10 @@ export class SkullEnemy extends Enemy {
     }
   };
 
+  dropXP = () => {
+    return Game.randTable([10, 11, 12, 13, 14, 15, 16]);
+  }
+
   kill = () => {
     this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
     this.dead = true;

@@ -43,7 +43,7 @@ export class Game {
       Sound.playMusic(); // loops forever
 
       this.player = new Player(this, 0, 0);
-      this.level = new Level(this, null, false, true, 0, Level.randEnv());
+      this.level = new Level(this, null, false, true, 0, Level.randEnv(), 1);
       this.level.enterLevel();
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
@@ -85,7 +85,7 @@ export class Game {
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
     Game.ctx.fillText(
       GameConstants.VERSION,
-      GameConstants.WIDTH - Game.ctx.measureText(GameConstants.VERSION).width - 2,
+      GameConstants.WIDTH - Game.ctx.measureText(GameConstants.VERSION).width - 1,
       GameConstants.HEIGHT - (GameConstants.FONT_SIZE - 1)
     );
     Game.ctx.globalAlpha = 1;
