@@ -6,7 +6,6 @@ import { Input } from "./input";
 import { GameConstants } from "./gameConstants";
 import { Equippable } from "./item/equippable";
 import { Armor } from "./item/armor";
-import { Helmet } from "./item/helmet";
 import { GoldenKey } from "./item/goldenKey";
 
 export class Inventory {
@@ -19,6 +18,7 @@ export class Inventory {
     this.game = game;
     this.items = new Array<Item>();
     Input.mouseLeftClickListener = this.mouseLeftClickListener;
+    this.items.push();
   }
 
   hasItem(itemType) {

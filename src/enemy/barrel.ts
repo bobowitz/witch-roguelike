@@ -1,15 +1,14 @@
 import { Enemy } from "./enemy";
 import { Level } from "../level";
 import { Game } from "../game";
-import { HealthBar } from "../healthbar";
-import { Potion } from "../item/potion";
+import { Heart } from "../item/heart";
 import { LevelConstants } from "../levelConstants";
 
 export class Barrel extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
     this.level = level;
-    this.healthBar = new HealthBar(8);
+    this.health = 1;
     this.tileX = 14;
     this.tileY = 0;
     this.hasShadow = false;
@@ -17,7 +16,7 @@ export class Barrel extends Enemy {
 
   kill = () => {
     this.dead = true;
-    if (Game.rand(1, 8) === 1) this.game.level.items.push(new Potion(this.x, this.y));
+    if (Game.rand(1, 8) === 1) this.game.level.items.push(new Heart(this.x, this.y));
   };
 
   draw = () => {

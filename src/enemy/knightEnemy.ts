@@ -3,8 +3,7 @@ import { LevelConstants } from "../levelConstants";
 import { Game } from "../game";
 import { Level } from "../level";
 import { astar } from "../astarclass";
-import { HealthBar } from "../healthbar";
-import { Potion } from "../item/potion";
+import { Heart } from "../item/heart";
 import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
 import { TextParticle } from "../textParticle";
@@ -13,33 +12,20 @@ import { GameConstants } from "../gameConstants";
 export class KnightEnemy extends Enemy {
   moves: Array<astar.AStarData>;
   ticks: number;
-  healthBar: HealthBar;
   seenPlayer: boolean;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
     this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
-    this.healthBar = new HealthBar(10);
+    this.health = 1;
     this.tileX = 4;
     this.tileY = 0;
     this.seenPlayer = false;
   }
 
   hit = (): number => {
-    let dmg = Game.randTable([1, 1, 1, 2, 3]);
-    if (Game.rand(1, 100) * 0.01 <= this.game.player.missProb) {
-      dmg = 0;
-      this.level.textParticles.push(
-        new TextParticle(
-          "miss",
-          this.game.player.x + 0.5,
-          this.game.player.y - 0.5,
-          GameConstants.MISS_COLOR
-        )
-      );
-    }
-    return dmg;
+    return 1;
   };
 
   tick = () => {
@@ -89,6 +75,6 @@ export class KnightEnemy extends Enemy {
   kill = () => {
     this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
     this.dead = true;
-    if (Game.rand(1, 4) === 1) this.level.items.push(new Potion(this.x, this.y));
+    if (Game.rand(1, 4) === 1) this.level.items.push(new Heart(this.x, this.y));
   };
 }

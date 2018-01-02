@@ -242,64 +242,7 @@ exports.LevelConstants = LevelConstants;
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var gameConstants_1 = __webpack_require__(1);
-var HealthBar = (function () {
-    function HealthBar(health) {
-        var _this = this;
-        this.DRAW_TICKS = gameConstants_1.GameConstants.FPS * 3; // 3 seconds of ticks
-        this.heal = function (amount) {
-            _this.health += amount;
-            if (_this.health > _this.fullHealth)
-                _this.health = _this.fullHealth;
-            if (_this.drawTicks > 0)
-                _this.drawTicks = _this.DRAW_TICKS / 2;
-            else
-                _this.drawTicks = _this.DRAW_TICKS;
-        };
-        this.hurt = function (damage) {
-            _this.health -= damage;
-            if (_this.drawTicks > 0)
-                _this.drawTicks = _this.DRAW_TICKS / 2;
-            else
-                _this.drawTicks = _this.DRAW_TICKS;
-        };
-        // here x is the center of the bar
-        this.draw = function (x, y) {
-            if (_this.drawTicks > 0) {
-                _this.drawTicks--;
-                var healthPct = _this.health / _this.fullHealth;
-                var WIDTH = Math.min(14, Math.min(_this.DRAW_TICKS - _this.drawTicks, _this.drawTicks));
-                var HEIGHT = 1;
-                var BORDER_W = 1;
-                var BORDER_H = 1;
-                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
-                game_1.Game.ctx.fillRect(x - WIDTH / 2 - BORDER_W, y - HEIGHT - BORDER_H * 2, WIDTH + BORDER_W * 2, HEIGHT + BORDER_H * 2);
-                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.RED;
-                game_1.Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, WIDTH, HEIGHT);
-                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.GREEN;
-                game_1.Game.ctx.fillRect(x - WIDTH / 2, y - HEIGHT - BORDER_H, Math.floor(healthPct * WIDTH), HEIGHT);
-            }
-        };
-        this.drawAboveTile = function (x, y) {
-            _this.draw(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE);
-        };
-        this.health = health;
-        this.fullHealth = health;
-        this.drawTicks = 0;
-    }
-    return HealthBar;
-}());
-exports.HealthBar = HealthBar;
-
-
-/***/ }),
+/* 4 */,
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -318,7 +261,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var collidable_1 = __webpack_require__(2);
 var game_1 = __webpack_require__(0);
-var healthbar_1 = __webpack_require__(4);
 var bones_1 = __webpack_require__(12);
 var levelConstants_1 = __webpack_require__(3);
 var Enemy = (function (_super) {
@@ -344,8 +286,8 @@ var Enemy = (function (_super) {
             return 0;
         };
         _this.hurt = function (player, damage) {
-            _this.healthBar.hurt(damage);
-            if (_this.healthBar.health <= 0) {
+            _this.health -= damage;
+            if (_this.health <= 0) {
                 player.stats.getXP(_this.dropXP());
                 _this.kill();
             }
@@ -368,13 +310,11 @@ var Enemy = (function (_super) {
             }
         };
         _this.tick = function () { };
-        _this.drawTopLayer = function () {
-            _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
-        };
+        _this.drawTopLayer = function () { };
         _this.game = game;
         _this.drawX = 0;
         _this.drawY = 0;
-        _this.healthBar = new healthbar_1.HealthBar(1);
+        _this.health = 1;
         _this.tileX = 0;
         _this.tileY = 0;
         _this.hasShadow = true;
@@ -414,6 +354,7 @@ var skullEnemy_1 = __webpack_require__(35);
 var barrel_1 = __webpack_require__(36);
 var crate_1 = __webpack_require__(37);
 var input_1 = __webpack_require__(16);
+var armor_1 = __webpack_require__(22);
 var Level = (function () {
     function Level(game, previousDoor, deadEnd, goldenKey, distFromStart, env, difficulty) {
         var _this = this;
@@ -587,8 +528,14 @@ var Level = (function () {
         };
         this.tick = function () {
             _this.game.player.startTick();
-            for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
-                var e = _a[_i];
+            for (var _i = 0, _a = _this.game.player.inventory.items; _i < _a.length; _i++) {
+                var i = _a[_i];
+                if (i instanceof armor_1.Armor) {
+                    i.tick();
+                }
+            }
+            for (var _b = 0, _c = _this.enemies; _b < _c.length; _b++) {
+                var e = _c[_b];
                 e.tick();
             }
             _this.enemies = _this.enemies.filter(function (e) { return !e.dead; });
@@ -1069,41 +1016,7 @@ exports.Level = Level;
 
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var pickup_1 = __webpack_require__(13);
-var Potion = (function (_super) {
-    __extends(Potion, _super);
-    function Potion(x, y) {
-        var _this = _super.call(this, x, y) || this;
-        _this.onPickup = function (player) {
-            player.heal(game_1.Game.randTable([9, 10, 10, 10, 10, 15]));
-        };
-        _this.tileX = 2;
-        _this.tileY = 0;
-        return _this;
-    }
-    return Potion;
-}(pickup_1.Pickup));
-exports.Potion = Potion;
-
-
-/***/ }),
+/* 7 */,
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1116,8 +1029,8 @@ var Item = (function () {
         var _this = this;
         this.draw = function () {
             game_1.Game.drawItem(0, 0, 1, 1, _this.x, _this.y, 1, 1);
-            _this.tick += Math.PI * 2 / 60;
-            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.tick) * 0.0625 - 1, _this.w, _this.h);
+            _this.frame += Math.PI * 2 / 60;
+            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.frame) * 0.0625 - 1, _this.w, _this.h);
         };
         this.drawIcon = function (x, y) {
             game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
@@ -1128,7 +1041,7 @@ var Item = (function () {
         this.h = 2;
         this.tileX = 0;
         this.tileY = 0;
-        this.tick = 0;
+        this.frame = 0;
         this.dead = false;
     }
     return Item;
@@ -1973,84 +1886,59 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var item_1 = __webpack_require__(8);
 var game_1 = __webpack_require__(0);
-var equippable_1 = __webpack_require__(15);
+var levelConstants_1 = __webpack_require__(3);
 var Armor = (function (_super) {
     __extends(Armor, _super);
-    function Armor(health, x, y) {
+    function Armor(x, y) {
         var _this = _super.call(this, x, y) || this;
+        _this.RECHARGE_TURNS = 18;
+        _this.tick = function () {
+            if (_this.rechargeTurnCounter > 0) {
+                _this.rechargeTurnCounter--;
+                if (_this.rechargeTurnCounter === 0) {
+                    _this.rechargeTurnCounter = -1;
+                    _this.health = 1;
+                }
+            }
+        };
         _this.hurt = function (damage) {
             _this.health -= damage;
             if (_this.health <= 0) {
                 _this.health = 0;
-                _this.dead = true;
+                _this.rechargeTurnCounter = _this.RECHARGE_TURNS;
             }
         };
-        _this.coEquippable = function (other) {
-            return !(other instanceof Armor);
-        };
-        _this.drawEquipped = function (x, y) {
-            game_1.Game.drawMob(0, 2, 1, 2, x, y - 1.5, 1, 2);
-        };
-        _this.health = health;
-        _this.lastTickHealth = health;
-        _this.tileX = 4;
-        _this.tileY = 0;
-        return _this;
-    }
-    return Armor;
-}(equippable_1.Equippable));
-exports.Armor = Armor;
-
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var equippable_1 = __webpack_require__(15);
-var Helmet = (function (_super) {
-    __extends(Helmet, _super);
-    function Helmet(health, x, y) {
-        var _this = _super.call(this, x, y) || this;
-        _this.hurt = function (damage) {
-            _this.health -= damage;
-            if (_this.health <= 0) {
-                _this.health = 0;
-                _this.dead = true;
+        _this.drawGUI = function (playerHealth) {
+            if (_this.rechargeTurnCounter === -1)
+                game_1.Game.drawItem(5, 0, 1, 2, playerHealth, levelConstants_1.LevelConstants.SCREEN_H - 2, 1, 2);
+            else {
+                var rechargeProportion = 1 - (_this.rechargeTurnCounter / _this.RECHARGE_TURNS);
+                if (rechargeProportion < 0.33) {
+                    game_1.Game.drawItem(2, 0, 1, 2, playerHealth, levelConstants_1.LevelConstants.SCREEN_H - 2, 1, 2);
+                }
+                else if (rechargeProportion < 0.67) {
+                    game_1.Game.drawItem(3, 0, 1, 2, playerHealth, levelConstants_1.LevelConstants.SCREEN_H - 2, 1, 2);
+                }
+                else {
+                    game_1.Game.drawItem(4, 0, 1, 2, playerHealth, levelConstants_1.LevelConstants.SCREEN_H - 2, 1, 2);
+                }
             }
         };
-        _this.coEquippable = function (other) {
-            return !(other instanceof Helmet);
-        };
-        _this.drawEquipped = function (x, y) {
-            game_1.Game.drawMob(1, 2, 1, 2, x, y - 1.5, 1, 2);
-        };
-        _this.health = health;
-        _this.lastTickHealth = health;
+        _this.health = 1;
+        _this.rechargeTurnCounter = -1;
         _this.tileX = 5;
         _this.tileY = 0;
         return _this;
     }
-    return Helmet;
-}(equippable_1.Equippable));
-exports.Helmet = Helmet;
+    return Armor;
+}(item_1.Item));
+exports.Armor = Armor;
 
 
 /***/ }),
+/* 23 */,
 /* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2390,22 +2278,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
 var astarclass_1 = __webpack_require__(19);
-var healthbar_1 = __webpack_require__(4);
-var potion_1 = __webpack_require__(7);
+var heart_1 = __webpack_require__(43);
 var bones_1 = __webpack_require__(12);
-var textParticle_1 = __webpack_require__(14);
-var gameConstants_1 = __webpack_require__(1);
 var KnightEnemy = (function (_super) {
     __extends(KnightEnemy, _super);
     function KnightEnemy(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.hit = function () {
-            var dmg = game_1.Game.randTable([1, 1, 1, 2, 3]);
-            if (game_1.Game.rand(1, 100) * 0.01 <= _this.game.player.missProb) {
-                dmg = 0;
-                _this.level.textParticles.push(new textParticle_1.TextParticle("miss", _this.game.player.x + 0.5, _this.game.player.y - 0.5, gameConstants_1.GameConstants.MISS_COLOR));
-            }
-            return dmg;
+            return 1;
         };
         _this.tick = function () {
             if (!_this.dead) {
@@ -2447,11 +2327,11 @@ var KnightEnemy = (function (_super) {
             _this.level.levelArray[_this.x][_this.y] = new bones_1.Bones(_this.level, _this.x, _this.y);
             _this.dead = true;
             if (game_1.Game.rand(1, 4) === 1)
-                _this.level.items.push(new potion_1.Potion(_this.x, _this.y));
+                _this.level.items.push(new heart_1.Heart(_this.x, _this.y));
         };
         _this.moves = new Array(); // empty move list
         _this.ticks = 0;
-        _this.healthBar = new healthbar_1.HealthBar(10);
+        _this.health = 1;
         _this.tileX = 4;
         _this.tileY = 0;
         _this.seenPlayer = false;
@@ -2481,11 +2361,9 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var key_1 = __webpack_require__(21);
+var heart_1 = __webpack_require__(43);
 var armor_1 = __webpack_require__(22);
-var helmet_1 = __webpack_require__(23);
-var healthbuff_1 = __webpack_require__(34);
 var enemy_1 = __webpack_require__(5);
-var healthbar_1 = __webpack_require__(4);
 var levelConstants_1 = __webpack_require__(3);
 var Chest = (function (_super) {
     __extends(Chest, _super);
@@ -2497,16 +2375,13 @@ var Chest = (function (_super) {
             var drop = game_1.Game.randTable([1, 1, 2, 3, 4]);
             switch (drop) {
                 case 1:
-                    _this.game.level.items.push(new healthbuff_1.HealthBuff(_this.x, _this.y));
+                    _this.game.level.items.push(new heart_1.Heart(_this.x, _this.y));
                     break;
                 case 2:
                     _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
                     break;
                 case 3:
-                    _this.game.level.items.push(new armor_1.Armor(game_1.Game.randTable([25, 50, 50, 50, 50, 50, 50, 75]), _this.x, _this.y));
-                    break;
-                case 4:
-                    _this.game.level.items.push(new helmet_1.Helmet(game_1.Game.randTable([20, 30, 30, 30, 30, 30, 45]), _this.x, _this.y));
+                    _this.game.level.items.push(new armor_1.Armor(_this.x, _this.y));
                     break;
             }
         };
@@ -2518,7 +2393,7 @@ var Chest = (function (_super) {
         };
         _this.tileX = 17;
         _this.tileY = 0;
-        _this.healthBar = new healthbar_1.HealthBar(1);
+        _this.health = 1;
         return _this;
     }
     return Chest;
@@ -2527,41 +2402,7 @@ exports.Chest = Chest;
 
 
 /***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var pickup_1 = __webpack_require__(13);
-var game_1 = __webpack_require__(0);
-var HealthBuff = (function (_super) {
-    __extends(HealthBuff, _super);
-    function HealthBuff(x, y) {
-        var _this = _super.call(this, x, y) || this;
-        _this.onPickup = function (player) {
-            player.buffHealth(game_1.Game.randTable([10, 10, 10, 10, 10, 50]));
-        };
-        _this.tileX = 7;
-        _this.tileY = 0;
-        return _this;
-    }
-    return HealthBuff;
-}(pickup_1.Pickup));
-exports.HealthBuff = HealthBuff;
-
-
-/***/ }),
+/* 34 */,
 /* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2581,22 +2422,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
 var astarclass_1 = __webpack_require__(19);
-var healthbar_1 = __webpack_require__(4);
-var potion_1 = __webpack_require__(7);
+var heart_1 = __webpack_require__(43);
 var bones_1 = __webpack_require__(12);
-var textParticle_1 = __webpack_require__(14);
-var gameConstants_1 = __webpack_require__(1);
 var SkullEnemy = (function (_super) {
     __extends(SkullEnemy, _super);
     function SkullEnemy(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.hit = function () {
-            var dmg = game_1.Game.randTable([4, 5, 5, 5, 5, 5, 5, 6, 7, 8]);
-            if (game_1.Game.rand(1, 100) * 0.01 <= _this.game.player.missProb) {
-                dmg = 0;
-                _this.level.textParticles.push(new textParticle_1.TextParticle("miss", _this.game.player.x + 0.5, _this.game.player.y - 0.5, gameConstants_1.GameConstants.MISS_COLOR));
-            }
-            return dmg;
+            return 1;
         };
         _this.tick = function () {
             if (!_this.dead) {
@@ -2633,11 +2466,11 @@ var SkullEnemy = (function (_super) {
             _this.level.levelArray[_this.x][_this.y] = new bones_1.Bones(_this.level, _this.x, _this.y);
             _this.dead = true;
             if (game_1.Game.rand(1, 2) === 1)
-                _this.level.items.push(new potion_1.Potion(_this.x, _this.y));
+                _this.level.items.push(new heart_1.Heart(_this.x, _this.y));
         };
         _this.moves = new Array(); // empty move list
         _this.ticks = 0;
-        _this.healthBar = new healthbar_1.HealthBar(20);
+        _this.health = 1;
         _this.tileX = 2;
         _this.tileY = 0;
         _this.seenPlayer = false;
@@ -2667,8 +2500,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
-var healthbar_1 = __webpack_require__(4);
-var potion_1 = __webpack_require__(7);
+var heart_1 = __webpack_require__(43);
 var levelConstants_1 = __webpack_require__(3);
 var Barrel = (function (_super) {
     __extends(Barrel, _super);
@@ -2677,7 +2509,7 @@ var Barrel = (function (_super) {
         _this.kill = function () {
             _this.dead = true;
             if (game_1.Game.rand(1, 8) === 1)
-                _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
+                _this.game.level.items.push(new heart_1.Heart(_this.x, _this.y));
         };
         _this.draw = function () {
             if (!_this.dead) {
@@ -2686,7 +2518,7 @@ var Barrel = (function (_super) {
             }
         };
         _this.level = level;
-        _this.healthBar = new healthbar_1.HealthBar(8);
+        _this.health = 1;
         _this.tileX = 14;
         _this.tileY = 0;
         _this.hasShadow = false;
@@ -2716,8 +2548,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
-var healthbar_1 = __webpack_require__(4);
-var potion_1 = __webpack_require__(7);
+var heart_1 = __webpack_require__(43);
 var levelConstants_1 = __webpack_require__(3);
 var Crate = (function (_super) {
     __extends(Crate, _super);
@@ -2726,7 +2557,7 @@ var Crate = (function (_super) {
         _this.kill = function () {
             _this.dead = true;
             if (game_1.Game.rand(1, 8) === 1)
-                _this.game.level.items.push(new potion_1.Potion(_this.x, _this.y));
+                _this.game.level.items.push(new heart_1.Heart(_this.x, _this.y));
         };
         _this.draw = function () {
             if (!_this.dead) {
@@ -2735,7 +2566,7 @@ var Crate = (function (_super) {
             }
         };
         _this.level = level;
-        _this.healthBar = new healthbar_1.HealthBar(8);
+        _this.health = 1;
         _this.tileX = 13;
         _this.tileY = 0;
         _this.hasShadow = false;
@@ -2759,14 +2590,12 @@ var game_1 = __webpack_require__(0);
 var door_1 = __webpack_require__(11);
 var bottomDoor_1 = __webpack_require__(17);
 var trapdoor_1 = __webpack_require__(18);
-var healthbar_1 = __webpack_require__(4);
 var inventory_1 = __webpack_require__(39);
 var lockedDoor_1 = __webpack_require__(25);
 var sound_1 = __webpack_require__(29);
 var spike_1 = __webpack_require__(28);
 var textParticle_1 = __webpack_require__(14);
 var armor_1 = __webpack_require__(22);
-var helmet_1 = __webpack_require__(23);
 var levelConstants_1 = __webpack_require__(3);
 var map_1 = __webpack_require__(40);
 var pickup_1 = __webpack_require__(13);
@@ -2818,7 +2647,7 @@ var Player = (function () {
                 _this.tryMove(_this.x, _this.y + 1);
         };
         this.hit = function () {
-            return Math.pow(2, _this.stats.level - 1) * game_1.Game.randTable([3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7]);
+            return 1;
         };
         this.tryMove = function (x, y) {
             var hitEnemy = false;
@@ -2883,37 +2712,23 @@ var Player = (function () {
                 }
             }
         };
-        this.buffHealth = function (amount) {
-            _this.healthBar.fullHealth += amount;
-            //this.healthBar.health += amount;
-            _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + amount, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.HEALTH_BUFF_COLOR, 0));
-            sound_1.Sound.powerup();
-        };
-        this.heal = function (amount) {
-            _this.healthBar.heal(amount);
-            sound_1.Sound.heal();
-        };
         this.hurt = function (damage) {
-            var allArmor = Array();
-            for (var _i = 0, _a = _this.equipped; _i < _a.length; _i++) {
-                var e = _a[_i];
-                if (e instanceof armor_1.Armor || e instanceof helmet_1.Helmet) {
-                    allArmor.push(e);
-                }
+            var armor = null;
+            for (var _i = 0, _a = _this.inventory.items; _i < _a.length; _i++) {
+                var i = _a[_i];
+                if (i instanceof armor_1.Armor)
+                    armor = i;
             }
-            if (allArmor.length > 0) {
+            console.log(armor);
+            if (armor !== null && armor.health > 0) {
                 var totalDamage = 0;
-                var avgDamage = damage / allArmor.length;
-                for (var i = 0; i < allArmor.length; i++) {
-                    allArmor[i].hurt(Math.round((i + 1) * avgDamage - totalDamage));
-                    totalDamage += Math.round(avgDamage - totalDamage);
-                }
+                armor.hurt(damage);
             }
             else {
                 _this.flashing = true;
-                _this.healthBar.hurt(damage);
-                if (_this.healthBar.health <= 0) {
-                    _this.healthBar.health = 0;
+                _this.health -= damage;
+                if (_this.health <= 0) {
+                    _this.health = 0;
                     _this.dead = true;
                 }
             }
@@ -2950,32 +2765,13 @@ var Player = (function () {
         this.startTick = function () { };
         this.finishTick = function () {
             _this.flashing = false;
-            var totalHealthDiff = _this.healthBar.health - _this.lastTickHealth;
-            _this.lastTickHealth = _this.healthBar.health; // update last tick health
+            var totalHealthDiff = _this.health - _this.lastTickHealth;
+            _this.lastTickHealth = _this.health; // update last tick health
             if (totalHealthDiff < 0) {
                 _this.game.level.textParticles.push(new textParticle_1.TextParticle("" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.RED, 0));
             }
             else if (totalHealthDiff > 0) {
-                _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.GREEN, 0));
-            }
-            else {
-                // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)
-                var totalArmorDiff = 0;
-                _this.missProb = 0.1; // check this here too
-                for (var _i = 0, _a = _this.equipped; _i < _a.length; _i++) {
-                    var e = _a[_i];
-                    if (e instanceof armor_1.Armor || e instanceof helmet_1.Helmet) {
-                        totalArmorDiff += e.health - e.lastTickHealth;
-                        e.lastTickHealth = e.health;
-                        _this.missProb += 0.1; // for each equipped piece of armor, increase missProb by .1
-                    }
-                }
-                if (totalArmorDiff < 0) {
-                    _this.game.level.textParticles.push(new textParticle_1.TextParticle("" + totalArmorDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.ARMOR_GREY));
-                }
-                else if (totalArmorDiff > 0) {
-                    _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + totalArmorDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.ARMOR_GREY));
-                }
+                _this.game.level.textParticles.push(new textParticle_1.TextParticle("+" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.RED, 0));
             }
         };
         this.draw = function () {
@@ -2986,35 +2782,20 @@ var Player = (function () {
                     _this.drawY += -0.5 * _this.drawY;
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
                     game_1.Game.drawMob(1, 0, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
-                    for (var _i = 0, _a = _this.equipped; _i < _a.length; _i++) {
-                        var e = _a[_i];
-                        if (e instanceof armor_1.Armor || e instanceof helmet_1.Helmet)
-                            e.drawEquipped(_this.x - _this.drawX, _this.y - _this.drawY);
-                    }
                 }
             }
         };
         this.drawTopLayer = function () {
             if (!_this.dead) {
-                _this.healthBar.drawAboveTile(_this.x - _this.drawX + 0.5, _this.y - 0.75 - _this.drawY);
-                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
-                game_1.Game.ctx.fillRect(1, gameConstants_1.GameConstants.HEIGHT - 15, gameConstants_1.GameConstants.WIDTH - 2, 14);
-                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.RED;
-                game_1.Game.ctx.fillRect(2, gameConstants_1.GameConstants.HEIGHT - 14, gameConstants_1.GameConstants.WIDTH - 4, 12);
-                game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.GREEN;
-                game_1.Game.ctx.fillRect(2, gameConstants_1.GameConstants.HEIGHT - 14, Math.floor((_this.healthBar.health / _this.healthBar.fullHealth) * (gameConstants_1.GameConstants.WIDTH - 4)), 12);
-                game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
-                var healthArmorString = _this.healthBar.health + "/" + _this.healthBar.fullHealth;
-                var totalArmor = 0;
-                for (var _i = 0, _a = _this.equipped; _i < _a.length; _i++) {
-                    var e = _a[_i];
-                    if (e instanceof armor_1.Armor || e instanceof helmet_1.Helmet) {
-                        totalArmor += e.health;
-                    }
+                for (var i = 0; i < _this.health; i++) {
+                    game_1.Game.drawItem(8, 0, 1, 2, i, levelConstants_1.LevelConstants.SCREEN_H - 2, 1, 2);
                 }
-                healthArmorString += totalArmor === 0 ? "" : "+" + totalArmor + " armor";
-                game_1.Game.ctx.fillText(healthArmorString, 3, gameConstants_1.GameConstants.HEIGHT - (gameConstants_1.GameConstants.FONT_SIZE - 1));
-                _this.stats.drawGUI();
+                for (var _i = 0, _a = _this.inventory.items; _i < _a.length; _i++) {
+                    var i = _a[_i];
+                    if (i instanceof armor_1.Armor)
+                        i.drawGUI(_this.health);
+                }
+                // this.stats.drawGUI(); TODO
             }
             else {
                 game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
@@ -3035,12 +2816,12 @@ var Player = (function () {
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
-        this.healthBar = new healthbar_1.HealthBar(50);
+        this.health = 1;
         this.stats = new stats_1.Stats();
         this.dead = false;
         this.flashing = false;
         this.flashingFrame = 0;
-        this.lastTickHealth = this.healthBar.health;
+        this.lastTickHealth = this.health;
         this.equipped = Array();
         this.inventory = new inventory_1.Inventory(game);
         this.map = new map_1.Map(game);
@@ -3103,6 +2884,7 @@ var Inventory = (function () {
         this.game = game;
         this.items = new Array();
         input_1.Input.mouseLeftClickListener = this.mouseLeftClickListener;
+        this.items.push();
     }
     Inventory.prototype.hasItem = function (itemType) {
         for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
@@ -3328,6 +3110,40 @@ var StatConstants = (function () {
     return StatConstants;
 }());
 exports.StatConstants = StatConstants;
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var pickup_1 = __webpack_require__(13);
+var Heart = (function (_super) {
+    __extends(Heart, _super);
+    function Heart(x, y) {
+        var _this = _super.call(this, x, y) || this;
+        _this.onPickup = function (player) {
+            player.health += 1;
+        };
+        _this.tileX = 8;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Heart;
+}(pickup_1.Pickup));
+exports.Heart = Heart;
 
 
 /***/ })

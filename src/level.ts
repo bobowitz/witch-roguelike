@@ -24,6 +24,7 @@ import { Map } from "./map";
 import { Barrel } from "./enemy/barrel";
 import { Crate } from "./enemy/crate";
 import { Input } from "./input";
+import { Armor } from "./item/armor";
 
 export class Level {
   levelArray: Tile[][];
@@ -687,6 +688,11 @@ export class Level {
 
   tick = () => {
     this.game.player.startTick();
+    for (const i of this.game.player.inventory.items) {
+      if (i instanceof Armor) {
+        i.tick();
+      }
+    }
     for (const e of this.enemies) {
       e.tick();
     }

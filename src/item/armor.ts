@@ -1,33 +1,51 @@
 import { Item } from "./item";
 import { Game } from "../game";
-import { Equippable } from "./equippable";
-import { Helmet } from "./helmet";
+import { LevelConstants } from "../levelConstants";
 
-export class Armor extends Equippable {
+export class Armor extends Item {
   health: number;
-  lastTickHealth: number;
+  rechargeTurnCounter: number;
+  readonly RECHARGE_TURNS = 18;
 
-  constructor(health: number, x: number, y: number) {
+  constructor(x: number, y: number) {
     super(x, y);
-    this.health = health;
-    this.lastTickHealth = health;
-    this.tileX = 4;
+    this.health = 1;
+    this.rechargeTurnCounter = -1;
+    this.tileX = 5;
     this.tileY = 0;
+  }
+
+  tick = () => {
+    if (this.rechargeTurnCounter > 0) {
+      this.rechargeTurnCounter--;
+      if (this.rechargeTurnCounter === 0) {
+        this.rechargeTurnCounter = -1;
+        this.health = 1;
+      }
+    }
   }
 
   hurt = (damage: number) => {
     this.health -= damage;
     if (this.health <= 0) {
       this.health = 0;
-      this.dead = true;
+      this.rechargeTurnCounter = this.RECHARGE_TURNS;
     }
   };
 
-  coEquippable = (other: Equippable): boolean => {
-    return !(other instanceof Armor);
-  };
+  drawGUI = (playerHealth: number) => {
+    if (this.rechargeTurnCounter === -1)
+      Game.drawItem(5, 0, 1, 2, playerHealth, LevelConstants.SCREEN_H - 2, 1, 2);
+    else {
+      let rechargeProportion = 1 - (this.rechargeTurnCounter / this.RECHARGE_TURNS);
 
-  drawEquipped = (x: number, y: number) => {
-    Game.drawMob(0, 2, 1, 2, x, y - 1.5, 1, 2);
-  };
+      if (rechargeProportion < 0.33) {
+        Game.drawItem(2, 0, 1, 2, playerHealth, LevelConstants.SCREEN_H - 2, 1, 2);
+      } else if (rechargeProportion < 0.67) {
+        Game.drawItem(3, 0, 1, 2, playerHealth, LevelConstants.SCREEN_H - 2, 1, 2);
+      } else {
+        Game.drawItem(4, 0, 1, 2, playerHealth, LevelConstants.SCREEN_H - 2, 1, 2);
+      }
+    }
+  }
 }

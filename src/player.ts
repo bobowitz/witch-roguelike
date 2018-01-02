@@ -4,18 +4,16 @@ import { Game } from "./game";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { Trapdoor } from "./tile/trapdoor";
-import { HealthBar } from "./healthbar";
 import { Floor } from "./tile/floor";
 import { Inventory } from "./inventory";
 import { LockedDoor } from "./tile/lockedDoor";
 import { Sound } from "./sound";
-import { Potion } from "./item/potion";
+import { Heart } from "./item/heart";
 import { Spike } from "./tile/spike";
 import { TextParticle } from "./textParticle";
 import { Armor } from "./item/armor";
 import { Item } from "./item/item";
 import { Equippable } from "./item/equippable";
-import { Helmet } from "./item/helmet";
 import { LevelConstants } from "./levelConstants";
 import { Map } from "./map";
 import { Pickup } from "./item/pickup";
@@ -34,7 +32,7 @@ export class Player {
   game: Game;
   flashing: boolean;
   flashingFrame: number;
-  healthBar: HealthBar;
+  health: number;
   stats: Stats;
   dead: boolean;
   lastTickHealth: number;
@@ -57,12 +55,12 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.healthBar = new HealthBar(50);
+    this.health = 1;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
-    this.lastTickHealth = this.healthBar.health;
+    this.lastTickHealth = this.health;
 
     this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
@@ -109,7 +107,7 @@ export class Player {
   };
 
   hit = (): number => {
-    return Math.pow(2, this.stats.level - 1) * Game.randTable([3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7]);
+    return 1;
   };
 
   tryMove = (x: number, y: number) => {
@@ -170,43 +168,20 @@ export class Player {
     }
   };
 
-  buffHealth = (amount: number) => {
-    this.healthBar.fullHealth += amount;
-    //this.healthBar.health += amount;
-
-    this.game.level.textParticles.push(
-      new TextParticle("+" + amount, this.x + 0.5, this.y - 0.5, GameConstants.HEALTH_BUFF_COLOR, 0)
-    );
-
-    Sound.powerup();
-  };
-
-  heal = (amount: number) => {
-    this.healthBar.heal(amount);
-
-    Sound.heal();
-  };
-
   hurt = (damage: number) => {
-    let allArmor = Array<Armor | Helmet>();
-    for (const e of this.equipped) {
-      if (e instanceof Armor || e instanceof Helmet) {
-        allArmor.push(e);
-      }
+    let armor = null;
+    for (const i of this.inventory.items) {
+      if (i instanceof Armor) armor = i;
     }
-    if (allArmor.length > 0) {
+    console.log(armor);
+    if (armor !== null && armor.health > 0) {
       let totalDamage = 0;
-      let avgDamage = damage / allArmor.length;
-      for (let i = 0; i < allArmor.length; i++) {
-        allArmor[i].hurt(Math.round((i + 1) * avgDamage - totalDamage));
-        totalDamage += Math.round(avgDamage - totalDamage);
-      }
+      armor.hurt(damage);
     } else {
       this.flashing = true;
-      this.healthBar.hurt(damage);
-      if (this.healthBar.health <= 0) {
-        this.healthBar.health = 0;
-
+      this.health -= damage;
+      if (this.health <= 0) {
+        this.health = 0;
         this.dead = true;
       }
     }
@@ -247,47 +222,17 @@ export class Player {
   finishTick = () => {
     this.flashing = false;
 
-    let totalHealthDiff = this.healthBar.health - this.lastTickHealth;
-    this.lastTickHealth = this.healthBar.health; // update last tick health
+    let totalHealthDiff = this.health - this.lastTickHealth;
+    this.lastTickHealth = this.health; // update last tick health
     if (totalHealthDiff < 0) {
       this.game.level.textParticles.push(
         new TextParticle("" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED, 0)
       );
-    } else if (totalHealthDiff > 0) {
+    }
+    else if (totalHealthDiff > 0) {
       this.game.level.textParticles.push(
-        new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.GREEN, 0)
+        new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED, 0)
       );
-    } else {
-      // if no health changes, check for health changes (we don't want them to overlap, health changes have priority)
-
-      let totalArmorDiff = 0;
-      this.missProb = 0.1; // check this here too
-      for (const e of this.equipped) {
-        if (e instanceof Armor || e instanceof Helmet) {
-          totalArmorDiff += e.health - e.lastTickHealth;
-          e.lastTickHealth = e.health;
-          this.missProb += 0.1; // for each equipped piece of armor, increase missProb by .1
-        }
-      }
-      if (totalArmorDiff < 0) {
-        this.game.level.textParticles.push(
-          new TextParticle(
-            "" + totalArmorDiff,
-            this.x + 0.5,
-            this.y - 0.5,
-            GameConstants.ARMOR_GREY
-          )
-        );
-      } else if (totalArmorDiff > 0) {
-        this.game.level.textParticles.push(
-          new TextParticle(
-            "+" + totalArmorDiff,
-            this.x + 0.5,
-            this.y - 0.5,
-            GameConstants.ARMOR_GREY
-          )
-        );
-      }
     }
   };
 
@@ -299,45 +244,20 @@ export class Player {
         this.drawY += -0.5 * this.drawY;
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
         Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
-        for (const e of this.equipped) {
-          if (e instanceof Armor || e instanceof Helmet)
-            e.drawEquipped(this.x - this.drawX, this.y - this.drawY);
-        }
       }
     }
   };
 
   drawTopLayer = () => {
     if (!this.dead) {
-      this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
-
-      Game.ctx.fillStyle = GameConstants.OUTLINE;
-      Game.ctx.fillRect(
-        1,
-        GameConstants.HEIGHT - 15,
-        GameConstants.WIDTH - 2,
-        14
-      );
-      Game.ctx.fillStyle = GameConstants.RED;
-      Game.ctx.fillRect(2, GameConstants.HEIGHT - 14, GameConstants.WIDTH - 4, 12);
-
-      Game.ctx.fillStyle = GameConstants.GREEN;
-      Game.ctx.fillRect(
-        2, GameConstants.HEIGHT - 14, Math.floor((this.healthBar.health / this.healthBar.fullHealth) * (GameConstants.WIDTH - 4)), 12
-      );
-
-      Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
-      let healthArmorString = this.healthBar.health + "/" + this.healthBar.fullHealth;
-      let totalArmor = 0;
-      for (const e of this.equipped) {
-        if (e instanceof Armor || e instanceof Helmet) {
-          totalArmor += e.health;
-        }
+      for (let i = 0; i < this.health; i++) {
+        Game.drawItem(8, 0, 1, 2, i, LevelConstants.SCREEN_H - 2, 1, 2);
       }
-      healthArmorString += totalArmor === 0 ? "" : "+" + totalArmor + " armor";
-      Game.ctx.fillText(healthArmorString, 3, GameConstants.HEIGHT - (GameConstants.FONT_SIZE - 1));
-
-      this.stats.drawGUI();
+      for (const i of this.inventory.items) {
+        if (i instanceof Armor)
+          i.drawGUI(this.health);
+      }
+      // this.stats.drawGUI(); TODO
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";

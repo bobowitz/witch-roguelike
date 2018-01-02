@@ -1,7 +1,6 @@
 import { Collidable } from "../tile/collidable";
 import { Game } from "../game";
 import { Level } from "../level";
-import { HealthBar } from "../healthbar";
 import { Bones } from "../tile/bones";
 import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
@@ -11,7 +10,7 @@ export class Enemy extends Collidable {
   drawY: number;
   dead: boolean;
   game: Game;
-  healthBar: HealthBar;
+  health: number;
   tileX: number;
   tileY: number;
   hasShadow: boolean;
@@ -22,7 +21,7 @@ export class Enemy extends Collidable {
     this.game = game;
     this.drawX = 0;
     this.drawY = 0;
-    this.healthBar = new HealthBar(1);
+    this.health = 1;
     this.tileX = 0;
     this.tileY = 0;
     this.hasShadow = true;
@@ -50,8 +49,8 @@ export class Enemy extends Collidable {
   }
 
   hurt = (player: Player, damage: number) => {
-    this.healthBar.hurt(damage);
-    if (this.healthBar.health <= 0) {
+    this.health -= damage;
+    if (this.health <= 0) {
       player.stats.getXP(this.dropXP());
       this.kill();
     }
@@ -85,7 +84,5 @@ export class Enemy extends Collidable {
     }
   };
   tick = () => { };
-  drawTopLayer = () => {
-    this.healthBar.drawAboveTile(this.x - this.drawX + 0.5, this.y - 0.75 - this.drawY);
-  };
+  drawTopLayer = () => { };
 }

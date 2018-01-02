@@ -3,15 +3,15 @@ import { Player } from "../player";
 import { Game } from "../game";
 import { Pickup } from "./pickup";
 
-export class Potion extends Pickup {
+export class Heart extends Pickup {
   constructor(x: number, y: number) {
     super(x, y);
 
-    this.tileX = 2;
+    this.tileX = 8;
     this.tileY = 0;
   }
 
   onPickup = (player: Player) => {
-    player.heal(Game.randTable([9, 10, 10, 10, 10, 15]));
+    player.health += 1;
   };
 }

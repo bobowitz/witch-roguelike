@@ -3,12 +3,9 @@ import { Item } from "../item/item";
 import { Game } from "../game";
 import { Key } from "../item/key";
 import { Level } from "../level";
-import { Potion } from "../item/potion";
+import { Heart } from "../item/heart";
 import { Armor } from "../item/armor";
-import { Helmet } from "../item/helmet";
-import { HealthBuff } from "../item/healthbuff";
 import { Enemy } from "./enemy";
-import { HealthBar } from "../healthbar";
 import { LevelConstants } from "../levelConstants";
 
 export class Chest extends Enemy {
@@ -17,7 +14,7 @@ export class Chest extends Enemy {
 
     this.tileX = 17;
     this.tileY = 0;
-    this.healthBar = new HealthBar(1);
+    this.health = 1;
   }
 
   kill = () => {
@@ -28,19 +25,14 @@ export class Chest extends Enemy {
 
     switch (drop) {
       case 1:
-        this.game.level.items.push(new HealthBuff(this.x, this.y));
+        this.game.level.items.push(new Heart(this.x, this.y));
         break;
       case 2:
         this.game.level.items.push(new Key(this.x, this.y));
         break;
       case 3:
         this.game.level.items.push(
-          new Armor(Game.randTable([25, 50, 50, 50, 50, 50, 50, 75]), this.x, this.y)
-        );
-        break;
-      case 4:
-        this.game.level.items.push(
-          new Helmet(Game.randTable([20, 30, 30, 30, 30, 30, 45]), this.x, this.y)
+          new Armor(this.x, this.y)
         );
         break;
     }
