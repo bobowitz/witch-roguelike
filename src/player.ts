@@ -23,6 +23,7 @@ import { Stats } from "./stats";
 import { GoldenDoor } from "./tile/goldenDoor";
 import { UnlockedGoldenDoor } from "./tile/unlockedGoldenDoor";
 import { Chest } from "./enemy/chest";
+import { WizardFireball } from "./projectile/wizardFireball";
 
 export class Player {
   x: number;
@@ -271,6 +272,14 @@ export class Player {
   startTick = () => {};
 
   finishTick = () => {
+    for (const p of this.game.level.projectiles) {
+      if (p instanceof WizardFireball) {
+        if (this.x === p.x && this.y === p.y) {
+          p.hit(this); // let fireball determine if it's in a damage-dealing state rn
+        }
+      }
+    }
+
     this.flashing = false;
 
     let totalHealthDiff = this.health - this.lastTickHealth;

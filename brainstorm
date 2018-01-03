@@ -13,10 +13,12 @@ usables (once-use), equippables, and pickups
 ***CHANGES***
 *************
 
-change attack to dash
 or 2 tile hitscan
-bring back health bars, get rid of hit particles
+add indication of who's attacking you
+draw enemies move after player
+inventory screen with more detailed pictures for items
 
+DASHING IS ACTUALLY FUN
 
 ***********
 ***ITEMS***

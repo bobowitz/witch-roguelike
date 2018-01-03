@@ -18,6 +18,7 @@ import { LockedDoor } from "./tile/lockedDoor";
 import { GoldenDoor } from "./tile/goldenDoor";
 import { Spike } from "./tile/spike";
 import { GameConstants } from "./gameConstants";
+import { WizardEnemy } from "./enemy/wizardEnemy";
 import { SkullEnemy } from "./enemy/skullEnemy";
 import { Map } from "./map";
 import { Barrel } from "./enemy/barrel";
@@ -25,6 +26,7 @@ import { Crate } from "./enemy/crate";
 import { Input } from "./input";
 import { Armor } from "./item/armor";
 import { Particle } from "./particle";
+import { Projectile } from "./projectile/projectile";
 
 export class Level {
   levelArray: Tile[][];
@@ -32,6 +34,7 @@ export class Level {
   enemies: Array<Enemy>;
   items: Array<Item>;
   doors: Array<Door>; // just a reference for mapping, still access through levelArray
+  projectiles: Array<Projectile>;
   particles: Array<Particle>;
   game: Game;
   bottomDoorX: number;
@@ -349,12 +352,15 @@ export class Level {
         x = Game.rand(this.roomX, this.roomX + this.width - 1);
         y = Game.rand(this.roomY, this.roomY + this.height - 1);
       }
-      switch (this.difficulty === 1 ? 1 : Game.rand(1, 2)) {
+      switch (Game.rand(1, 3)) {
         case 1:
           this.enemies.push(new KnightEnemy(this, this.game, x, y));
           break;
         case 2:
           this.enemies.push(new SkullEnemy(this, this.game, x, y));
+          break;
+        case 3:
+          this.enemies.push(new WizardEnemy(this, this.game, x, y));
           break;
       }
     }
@@ -418,6 +424,7 @@ export class Level {
     this.env = env;
 
     this.items = Array<Item>();
+    this.projectiles = Array<Projectile>();
     this.particles = Array<Particle>();
     this.doors = Array<Door>();
     this.enemies = Array<Enemy>();
@@ -699,6 +706,9 @@ export class Level {
   tick = () => {
     this.game.player.startTick();
     if (this.game.player.armor) this.game.player.armor.tick();
+    for (const p of this.projectiles) {
+      p.tick();
+    }
     for (const e of this.enemies) {
       e.tick();
     }
@@ -746,6 +756,11 @@ export class Level {
 
     for (const p of this.particles) {
       p.drawBehind();
+    }
+
+    this.projectiles = this.projectiles.filter(p => !p.dead);
+    for (const p of this.projectiles) {
+      p.draw();
     }
 
     for (const e of this.enemies) {
