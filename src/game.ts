@@ -49,7 +49,7 @@ export class Game {
       Sound.playMusic(); // loops forever
 
       this.player = new Player(this, 0, 0);
-      this.level = new Level(this, null, false, true, 0, 0, 1);
+      this.level = new Level(this, null, false, true, 0, 0, 2);
       this.level.enterLevel();
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);

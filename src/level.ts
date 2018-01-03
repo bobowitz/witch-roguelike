@@ -708,7 +708,7 @@ export class Level {
   };
 
   update = () => {
-    // update, animations maybe?
+    //
   };
 
   draw = () => {
@@ -743,6 +743,10 @@ export class Level {
   drawEntitiesBehindPlayer = () => {
     this.enemies.sort((a, b) => a.y - b.y);
     this.items.sort((a, b) => a.y - b.y);
+
+    for (const p of this.particles) {
+      p.drawBehind();
+    }
 
     for (const e of this.enemies) {
       if (e.y <= this.game.player.y && this.visibilityArray[e.x][e.y] > 0) e.draw();

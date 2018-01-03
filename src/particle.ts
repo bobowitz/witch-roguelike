@@ -1,4 +1,5 @@
 export class Particle {
   dead: boolean;
-  draw = () => {};
+  drawBehind = () => {}; // drawing behind player and such
+  draw = () => {}; // drawing on top of player and such
 }

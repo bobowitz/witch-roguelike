@@ -7,25 +7,19 @@ export class DashParticle extends Particle {
   y: number;
   frame: number;
   dead: boolean;
-  delay: number;
 
-  constructor(x: number, y: number, delay: number) {
+  constructor(x: number, y: number, frameOffset: number) {
     super();
     this.x = x;
     this.y = y - 1;
     this.dead = false;
-    this.frame = 0;
-    this.delay = delay;
+    this.frame = frameOffset;
   }
 
-  draw = () => {
-    if (this.delay > 0) {
-      this.delay--;
-    } else {
-      Game.drawFX(Math.round(this.frame), 0, 1, 2, this.x, this.y, 1, 2);
+  drawBehind = () => {
+    Game.drawFX(Math.round(this.frame), 0, 1, 2, this.x, this.y, 1, 2);
 
-      this.frame += 0.5;
-      if (this.frame > 10) this.dead = true;
-    }
+    this.frame += 0.4;
+    if (this.frame > 7) this.dead = true;
   };
 }

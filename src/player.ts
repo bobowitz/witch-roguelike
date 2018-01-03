@@ -58,7 +58,7 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 3;
+    this.health = 1;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
@@ -84,24 +84,28 @@ export class Player {
     this.inventory.close();
   };
   leftListener = () => {
-    if (Input.isDown(Input.SPACE)) {
-      this.tryDash(-1, 0);
-    } else if (!this.dead) this.tryMove(this.x - 1, this.y);
+    if (!this.dead) {
+      if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
+      else this.tryMove(this.x - 1, this.y);
+    }
   };
   rightListener = () => {
-    if (Input.isDown(Input.SPACE)) {
-      this.tryDash(1, 0);
-    } else if (!this.dead) this.tryMove(this.x + 1, this.y);
+    if (!this.dead) {
+      if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
+      else this.tryMove(this.x + 1, this.y);
+    }
   };
   upListener = () => {
-    if (Input.isDown(Input.SPACE)) {
-      this.tryDash(0, -1);
-    } else if (!this.dead) this.tryMove(this.x, this.y - 1);
+    if (!this.dead) {
+      if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
+      else this.tryMove(this.x, this.y - 1);
+    }
   };
   downListener = () => {
-    if (Input.isDown(Input.SPACE)) {
-      this.tryDash(0, 1);
-    } else if (!this.dead) this.tryMove(this.x, this.y + 1);
+    if (!this.dead) {
+      if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
+      else this.tryMove(this.x, this.y + 1);
+    }
   };
 
   hit = (): number => {
@@ -114,10 +118,20 @@ export class Player {
     let startY = this.y;
     let x = this.x;
     let y = this.y;
-    let delay = 0;
+    let particleFrameOffset = 4;
     while (x !== startX + 2 * dx || y !== startY + 2 * dy) {
       x += dx;
       y += dy;
+      let other = this.game.level.getCollidable(x, y);
+      if (other === null) {
+      } else if (other instanceof Spike) {
+        other.onCollide(this);
+      } else {
+        break;
+      }
+      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
+      particleFrameOffset -= 2;
+      let breakFlag = false;
       for (let e of this.game.level.enemies) {
         if (e.x === x && e.y === y) {
           let dmg = this.hit();
@@ -125,23 +139,22 @@ export class Player {
           this.game.level.particles.push(
             new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
           );
+          if (e instanceof Chest) {
+            breakFlag = true;
+            this.game.level.tick();
+            break;
+          }
         }
       }
-      let other = this.game.level.getCollidable(x, y);
-      if (other === null) {
-      } else if (other instanceof Spike) {
-        other.onCollide(this);
-      } else {
-        this.dashMove(x - dx, y - dy);
-        break;
-      }
-      this.game.level.particles.push(new DashParticle(this.x, this.y, delay));
-      delay += 5;
+      if (breakFlag) break;
       this.dashMove(x, y);
     }
     this.drawX = this.x - startX;
     this.drawY = this.y - startY;
-    this.game.level.tick();
+    if (this.x !== startX || this.y !== startY) {
+      this.game.level.tick();
+      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
+    }
   };
 
   tryMove = (x: number, y: number) => {
@@ -207,6 +220,19 @@ export class Player {
   dashMove = (x: number, y: number) => {
     this.x = x;
     this.y = y;
+
+    for (let i of this.game.level.items) {
+      if (i.x === x && i.y === y) {
+        if (i instanceof Pickup) {
+          i.onPickup(this);
+        } else {
+          this.inventory.addItem(i);
+        }
+
+        this.game.level.items = this.game.level.items.filter(x => x !== i); // remove item from item list
+      }
+    }
+
     this.game.level.updateLighting();
   };
 

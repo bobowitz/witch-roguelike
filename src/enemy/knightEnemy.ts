@@ -6,7 +6,7 @@ import { astar } from "../astarclass";
 import { Heart } from "../item/heart";
 import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
-import { TextParticle } from "../textParticle";
+import { DeathParticle } from "../deathParticle";
 import { GameConstants } from "../gameConstants";
 
 export class KnightEnemy extends Enemy {
@@ -31,7 +31,9 @@ export class KnightEnemy extends Enemy {
   tick = () => {
     if (!this.dead) {
       this.ticks++;
+      this.tileX = 5;
       if (this.ticks % 2 === 0) {
+        this.tileX = 4;
         if (this.seenPlayer || this.level.visibilityArray[this.x][this.y] > 0) {
           // visible to player, chase them
 
@@ -70,10 +72,11 @@ export class KnightEnemy extends Enemy {
 
   dropXP = () => {
     return Game.randTable([4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 10]);
-  }
+  };
 
   kill = () => {
     this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
     this.dead = true;
+    this.level.particles.push(new DeathParticle(this.x, this.y));
   };
 }
