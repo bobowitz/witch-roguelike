@@ -12,6 +12,8 @@ export class Game {
   static tileset: HTMLImageElement;
   static mobset: HTMLImageElement;
   static itemset: HTMLImageElement;
+  static fxset: HTMLImageElement;
+  static inventory: HTMLImageElement;
 
   // [min, max] inclusive
   static rand = (min: number, max: number): number => {
@@ -38,12 +40,16 @@ export class Game {
       Game.mobset.src = "res/mobset.png";
       Game.itemset = new Image();
       Game.itemset.src = "res/itemset.png";
+      Game.fxset = new Image();
+      Game.fxset.src = "res/fxset.png";
+      Game.inventory = new Image();
+      Game.inventory.src = "res/inv.png";
 
       Sound.loadSounds();
       Sound.playMusic(); // loops forever
 
       this.player = new Player(this, 0, 0);
-      this.level = new Level(this, null, false, true, 0, Level.randEnv(), 1);
+      this.level = new Level(this, null, false, true, 0, 0, 1);
       this.level.enterLevel();
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
@@ -149,6 +155,29 @@ export class Game {
   ) => {
     Game.ctx.drawImage(
       Game.itemset,
+      sX * GameConstants.TILESIZE,
+      sY * GameConstants.TILESIZE,
+      sW * GameConstants.TILESIZE,
+      sH * GameConstants.TILESIZE,
+      dX * GameConstants.TILESIZE,
+      dY * GameConstants.TILESIZE,
+      dW * GameConstants.TILESIZE,
+      dH * GameConstants.TILESIZE
+    );
+  };
+
+  static drawFX = (
+    sX: number,
+    sY: number,
+    sW: number,
+    sH: number,
+    dX: number,
+    dY: number,
+    dW: number,
+    dH: number
+  ) => {
+    Game.ctx.drawImage(
+      Game.fxset,
       sX * GameConstants.TILESIZE,
       sY * GameConstants.TILESIZE,
       sW * GameConstants.TILESIZE,

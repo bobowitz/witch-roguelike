@@ -16,7 +16,6 @@ export class Barrel extends Enemy {
 
   kill = () => {
     this.dead = true;
-    if (Game.rand(1, 8) === 1) this.game.level.items.push(new Heart(this.x, this.y));
   };
 
   draw = () => {

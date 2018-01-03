@@ -17,7 +17,6 @@ import { SpawnFloor } from "./tile/spawnfloor";
 import { LockedDoor } from "./tile/lockedDoor";
 import { GoldenDoor } from "./tile/goldenDoor";
 import { Spike } from "./tile/spike";
-import { TextParticle } from "./textParticle";
 import { GameConstants } from "./gameConstants";
 import { SkullEnemy } from "./enemy/skullEnemy";
 import { Map } from "./map";
@@ -25,6 +24,7 @@ import { Barrel } from "./enemy/barrel";
 import { Crate } from "./enemy/crate";
 import { Input } from "./input";
 import { Armor } from "./item/armor";
+import { Particle } from "./particle";
 
 export class Level {
   levelArray: Tile[][];
@@ -32,7 +32,7 @@ export class Level {
   enemies: Array<Enemy>;
   items: Array<Item>;
   doors: Array<Door>; // just a reference for mapping, still access through levelArray
-  textParticles: Array<TextParticle>;
+  particles: Array<Particle>;
   game: Game;
   bottomDoorX: number;
   bottomDoorY: number;
@@ -323,10 +323,20 @@ export class Level {
 
   private addEnemies(): number {
     // add enemies
-    let numEnemies = Game.rand(1, 2);
+    let emptyTileCount = 0;
+    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
+      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+        if (this.getCollidable(x, y) === null) {
+          emptyTileCount++;
+        }
+      }
+    }
+    let numEnemies =
+      emptyTileCount /
+      5; /*Game.rand(1, 2);
     if (numEnemies === 1 || this.width * this.height > 8 * 8) {
       numEnemies = Game.randTable([1, 2, 2, 3, 3, 3, 4, 4, 4]);
-    } else numEnemies = 0;
+    } else numEnemies = 0;*/
     for (let i = 0; i < numEnemies; i++) {
       let x = 0;
       let y = 0;
@@ -408,7 +418,7 @@ export class Level {
     this.env = env;
 
     this.items = Array<Item>();
-    this.textParticles = Array<TextParticle>();
+    this.particles = Array<Particle>();
     this.doors = Array<Door>();
     this.enemies = Array<Enemy>();
 
@@ -547,7 +557,7 @@ export class Level {
   };
 
   exitLevel = () => {
-    this.textParticles.splice(0, this.textParticles.length);
+    this.particles.splice(0, this.particles.length);
   };
 
   updateLevelTextColor = () => {
@@ -756,8 +766,8 @@ export class Level {
       e.drawTopLayer(); // health bars
     }
 
-    this.textParticles = this.textParticles.filter(x => !x.dead);
-    for (const p of this.textParticles) {
+    this.particles = this.particles.filter(x => !x.dead);
+    for (const p of this.particles) {
       p.draw();
     }
 

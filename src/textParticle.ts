@@ -1,7 +1,8 @@
 import { Game } from "./game";
 import { GameConstants } from "./gameConstants";
+import { Particle } from "./particle";
 
-export class TextParticle {
+export class TextParticle extends Particle {
   text: string;
   x: number;
   y: number;
@@ -13,6 +14,7 @@ export class TextParticle {
   delay: number;
 
   constructor(text: string, x: number, y: number, color: string, delay?: number) {
+    super();
     this.text = text;
     this.x = x * GameConstants.TILESIZE;
     this.y = y * GameConstants.TILESIZE;

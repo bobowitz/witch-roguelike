@@ -69,6 +69,5 @@ export class SkullEnemy extends Enemy {
   kill = () => {
     this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
     this.dead = true;
-    if (Game.rand(1, 2) === 1) this.level.items.push(new Heart(this.x, this.y));
   };
 }

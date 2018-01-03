@@ -2,6 +2,7 @@ import { Item } from "./item";
 import { Player } from "../player";
 import { Game } from "../game";
 import { Pickup } from "./pickup";
+import { Sound } from "../sound";
 
 export class Heart extends Pickup {
   constructor(x: number, y: number) {
@@ -13,5 +14,6 @@ export class Heart extends Pickup {
 
   onPickup = (player: Player) => {
     player.health += 1;
+    Sound.heal();
   };
 }

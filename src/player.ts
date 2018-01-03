@@ -11,6 +11,7 @@ import { Sound } from "./sound";
 import { Heart } from "./item/heart";
 import { Spike } from "./tile/spike";
 import { TextParticle } from "./textParticle";
+import { DashParticle } from "./dashParticle";
 import { Armor } from "./item/armor";
 import { Item } from "./item/item";
 import { Equippable } from "./item/equippable";
@@ -21,6 +22,7 @@ import { Crate } from "./enemy/crate";
 import { Stats } from "./stats";
 import { GoldenDoor } from "./tile/goldenDoor";
 import { UnlockedGoldenDoor } from "./tile/unlockedGoldenDoor";
+import { Chest } from "./enemy/chest";
 
 export class Player {
   x: number;
@@ -49,14 +51,14 @@ export class Player {
     this.x = x;
     this.y = y;
 
-    Input.spaceListener = this.spaceListener;
-    Input.spaceUpListener = this.spaceUpListener;
+    Input.iListener = this.iListener;
+    Input.iUpListener = this.iUpListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 1;
+    this.health = 10;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
@@ -75,37 +77,30 @@ export class Player {
     this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
   }
 
-  spaceListener = () => {
-    // dev tools: chest spawning
-    // this.game.level.levelArray[this.x][this.y] = new Chest(
-    //   this.game.level,
-    //   this.game,
-    //   this.x,
-    //   this.y
-    // );
-    this.map.open();
+  iListener = () => {
+    this.inventory.open();
   };
-  spaceUpListener = () => {
-    this.map.close();
+  iUpListener = () => {
+    this.inventory.close();
   };
   leftListener = () => {
-    if (this.map.isOpen) {
-      this.map.leftListener();
+    if (Input.isDown(Input.SPACE)) {
+      this.tryDash(-1, 0);
     } else if (!this.dead) this.tryMove(this.x - 1, this.y);
   };
   rightListener = () => {
-    if (this.map.isOpen) {
-      this.map.rightListener();
+    if (Input.isDown(Input.SPACE)) {
+      this.tryDash(1, 0);
     } else if (!this.dead) this.tryMove(this.x + 1, this.y);
   };
   upListener = () => {
-    if (this.map.isOpen) {
-      this.map.upListener();
+    if (Input.isDown(Input.SPACE)) {
+      this.tryDash(0, -1);
     } else if (!this.dead) this.tryMove(this.x, this.y - 1);
   };
   downListener = () => {
-    if (this.map.isOpen) {
-      this.map.downListener();
+    if (Input.isDown(Input.SPACE)) {
+      this.tryDash(0, 1);
     } else if (!this.dead) this.tryMove(this.x, this.y + 1);
   };
 
@@ -113,60 +108,85 @@ export class Player {
     return 1;
   };
 
-  tryMove = (x: number, y: number) => {
-    let hitEnemy = false;
-    for (let e of this.game.level.enemies) {
-      if (e.x === x && e.y === y) {
-        let dmg = this.hit();
-        e.hurt(this, dmg);
-        this.game.level.textParticles.push(
-          new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
-        );
-        hitEnemy = true;
+  // dash length 2
+  tryDash = (dx: number, dy: number) => {
+    let startX = this.x;
+    let startY = this.y;
+    let x = this.x;
+    let y = this.y;
+    let delay = 0;
+    while (x !== startX + 2 * dx || y !== startY + 2 * dy) {
+      x += dx;
+      y += dy;
+      for (let e of this.game.level.enemies) {
+        if (e.x === x && e.y === y) {
+          let dmg = this.hit();
+          e.hurt(this, dmg);
+          this.game.level.particles.push(
+            new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
+          );
+        }
       }
-    }
-    if (hitEnemy) {
-      this.drawX = (this.x - x) * 0.5;
-      this.drawY = (this.y - y) * 0.5;
-      this.game.level.tick();
-    } else {
       let other = this.game.level.getCollidable(x, y);
       if (other === null) {
-        this.move(x, y);
-        this.game.level.tick();
+      } else if (other instanceof Spike) {
+        other.onCollide(this);
       } else {
-        if (other instanceof Door) {
-          if (x - this.x === 0) {
-            this.move(x, y);
-            other.onCollide(this);
-          }
-        } else if (other instanceof UnlockedGoldenDoor) {
-          if (x - this.x === 0) {
-            this.move(x, y);
-            other.onCollide(this);
-          }
-        } else if (other instanceof LockedDoor) {
-          if (x - this.x === 0) {
-            this.drawX = (this.x - x) * 0.5;
-            this.drawY = (this.y - y) * 0.5;
-            other.unlock(this);
-            this.game.level.tick();
-          }
-        } else if (other instanceof GoldenDoor) {
-          if (x - this.x === 0) {
-            this.drawX = (this.x - x) * 0.5;
-            this.drawY = (this.y - y) * 0.5;
-            other.unlock(this);
-            this.game.level.tick();
-          }
-        } else if (other instanceof BottomDoor || other instanceof Trapdoor) {
+        this.move(x - dx, y - dy);
+        break;
+      }
+      this.game.level.particles.push(new DashParticle(this.x, this.y, delay));
+      delay += 5;
+      this.move(x, y);
+    }
+    this.drawX = this.x - startX;
+    this.drawY = this.y - startY;
+    this.game.level.tick();
+  };
+
+  tryMove = (x: number, y: number) => {
+    for (let e of this.game.level.enemies) {
+      // if we're trying to hit an enemy, do nothing
+      if (e.x === x && e.y === y) {
+        return;
+      }
+    }
+    let other = this.game.level.getCollidable(x, y);
+    if (other === null) {
+      this.move(x, y);
+      this.game.level.tick();
+    } else {
+      if (other instanceof Door) {
+        if (x - this.x === 0) {
           this.move(x, y);
           other.onCollide(this);
-        } else if (other instanceof Spike) {
+        }
+      } else if (other instanceof UnlockedGoldenDoor) {
+        if (x - this.x === 0) {
           this.move(x, y);
           other.onCollide(this);
+        }
+      } else if (other instanceof LockedDoor) {
+        if (x - this.x === 0) {
+          this.drawX = (this.x - x) * 0.5;
+          this.drawY = (this.y - y) * 0.5;
+          other.unlock(this);
           this.game.level.tick();
         }
+      } else if (other instanceof GoldenDoor) {
+        if (x - this.x === 0) {
+          this.drawX = (this.x - x) * 0.5;
+          this.drawY = (this.y - y) * 0.5;
+          other.unlock(this);
+          this.game.level.tick();
+        }
+      } else if (other instanceof BottomDoor || other instanceof Trapdoor) {
+        this.move(x, y);
+        other.onCollide(this);
+      } else if (other instanceof Spike) {
+        this.move(x, y);
+        other.onCollide(this);
+        this.game.level.tick();
       }
     }
   };
@@ -203,6 +223,8 @@ export class Player {
         this.game.level.items = this.game.level.items.filter(x => x !== i); // remove item from item list
       }
     }
+
+    this.game.level.updateLighting();
   };
 
   moveNoSmooth = (x: number, y: number) => {
@@ -212,9 +234,9 @@ export class Player {
     this.drawY = 0;
   };
 
-  update = () => { };
+  update = () => {};
 
-  startTick = () => { };
+  startTick = () => {};
 
   finishTick = () => {
     this.flashing = false;
@@ -222,24 +244,24 @@ export class Player {
     let totalHealthDiff = this.health - this.lastTickHealth;
     this.lastTickHealth = this.health; // update last tick health
     if (totalHealthDiff < 0) {
-      this.game.level.textParticles.push(
+      this.flashing = true;
+      this.game.level.particles.push(
         new TextParticle("" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED, 0)
       );
-    }
-    else if (totalHealthDiff > 0) {
-      this.game.level.textParticles.push(
+    } else if (totalHealthDiff > 0) {
+      this.game.level.particles.push(
         new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED, 0)
       );
     }
   };
 
   draw = () => {
-    this.flashingFrame += 4 / GameConstants.FPS;
+    this.flashingFrame += 12 / GameConstants.FPS;
     if (!this.dead) {
+      Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
         this.drawX += -0.5 * this.drawX;
         this.drawY += -0.5 * this.drawY;
-        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
         Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
       }
     }
@@ -250,8 +272,7 @@ export class Player {
       for (let i = 0; i < this.health; i++) {
         Game.drawItem(8, 0, 1, 2, i, LevelConstants.SCREEN_H - 2, 1, 2);
       }
-      if (this.armor)
-        this.armor.drawGUI(this.health);
+      if (this.armor) this.armor.drawGUI(this.health);
       // this.stats.drawGUI(); TODO
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;

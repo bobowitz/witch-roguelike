@@ -13,6 +13,7 @@ export class Inventory {
   tileX = 0;
   tileY = 0;
   game: Game;
+  isOpen: boolean;
 
   constructor(game: Game) {
     this.game = game;
@@ -20,6 +21,14 @@ export class Inventory {
     Input.mouseLeftClickListener = this.mouseLeftClickListener;
     this.items.push();
   }
+
+  open = () => {
+    this.isOpen = true;
+  };
+
+  close = () => {
+    this.isOpen = false;
+  };
 
   hasItem(itemType) {
     for (const i of this.items) {
@@ -54,20 +63,32 @@ export class Inventory {
   };
 
   draw = () => {
-    // check equips too
-    this.items = this.items.filter(x => !x.dead);
-    this.game.player.equipped = this.items.filter(
-      x => x instanceof Equippable && x.equipped
-    ) as Array<Equippable>;
+    if (this.isOpen) {
+      Game.ctx.drawImage(
+        Game.inventory,
+        GameConstants.WIDTH / 2 - 48,
+        GameConstants.HEIGHT / 2 - 48
+      );
+      // check equips too
+      this.items = this.items.filter(x => !x.dead);
+      this.game.player.equipped = this.items.filter(
+        x => x instanceof Equippable && x.equipped
+      ) as Array<Equippable>;
 
-    for (let i = 0; i < this.items.length; i++) {
-      let x = i % LevelConstants.SCREEN_W;
-      let y = Math.floor(i / LevelConstants.SCREEN_W);
+      for (let i = 0; i < this.items.length; i++) {
+        let s = 4;
 
-      this.items[i].drawIcon(x, y);
+        let x = i % s;
+        let y = Math.floor(i / s);
 
-      if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
-        Game.drawItem(0, 1, 1, 1, x, y, 1, 1);
+        this.items[i].drawIcon(
+          x + LevelConstants.SCREEN_W / 2 - s / 2,
+          y + LevelConstants.SCREEN_H / 2 - s / 2
+        );
+
+        if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
+          Game.drawItem(0, 1, 1, 1, x, y, 1, 1);
+        }
       }
     }
   };

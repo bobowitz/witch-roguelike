@@ -9,6 +9,15 @@ make player find the golden door
 should using items use a turn?
 usables (once-use), equippables, and pickups
 
+*************
+***CHANGES***
+*************
+
+change attack to dash
+or 2 tile hitscan
+bring back health bars, get rid of hit particles
+
+
 ***********
 ***ITEMS***
 ***********
@@ -30,3 +39,19 @@ mind control - control monster's next move
 3. EQUIPPABLES
 bow and arrow - shoots arrow which moves 1 tile per turn
 hitscan weapon - hits target immediately
+
+
+***********
+***STORY***
+***********
+
+start off in wizard's hut in the woods
+venture outside, fight some worms and rats
+boss fight unlocks stone stairs leading downward to dungeon
+lighting first appears in dungeon
+prisoner tells you legend of the monster at the bottom of the dungeon, warns you
+dungeon introduces skulls and knights, still has some rats
+dungeon has multiple vertical levels
+killing dungeon boss drops golden key
+golden key unlocks door to ice env
+yetis, snowmen
