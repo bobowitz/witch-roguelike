@@ -58,7 +58,7 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 10;
+    this.health = 3;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
@@ -132,12 +132,12 @@ export class Player {
       } else if (other instanceof Spike) {
         other.onCollide(this);
       } else {
-        this.move(x - dx, y - dy);
+        this.dashMove(x - dx, y - dy);
         break;
       }
       this.game.level.particles.push(new DashParticle(this.x, this.y, delay));
       delay += 5;
-      this.move(x, y);
+      this.dashMove(x, y);
     }
     this.drawX = this.x - startX;
     this.drawY = this.y - startY;
@@ -202,6 +202,12 @@ export class Player {
         this.dead = true;
       }
     }
+  };
+
+  dashMove = (x: number, y: number) => {
+    this.x = x;
+    this.y = y;
+    this.game.level.updateLighting();
   };
 
   move = (x: number, y: number) => {

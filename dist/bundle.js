@@ -2617,12 +2617,12 @@ var Player = (function () {
                     other.onCollide(_this);
                 }
                 else {
-                    _this.move(x - dx, y - dy);
+                    _this.dashMove(x - dx, y - dy);
                     break;
                 }
                 _this.game.level.particles.push(new dashParticle_1.DashParticle(_this.x, _this.y, delay));
                 delay += 5;
-                _this.move(x, y);
+                _this.dashMove(x, y);
             }
             _this.drawX = _this.x - startX;
             _this.drawY = _this.y - startY;
@@ -2693,6 +2693,11 @@ var Player = (function () {
                     _this.dead = true;
                 }
             }
+        };
+        this.dashMove = function (x, y) {
+            _this.x = x;
+            _this.y = y;
+            _this.game.level.updateLighting();
         };
         this.move = function (x, y) {
             sound_1.Sound.footstep();
@@ -2776,7 +2781,7 @@ var Player = (function () {
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
-        this.health = 10;
+        this.health = 3;
         this.stats = new stats_1.Stats();
         this.dead = false;
         this.flashing = false;
