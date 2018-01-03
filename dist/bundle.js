@@ -1312,9 +1312,8 @@ exports.Input = {
     _pressed: {},
     iListener: function () { },
     iUpListener: function () { },
-    sListener: function () { },
-    spaceListener: function () { },
-    spaceUpListener: function () { },
+    mListener: function () { },
+    mUpListener: function () { },
     rightListener: function () { },
     leftListener: function () { },
     upListener: function () { },
@@ -1331,11 +1330,6 @@ exports.Input = {
     onKeydown: function (event) {
         exports.Input._pressed[event.keyCode] = true;
         switch (event.keyCode) {
-            case exports.Input.SPACE:
-                // we don't want repeats for space specifically cause of map stuff
-                if (!event.repeat)
-                    exports.Input.spaceListener();
-                break;
             case exports.Input.LEFT:
                 exports.Input.leftListener();
                 break;
@@ -1348,8 +1342,8 @@ exports.Input = {
             case exports.Input.DOWN:
                 exports.Input.downListener();
                 break;
-            case 83:
-                exports.Input.sListener();
+            case 77:
+                exports.Input.mListener();
                 break;
             case 73:
                 exports.Input.iListener();
@@ -1358,8 +1352,8 @@ exports.Input = {
     },
     onKeyup: function (event) {
         delete this._pressed[event.keyCode];
-        if (event.keyCode === exports.Input.SPACE)
-            exports.Input.spaceUpListener();
+        if (event.keyCode === 77)
+            exports.Input.mUpListener();
         if (event.keyCode === 73)
             exports.Input.iUpListener();
     },
@@ -2875,10 +2869,13 @@ var Player = (function () {
         this.game = game;
         this.x = x;
         this.y = y;
+        this.map = new map_1.Map(game);
         input_1.Input.iListener = this.iListener;
         input_1.Input.iUpListener = this.iUpListener;
         input_1.Input.leftListener = this.leftListener;
         input_1.Input.rightListener = this.rightListener;
+        input_1.Input.mListener = this.map.open;
+        input_1.Input.mUpListener = this.map.close;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
         this.health = 1;
@@ -2889,7 +2886,6 @@ var Player = (function () {
         this.lastTickHealth = this.health;
         this.equipped = Array();
         this.inventory = new inventory_1.Inventory(game);
-        this.map = new map_1.Map(game);
         this.missProb = 0.1;
         this.armor = null;
         this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
@@ -3426,28 +3422,44 @@ var WizardEnemy = (function (_super) {
         _this.tick = function () {
             if (!_this.dead && _this.level.visibilityArray[_this.x][_this.y] > 0) {
                 _this.ticks++;
-                switch (_this.ticks % 5) {
+                switch (_this.ticks % 3) {
                     case 0:
+                        _this.tileX = 7;
+                        if (_this.level.getCollidable(_this.x - 1, _this.y) === null) {
+                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x - 1, _this.y));
+                            if (_this.level.getCollidable(_this.x - 2, _this.y) === null) {
+                                _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x - 2, _this.y));
+                            }
+                        }
+                        if (_this.level.getCollidable(_this.x + 1, _this.y) === null) {
+                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x + 1, _this.y));
+                            if (_this.level.getCollidable(_this.x + 2, _this.y) === null) {
+                                _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x + 2, _this.y));
+                            }
+                        }
+                        if (_this.level.getCollidable(_this.x, _this.y - 1) === null) {
+                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x, _this.y - 1));
+                            if (_this.level.getCollidable(_this.x, _this.y - 2) === null) {
+                                _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x, _this.y - 2));
+                            }
+                        }
+                        if (_this.level.getCollidable(_this.x, _this.y + 1) === null) {
+                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x, _this.y + 1));
+                            if (_this.level.getCollidable(_this.x, _this.y + 2) === null) {
+                                _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x, _this.y + 2));
+                            }
+                        }
+                        break;
+                    case 1:
+                        _this.tileX = 6;
+                        break;
+                    default:
                         var oldX = _this.x;
                         var oldY = _this.y;
                         var moveXY = game_1.Game.randTable([[0, 1], [0, -1], [1, 0], [-1, 0]]);
                         _this.tryMove(_this.x + moveXY[0], _this.y + moveXY[1]);
                         _this.drawX = _this.x - oldX;
                         _this.drawY = _this.y - oldY;
-                        break;
-                    case 2:
-                        _this.tileX = 7;
-                        if (_this.level.getCollidable(_this.x - 1, _this.y) === null)
-                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x - 1, _this.y));
-                        if (_this.level.getCollidable(_this.x + 1, _this.y) === null)
-                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x + 1, _this.y));
-                        if (_this.level.getCollidable(_this.x, _this.y - 1) === null)
-                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x, _this.y - 1));
-                        if (_this.level.getCollidable(_this.x, _this.y + 1) === null)
-                            _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x, _this.y + 1));
-                        break;
-                    case 3:
-                        _this.tileX = 6;
                         break;
                 }
             }
@@ -3500,6 +3512,7 @@ var WizardFireball = (function (_super) {
             _this.state++;
             if (_this.state === 1) {
                 _this.frame = 0;
+                _this.delay = game_1.Game.rand(0, 10);
             }
         };
         _this.hit = function (player) {
@@ -3515,6 +3528,10 @@ var WizardFireball = (function (_super) {
                 game_1.Game.drawFX(18 + Math.floor(_this.frame), 6, 1, 2, _this.x, _this.y - 1, 1, 2);
             }
             else {
+                if (_this.delay > 0) {
+                    _this.delay--;
+                    return;
+                }
                 _this.frame += 0.3;
                 if (_this.frame > 17)
                     _this.dead = true;

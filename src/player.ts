@@ -52,10 +52,14 @@ export class Player {
     this.x = x;
     this.y = y;
 
+    this.map = new Map(game);
+
     Input.iListener = this.iListener;
     Input.iUpListener = this.iUpListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
+    Input.mListener = this.map.open;
+    Input.mUpListener = this.map.close;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
@@ -68,8 +72,6 @@ export class Player {
 
     this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
-
-    this.map = new Map(game);
 
     this.missProb = 0.1;
 

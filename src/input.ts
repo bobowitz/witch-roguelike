@@ -3,16 +3,15 @@ import { GameConstants } from "./gameConstants";
 export const Input = {
   _pressed: {},
 
-  iListener: function () { },
-  iUpListener: function () { },
-  sListener: function () { },
-  spaceListener: function () { },
-  spaceUpListener: function () { },
-  rightListener: function () { },
-  leftListener: function () { },
-  upListener: function () { },
-  downListener: function () { },
-  mouseLeftClickListener: function (x: number, y: number) { },
+  iListener: function() {},
+  iUpListener: function() {},
+  mListener: function() {},
+  mUpListener: function() {},
+  rightListener: function() {},
+  leftListener: function() {},
+  upListener: function() {},
+  downListener: function() {},
+  mouseLeftClickListener: function(x: number, y: number) {},
 
   SPACE: 32,
   LEFT: 37,
@@ -20,17 +19,13 @@ export const Input = {
   RIGHT: 39,
   DOWN: 40,
 
-  isDown: function (keyCode: number) {
+  isDown: function(keyCode: number) {
     return this._pressed[keyCode];
   },
 
   onKeydown: (event: KeyboardEvent) => {
     Input._pressed[event.keyCode] = true;
     switch (event.keyCode) {
-      case Input.SPACE:
-        // we don't want repeats for space specifically cause of map stuff
-        if (!event.repeat) Input.spaceListener();
-        break;
       case Input.LEFT:
         Input.leftListener();
         break;
@@ -43,8 +38,8 @@ export const Input = {
       case Input.DOWN:
         Input.downListener();
         break;
-      case 83:
-        Input.sListener();
+      case 77:
+        Input.mListener();
         break;
       case 73:
         Input.iListener();
@@ -52,13 +47,13 @@ export const Input = {
     }
   },
 
-  onKeyup: function (event: KeyboardEvent) {
+  onKeyup: function(event: KeyboardEvent) {
     delete this._pressed[event.keyCode];
-    if (event.keyCode === Input.SPACE) Input.spaceUpListener();
+    if (event.keyCode === 77) Input.mUpListener();
     if (event.keyCode === 73) Input.iUpListener();
   },
 
-  mouseClickListener: function (event: MouseEvent) {
+  mouseClickListener: function(event: MouseEvent) {
     if (event.button === 0) {
       let rect = window.document.getElementById("gameCanvas").getBoundingClientRect();
       let x = event.clientX - rect.left;
@@ -72,14 +67,14 @@ export const Input = {
 };
 window.addEventListener(
   "keyup",
-  function (event) {
+  function(event) {
     Input.onKeyup(event);
   },
   false
 );
 window.addEventListener(
   "keydown",
-  function (event) {
+  function(event) {
     Input.onKeydown(event);
   },
   false

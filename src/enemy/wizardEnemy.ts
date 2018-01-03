@@ -28,28 +28,44 @@ export class WizardEnemy extends Enemy {
   tick = () => {
     if (!this.dead && this.level.visibilityArray[this.x][this.y] > 0) {
       this.ticks++;
-      switch (this.ticks % 5) {
+      switch (this.ticks % 3) {
         case 0:
+          this.tileX = 7;
+          if (this.level.getCollidable(this.x - 1, this.y) === null) {
+            this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
+            if (this.level.getCollidable(this.x - 2, this.y) === null) {
+              this.level.projectiles.push(new WizardFireball(this, this.x - 2, this.y));
+            }
+          }
+          if (this.level.getCollidable(this.x + 1, this.y) === null) {
+            this.level.projectiles.push(new WizardFireball(this, this.x + 1, this.y));
+            if (this.level.getCollidable(this.x + 2, this.y) === null) {
+              this.level.projectiles.push(new WizardFireball(this, this.x + 2, this.y));
+            }
+          }
+          if (this.level.getCollidable(this.x, this.y - 1) === null) {
+            this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 1));
+            if (this.level.getCollidable(this.x, this.y - 2) === null) {
+              this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 2));
+            }
+          }
+          if (this.level.getCollidable(this.x, this.y + 1) === null) {
+            this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 1));
+            if (this.level.getCollidable(this.x, this.y + 2) === null) {
+              this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 2));
+            }
+          }
+          break;
+        case 1:
+          this.tileX = 6;
+          break;
+        default:
           let oldX = this.x;
           let oldY = this.y;
           let moveXY = Game.randTable([[0, 1], [0, -1], [1, 0], [-1, 0]]);
           this.tryMove(this.x + moveXY[0], this.y + moveXY[1]);
           this.drawX = this.x - oldX;
           this.drawY = this.y - oldY;
-          break;
-        case 2:
-          this.tileX = 7;
-          if (this.level.getCollidable(this.x - 1, this.y) === null)
-            this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
-          if (this.level.getCollidable(this.x + 1, this.y) === null)
-            this.level.projectiles.push(new WizardFireball(this, this.x + 1, this.y));
-          if (this.level.getCollidable(this.x, this.y - 1) === null)
-            this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 1));
-          if (this.level.getCollidable(this.x, this.y + 1) === null)
-            this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 1));
-          break;
-        case 3:
-          this.tileX = 6;
           break;
       }
     }
