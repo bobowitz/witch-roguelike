@@ -1,7 +1,24 @@
-make monsters have the correct difficulty for their context
+****
+TODO
+****
+
+progression
+add indication of who's attacking you
+draw enemies' moves after player's
 add a proper inventory, so you can equip equippables and use usables
 add a bunch more items, and make the monsters drop them
 add stairs
 add fountains
 add xp and leveling up
 add a bunch more monsters
+
+do mockups for current environments
+
+***************
+LONG TERM GOALS
+***************
+
+inventory screen with more detailed pictures for items
+long rooms
+dungeon sub dungeon catacombs (rand-gen, infinite)
+draw adjacent levels in shadow
