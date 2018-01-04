@@ -45,6 +45,10 @@ export class SkullEnemy extends Enemy {
 
   tick = () => {
     if (!this.dead) {
+      if (this.skipNextTurns > 0) {
+        this.skipNextTurns--;
+        return;
+      }
       if (this.health === 1) {
         this.ticksSinceFirstHit++;
         if (this.ticksSinceFirstHit >= this.REGEN_TICKS) {

@@ -11,9 +11,18 @@ import { WizardTeleportParticle } from "../particle/wizardTeleportParticle";
 import { GameConstants } from "../gameConstants";
 import { WizardFireball } from "../projectile/wizardFireball";
 
+enum WizardState {
+  idle,
+  attack,
+  justAttacked,
+  teleport,
+}
+
 export class WizardEnemy extends Enemy {
   ticks: number;
+  state: WizardState;
   frame: number;
+  readonly ATTACK_RADIUS = 5;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
@@ -22,17 +31,28 @@ export class WizardEnemy extends Enemy {
     this.tileX = 6;
     this.tileY = 0;
     this.frame = 0;
+    this.state = WizardState.attack;
   }
 
   hit = (): number => {
     return 1;
   };
 
+  withinAttackingRangeOfPlayer = (): boolean => {
+    return (
+      (this.x - this.game.player.x) ** 2 + (this.y - this.game.player.y) ** 2 <=
+      this.ATTACK_RADIUS ** 2
+    );
+  };
+
   tick = () => {
     if (!this.dead && this.level.visibilityArray[this.x][this.y] > 0) {
-      this.ticks++;
-      switch (this.ticks % 3) {
-        case 0:
+      if (this.skipNextTurns > 0) {
+        this.skipNextTurns--;
+        return;
+      }
+      switch (this.state) {
+        case WizardState.attack:
           this.tileX = 7;
           if (this.level.getCollidable(this.x - 1, this.y) === null) {
             this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
@@ -58,11 +78,13 @@ export class WizardEnemy extends Enemy {
               this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 2));
             }
           }
+          this.state = WizardState.justAttacked;
           break;
-        case 1:
+        case WizardState.justAttacked:
           this.tileX = 6;
+          this.state = WizardState.teleport;
           break;
-        case 2:
+        case WizardState.teleport:
           let oldX = this.x;
           let oldY = this.y;
           while (this.x === oldX && this.y === oldY) {
@@ -73,6 +95,14 @@ export class WizardEnemy extends Enemy {
           this.drawY = this.y - oldY;
           this.frame = 0; // trigger teleport animation
           this.level.particles.push(new WizardTeleportParticle(oldX, oldY));
+          if (this.withinAttackingRangeOfPlayer()) {
+            this.state = WizardState.attack;
+          } else {
+            this.state = WizardState.idle;
+          }
+          break;
+        case WizardState.idle:
+          this.state = WizardState.teleport;
           break;
       }
     }

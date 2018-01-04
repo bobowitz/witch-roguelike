@@ -19,9 +19,12 @@ export class Crate extends Enemy {
   };
 
   draw = () => {
+    // not inherited because it doesn't have the 0.5 offset
     if (!this.dead) {
       let darkOffset =
         this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
+      this.drawX += -0.5 * this.drawX;
+      this.drawY += -0.5 * this.drawY;
       Game.drawMob(
         this.tileX,
         this.tileY + darkOffset,

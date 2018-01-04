@@ -229,7 +229,7 @@ var levelConstants_1 = __webpack_require__(1);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.19";
+    GameConstants.VERSION = "v0.0.20";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -307,6 +307,10 @@ var Enemy = (function (_super) {
             _this.dead = true;
             _this.level.particles.push(new deathParticle_1.DeathParticle(_this.x, _this.y));
         };
+        _this.killNoBones = function () {
+            _this.dead = true;
+            _this.level.particles.push(new deathParticle_1.DeathParticle(_this.x, _this.y));
+        };
         _this.draw = function () {
             if (!_this.dead) {
                 var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF &&
@@ -330,6 +334,7 @@ var Enemy = (function (_super) {
         _this.tileY = 0;
         _this.hasShadow = true;
         _this.hasDarkVersion = true;
+        _this.skipNextTurns = 0;
         return _this;
     }
     return Enemy;
@@ -2273,6 +2278,10 @@ var KnightEnemy = (function (_super) {
         };
         _this.tick = function () {
             if (!_this.dead) {
+                if (_this.skipNextTurns > 0) {
+                    _this.skipNextTurns--;
+                    return;
+                }
                 _this.ticks++;
                 _this.tileX = 5;
                 if (_this.ticks % 2 === 0) {
@@ -2458,18 +2467,33 @@ var bones_1 = __webpack_require__(16);
 var deathParticle_1 = __webpack_require__(46);
 var wizardTeleportParticle_1 = __webpack_require__(48);
 var wizardFireball_1 = __webpack_require__(27);
+var WizardState;
+(function (WizardState) {
+    WizardState[WizardState["idle"] = 0] = "idle";
+    WizardState[WizardState["attack"] = 1] = "attack";
+    WizardState[WizardState["justAttacked"] = 2] = "justAttacked";
+    WizardState[WizardState["teleport"] = 3] = "teleport";
+})(WizardState || (WizardState = {}));
 var WizardEnemy = (function (_super) {
     __extends(WizardEnemy, _super);
     function WizardEnemy(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
+        _this.ATTACK_RADIUS = 5;
         _this.hit = function () {
             return 1;
         };
+        _this.withinAttackingRangeOfPlayer = function () {
+            return (Math.pow((_this.x - _this.game.player.x), 2) + Math.pow((_this.y - _this.game.player.y), 2) <=
+                Math.pow(_this.ATTACK_RADIUS, 2));
+        };
         _this.tick = function () {
             if (!_this.dead && _this.level.visibilityArray[_this.x][_this.y] > 0) {
-                _this.ticks++;
-                switch (_this.ticks % 3) {
-                    case 0:
+                if (_this.skipNextTurns > 0) {
+                    _this.skipNextTurns--;
+                    return;
+                }
+                switch (_this.state) {
+                    case WizardState.attack:
                         _this.tileX = 7;
                         if (_this.level.getCollidable(_this.x - 1, _this.y) === null) {
                             _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x - 1, _this.y));
@@ -2495,11 +2519,13 @@ var WizardEnemy = (function (_super) {
                                 _this.level.projectiles.push(new wizardFireball_1.WizardFireball(_this, _this.x, _this.y + 2));
                             }
                         }
+                        _this.state = WizardState.justAttacked;
                         break;
-                    case 1:
+                    case WizardState.justAttacked:
                         _this.tileX = 6;
+                        _this.state = WizardState.teleport;
                         break;
-                    case 2:
+                    case WizardState.teleport:
                         var oldX = _this.x;
                         var oldY = _this.y;
                         while (_this.x === oldX && _this.y === oldY) {
@@ -2510,6 +2536,15 @@ var WizardEnemy = (function (_super) {
                         _this.drawY = _this.y - oldY;
                         _this.frame = 0; // trigger teleport animation
                         _this.level.particles.push(new wizardTeleportParticle_1.WizardTeleportParticle(oldX, oldY));
+                        if (_this.withinAttackingRangeOfPlayer()) {
+                            _this.state = WizardState.attack;
+                        }
+                        else {
+                            _this.state = WizardState.idle;
+                        }
+                        break;
+                    case WizardState.idle:
+                        _this.state = WizardState.teleport;
                         break;
                 }
             }
@@ -2548,6 +2583,7 @@ var WizardEnemy = (function (_super) {
         _this.tileX = 6;
         _this.tileY = 0;
         _this.frame = 0;
+        _this.state = WizardState.attack;
         return _this;
     }
     return WizardEnemy;
@@ -2614,6 +2650,10 @@ var SkullEnemy = (function (_super) {
         };
         _this.tick = function () {
             if (!_this.dead) {
+                if (_this.skipNextTurns > 0) {
+                    _this.skipNextTurns--;
+                    return;
+                }
                 if (_this.health === 1) {
                     _this.ticksSinceFirstHit++;
                     if (_this.ticksSinceFirstHit >= _this.REGEN_TICKS) {
@@ -2720,8 +2760,11 @@ var Barrel = (function (_super) {
             _this.dead = true;
         };
         _this.draw = function () {
+            // not inherited because it doesn't have the 0.5 offset
             if (!_this.dead) {
                 var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
                 game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
             }
         };
@@ -2765,8 +2808,11 @@ var Crate = (function (_super) {
             _this.dead = true;
         };
         _this.draw = function () {
+            // not inherited because it doesn't have the 0.5 offset
             if (!_this.dead) {
                 var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
                 game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
             }
         };
@@ -2804,16 +2850,19 @@ var dashParticle_1 = __webpack_require__(50);
 var levelConstants_1 = __webpack_require__(1);
 var map_1 = __webpack_require__(43);
 var pickup_1 = __webpack_require__(11);
+var crate_1 = __webpack_require__(37);
 var stats_1 = __webpack_require__(44);
 var goldenDoor_1 = __webpack_require__(24);
 var unlockedGoldenDoor_1 = __webpack_require__(25);
 var chest_1 = __webpack_require__(20);
 var wizardFireball_1 = __webpack_require__(27);
+var barrel_1 = __webpack_require__(36);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
         this.iListener = function () {
             _this.inventory.open();
+            //this.game.level.enemies.push(new Crate(this.game.level, this.game, this.x, this.y));
         };
         this.iUpListener = function () {
             _this.inventory.close();
@@ -2902,9 +2951,69 @@ var Player = (function () {
         this.tryMove = function (x, y) {
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
-                // if we're trying to hit an enemy, do nothing
                 if (e.x === x && e.y === y) {
-                    return;
+                    if (e instanceof crate_1.Crate || e instanceof barrel_1.Barrel) {
+                        // pushing a crate or barrel
+                        var oldEnemyX = e.x;
+                        var oldEnemyY = e.y;
+                        var dx = x - _this.x;
+                        var dy = y - _this.y;
+                        var nextX = x + dx;
+                        var nextY = y + dy;
+                        var foundEnd = false; // end of the train of whatever we're pushing
+                        var enemyEnd = false; // end of the train is a solid enemy (crate/chest/barrel)
+                        var pushedEnemies = [];
+                        while (true) {
+                            foundEnd = true;
+                            for (var _b = 0, _c = _this.game.level.enemies; _b < _c.length; _b++) {
+                                var f = _c[_b];
+                                if (f.x === nextX && f.y === nextY) {
+                                    if (f instanceof crate_1.Crate || f instanceof barrel_1.Barrel || f instanceof chest_1.Chest) {
+                                        enemyEnd = true;
+                                        foundEnd = true;
+                                        break;
+                                    }
+                                    foundEnd = false;
+                                    pushedEnemies.push(f);
+                                    break;
+                                }
+                            }
+                            if (foundEnd)
+                                break;
+                            nextX += dx;
+                            nextY += dy;
+                        }
+                        /* if no enemies and there is a wall, no move
+                        otherwise, push everything, killing last enemy if there is a wall */
+                        // here, (nextX, nextY) is the position immediately after the end of the train
+                        if (pushedEnemies.length === 0 &&
+                            (_this.game.level.getCollidable(nextX, nextY) !== null || enemyEnd)) {
+                            return;
+                        }
+                        else {
+                            for (var _d = 0, pushedEnemies_1 = pushedEnemies; _d < pushedEnemies_1.length; _d++) {
+                                var f = pushedEnemies_1[_d];
+                                f.x += dx;
+                                f.y += dy;
+                                f.drawX = dx;
+                                f.drawY = dy;
+                                f.skipNextTurns = 1; // skip next turn, so they don't move while we're pushing them
+                            }
+                            if (_this.game.level.getCollidable(nextX, nextY) !== null || enemyEnd)
+                                pushedEnemies[pushedEnemies.length - 1].killNoBones();
+                            e.x += dx;
+                            e.y += dy;
+                            e.drawX = dx;
+                            e.drawY = dy;
+                            _this.move(x, y);
+                            _this.game.level.tick();
+                            return;
+                        }
+                    }
+                    else {
+                        // if we're trying to hit an enemy, do nothing
+                        return;
+                    }
                 }
             }
             var other = _this.game.level.getCollidable(x, y);

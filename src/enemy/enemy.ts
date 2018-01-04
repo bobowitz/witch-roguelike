@@ -16,6 +16,7 @@ export class Enemy extends Collidable {
   tileY: number;
   hasShadow: boolean;
   hasDarkVersion: boolean;
+  skipNextTurns: number;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
@@ -27,6 +28,7 @@ export class Enemy extends Collidable {
     this.tileY = 0;
     this.hasShadow = true;
     this.hasDarkVersion = true;
+    this.skipNextTurns = 0;
   }
 
   tryMove = (x: number, y: number) => {
@@ -62,6 +64,11 @@ export class Enemy extends Collidable {
 
   kill = () => {
     this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
+    this.dead = true;
+    this.level.particles.push(new DeathParticle(this.x, this.y));
+  };
+
+  killNoBones = () => {
     this.dead = true;
     this.level.particles.push(new DeathParticle(this.x, this.y));
   };

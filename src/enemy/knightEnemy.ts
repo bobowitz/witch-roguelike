@@ -30,6 +30,10 @@ export class KnightEnemy extends Enemy {
 
   tick = () => {
     if (!this.dead) {
+      if (this.skipNextTurns > 0) {
+        this.skipNextTurns--;
+        return;
+      }
       this.ticks++;
       this.tileX = 5;
       if (this.ticks % 2 === 0) {

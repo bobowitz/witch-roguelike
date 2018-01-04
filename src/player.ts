@@ -24,6 +24,8 @@ import { GoldenDoor } from "./tile/goldenDoor";
 import { UnlockedGoldenDoor } from "./tile/unlockedGoldenDoor";
 import { Chest } from "./enemy/chest";
 import { WizardFireball } from "./projectile/wizardFireball";
+import { Barrel } from "./enemy/barrel";
+import { Wall } from "./tile/wall";
 
 export class Player {
   x: number;
@@ -84,6 +86,7 @@ export class Player {
 
   iListener = () => {
     this.inventory.open();
+    //this.game.level.enemies.push(new Crate(this.game.level, this.game, this.x, this.y));
   };
   iUpListener = () => {
     this.inventory.close();
@@ -164,9 +167,66 @@ export class Player {
 
   tryMove = (x: number, y: number) => {
     for (let e of this.game.level.enemies) {
-      // if we're trying to hit an enemy, do nothing
       if (e.x === x && e.y === y) {
-        return;
+        if (e instanceof Crate || e instanceof Barrel) {
+          // pushing a crate or barrel
+          let oldEnemyX = e.x;
+          let oldEnemyY = e.y;
+          let dx = x - this.x;
+          let dy = y - this.y;
+          let nextX = x + dx;
+          let nextY = y + dy;
+          let foundEnd = false; // end of the train of whatever we're pushing
+          let enemyEnd = false; // end of the train is a solid enemy (crate/chest/barrel)
+          let pushedEnemies = [];
+          while (true) {
+            foundEnd = true;
+            for (const f of this.game.level.enemies) {
+              if (f.x === nextX && f.y === nextY) {
+                if (f instanceof Crate || f instanceof Barrel || f instanceof Chest) {
+                  enemyEnd = true;
+                  foundEnd = true;
+                  break;
+                }
+                foundEnd = false;
+                pushedEnemies.push(f);
+                break;
+              }
+            }
+            if (foundEnd) break;
+            nextX += dx;
+            nextY += dy;
+          }
+          /* if no enemies and there is a wall, no move
+          otherwise, push everything, killing last enemy if there is a wall */
+          // here, (nextX, nextY) is the position immediately after the end of the train
+          if (
+            pushedEnemies.length === 0 &&
+            (this.game.level.getCollidable(nextX, nextY) !== null || enemyEnd)
+          ) {
+            return;
+          } else {
+            for (const f of pushedEnemies) {
+              f.x += dx;
+              f.y += dy;
+              f.drawX = dx;
+              f.drawY = dy;
+              f.skipNextTurns = 1; // skip next turn, so they don't move while we're pushing them
+            }
+            if (this.game.level.getCollidable(nextX, nextY) !== null || enemyEnd)
+              pushedEnemies[pushedEnemies.length - 1].killNoBones();
+            e.x += dx;
+            e.y += dy;
+            e.drawX = dx;
+            e.drawY = dy;
+            this.move(x, y);
+            this.game.level.tick();
+            return;
+          }
+        } else {
+          // if we're trying to hit an enemy, do nothing
+          return;
+        }
       }
     }
     let other = this.game.level.getCollidable(x, y);
