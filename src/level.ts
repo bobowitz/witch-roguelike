@@ -25,7 +25,7 @@ import { Barrel } from "./enemy/barrel";
 import { Crate } from "./enemy/crate";
 import { Input } from "./input";
 import { Armor } from "./item/armor";
-import { Particle } from "./particle";
+import { Particle } from "./particle/particle";
 import { Projectile } from "./projectile/projectile";
 
 export class Level {
@@ -325,21 +325,7 @@ export class Level {
   }
 
   private addEnemies(): number {
-    // add enemies
-    let emptyTileCount = 0;
-    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
-      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
-        if (this.getCollidable(x, y) === null) {
-          emptyTileCount++;
-        }
-      }
-    }
-    let numEnemies =
-      emptyTileCount /
-      5; /*Game.rand(1, 2);
-    if (numEnemies === 1 || this.width * this.height > 8 * 8) {
-      numEnemies = Game.randTable([1, 2, 2, 3, 3, 3, 4, 4, 4]);
-    } else numEnemies = 0;*/
+    let numEnemies = this.getEmptyTiles().length / 5;
     for (let i = 0; i < numEnemies; i++) {
       let x = 0;
       let y = 0;
@@ -412,12 +398,6 @@ export class Level {
     env: number,
     difficulty: number
   ) {
-    // smooth lighting handler
-    Input.sListener = () => {
-      // LevelConstants.SMOOTH_LIGHTING = !LevelConstants.SMOOTH_LIGHTING;
-      this.updateLighting();
-    };
-
     this.difficulty = difficulty;
 
     this.distFromStart = distFromStart;
@@ -585,6 +565,18 @@ export class Level {
     this.game.player.moveNoSmooth(door.x, door.y + 1);
 
     this.updateLighting();
+  };
+
+  getEmptyTiles = (): Tile[] => {
+    let returnVal: Tile[] = [];
+    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
+      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+        if (this.getCollidable(x, y) === null) {
+          returnVal.push(this.levelArray[x][y]);
+        }
+      }
+    }
+    return returnVal;
   };
 
   getCollidable = (x: number, y: number) => {

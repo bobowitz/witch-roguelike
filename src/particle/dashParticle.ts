@@ -1,12 +1,10 @@
-import { Game } from "./game";
-import { GameConstants } from "./gameConstants";
+import { Game } from "../game";
 import { Particle } from "./particle";
 
 export class DashParticle extends Particle {
   x: number;
   y: number;
   frame: number;
-  dead: boolean;
 
   constructor(x: number, y: number, frameOffset: number) {
     super();

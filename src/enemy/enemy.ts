@@ -4,7 +4,7 @@ import { Level } from "../level";
 import { Bones } from "../tile/bones";
 import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
-import { DeathParticle } from "../deathParticle";
+import { DeathParticle } from "../particle/deathParticle";
 
 export class Enemy extends Collidable {
   drawX: number;

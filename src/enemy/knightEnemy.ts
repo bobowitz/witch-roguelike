@@ -6,7 +6,7 @@ import { astar } from "../astarclass";
 import { Heart } from "../item/heart";
 import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
-import { DeathParticle } from "../deathParticle";
+import { DeathParticle } from "../particle/deathParticle";
 import { GameConstants } from "../gameConstants";
 
 export class KnightEnemy extends Enemy {

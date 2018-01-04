@@ -6,12 +6,14 @@ import { astar } from "../astarclass";
 import { Heart } from "../item/heart";
 import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
-import { DeathParticle } from "../deathParticle";
+import { DeathParticle } from "../particle/deathParticle";
+import { WizardTeleportParticle } from "../particle/wizardTeleportParticle";
 import { GameConstants } from "../gameConstants";
 import { WizardFireball } from "../projectile/wizardFireball";
 
 export class WizardEnemy extends Enemy {
   ticks: number;
+  frame: number;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
@@ -19,6 +21,7 @@ export class WizardEnemy extends Enemy {
     this.health = 1;
     this.tileX = 6;
     this.tileY = 0;
+    this.frame = 0;
   }
 
   hit = (): number => {
@@ -59,14 +62,47 @@ export class WizardEnemy extends Enemy {
         case 1:
           this.tileX = 6;
           break;
-        default:
+        case 2:
           let oldX = this.x;
           let oldY = this.y;
-          let moveXY = Game.randTable([[0, 1], [0, -1], [1, 0], [-1, 0]]);
-          this.tryMove(this.x + moveXY[0], this.y + moveXY[1]);
+          while (this.x === oldX && this.y === oldY) {
+            let newPos = Game.randTable(this.level.getEmptyTiles());
+            this.tryMove(newPos.x, newPos.y);
+          }
           this.drawX = this.x - oldX;
           this.drawY = this.y - oldY;
+          this.frame = 0; // trigger teleport animation
+          this.level.particles.push(new WizardTeleportParticle(oldX, oldY));
           break;
+      }
+    }
+  };
+
+  draw = () => {
+    if (!this.dead) {
+      let darkOffset =
+        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF &&
+        this.hasDarkVersion
+          ? 2
+          : 0;
+      this.drawX += -0.5 * this.drawX;
+      this.drawY += -0.5 * this.drawY;
+      if (this.hasShadow) Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+      if (this.frame >= 0) {
+        Game.drawFX(Math.floor(this.frame), 10 + darkOffset, 1, 2, this.x, this.y - 1.5, 1, 2);
+        this.frame += 0.4;
+        if (this.frame > 11) this.frame = -1;
+      } else {
+        Game.drawMob(
+          this.tileX,
+          this.tileY + darkOffset,
+          1,
+          2,
+          this.x - this.drawX,
+          this.y - 1.5 - this.drawY,
+          1,
+          2
+        );
       }
     }
   };

@@ -8,7 +8,7 @@ import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
 import { GameConstants } from "../gameConstants";
 import { Player } from "../player";
-import { DeathParticle } from "../deathParticle";
+import { DeathParticle } from "../particle/deathParticle";
 
 export class SkullEnemy extends Enemy {
   moves: Array<astar.AStarData>;

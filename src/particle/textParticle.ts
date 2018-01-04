@@ -1,5 +1,5 @@
-import { Game } from "./game";
-import { GameConstants } from "./gameConstants";
+import { Game } from "../game";
+import { GameConstants } from "../gameConstants";
 import { Particle } from "./particle";
 
 export class TextParticle extends Particle {

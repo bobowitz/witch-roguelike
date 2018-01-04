@@ -10,8 +10,8 @@ import { LockedDoor } from "./tile/lockedDoor";
 import { Sound } from "./sound";
 import { Heart } from "./item/heart";
 import { Spike } from "./tile/spike";
-import { TextParticle } from "./textParticle";
-import { DashParticle } from "./dashParticle";
+import { TextParticle } from "./particle/textParticle";
+import { DashParticle } from "./particle/dashParticle";
 import { Armor } from "./item/armor";
 import { Item } from "./item/item";
 import { Equippable } from "./item/equippable";
@@ -45,6 +45,7 @@ export class Player {
   armor: Armor;
   missProb: number;
   sightRadius: number;
+  guiHeartFrame: number;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -63,12 +64,13 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 1;
+    this.health = 3;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
     this.lastTickHealth = this.health;
+    this.guiHeartFrame = 0;
 
     this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
@@ -312,8 +314,12 @@ export class Player {
 
   drawTopLayer = () => {
     if (!this.dead) {
+      this.guiHeartFrame += 1;
+      let FREQ = GameConstants.FPS * 1.5;
+      this.guiHeartFrame %= FREQ;
       for (let i = 0; i < this.health; i++) {
-        Game.drawItem(8, 0, 1, 2, i, LevelConstants.SCREEN_H - 2, 1, 2);
+        let frame = (this.guiHeartFrame + FREQ) % FREQ >= FREQ - 4 ? 1 : 0;
+        Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
       }
       if (this.armor) this.armor.drawGUI(this.health);
       // this.stats.drawGUI(); TODO

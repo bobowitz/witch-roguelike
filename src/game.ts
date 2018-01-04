@@ -21,7 +21,7 @@ export class Game {
     return Math.floor(Math.random() * (max - min + 1) + min);
   };
 
-  static randTable = (table: [any]): any => {
+  static randTable = (table: any[]): any => {
     return table[Game.rand(0, table.length - 1)];
   };
 

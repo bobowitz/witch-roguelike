@@ -1,12 +1,11 @@
-import { Game } from "./game";
-import { GameConstants } from "./gameConstants";
+import { Game } from "../game";
+import { GameConstants } from "../gameConstants";
 import { Particle } from "./particle";
 
 export class DeathParticle extends Particle {
   x: number;
   y: number;
   frame: number;
-  dead: boolean;
 
   constructor(x: number, y: number) {
     super();

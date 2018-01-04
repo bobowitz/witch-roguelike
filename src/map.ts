@@ -163,7 +163,7 @@ export class Map {
 
   draw = () => {
     if (this.isOpen) {
-      Game.ctx.fillStyle = "black";
+      Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
       Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
       this.drawTree(
