@@ -1,6 +1,4 @@
 import { Floor } from "./tile/floor";
-import { Trapdoor } from "./tile/trapdoor";
-import { SpawnFloor } from "./tile/spawnfloor";
 
 export namespace astar {
   //================== start graph js
@@ -48,10 +46,10 @@ export namespace astar {
       var graphString = "\n";
       var nodes = this.nodes;
       var rowDebug: string, row: GraphNode[], y: number, l: number;
-      for (var x = 0, len = nodes.length; x < len;) {
+      for (var x = 0, len = nodes.length; x < len; ) {
         rowDebug = "";
         row = nodes[x++];
-        for (y = 0, l = row.length; y < l;) {
+        for (y = 0, l = row.length; y < l; ) {
           rowDebug += row[y++].type + " ";
         }
         graphString = graphString + rowDebug + "\n";
@@ -222,7 +220,7 @@ export namespace astar {
       for (var x = 0, xl = grid.length; x < xl; x++) {
         this.grid[x] = [];
         for (var y = 0, yl = grid[x].length; y < yl; y++) {
-          var cost = ((grid[x][y] instanceof Floor) || (grid[x][y] instanceof SpawnFloor)) ? 1 : 99999999;
+          var cost = grid[x][y] instanceof Floor ? 1 : 99999999;
           this.grid[x][y] = {
             org: grid[x][y],
             f: 0,
@@ -246,7 +244,7 @@ export namespace astar {
     }
 
     heap(): BinaryHeap {
-      return new BinaryHeap(function (node: AStarData) {
+      return new BinaryHeap(function(node: AStarData) {
         return node.f;
       });
     }

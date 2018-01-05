@@ -1,12 +1,8 @@
 import { Input } from "./input";
 import { GameConstants } from "./gameConstants";
 import { Game } from "./game";
-import { Door } from "./tile/door";
-import { BottomDoor } from "./tile/bottomDoor";
-import { Trapdoor } from "./tile/trapdoor";
 import { Floor } from "./tile/floor";
 import { Inventory } from "./inventory";
-import { LockedDoor } from "./tile/lockedDoor";
 import { Sound } from "./sound";
 import { Heart } from "./item/heart";
 import { Spike } from "./tile/spike";
@@ -16,16 +12,14 @@ import { Armor } from "./item/armor";
 import { Item } from "./item/item";
 import { Equippable } from "./item/equippable";
 import { LevelConstants } from "./levelConstants";
-import { Map } from "./map";
 import { Pickup } from "./item/pickup";
 import { Crate } from "./enemy/crate";
 import { Stats } from "./stats";
-import { GoldenDoor } from "./tile/goldenDoor";
-import { UnlockedGoldenDoor } from "./tile/unlockedGoldenDoor";
 import { Chest } from "./enemy/chest";
 import { WizardFireball } from "./projectile/wizardFireball";
 import { Barrel } from "./enemy/barrel";
 import { Wall } from "./tile/wall";
+import { Camera } from "./camera";
 
 export class Player {
   x: number;
@@ -43,7 +37,6 @@ export class Player {
   lastTickHealth: number;
   inventory: Inventory;
   equipped: Array<Equippable>;
-  map: Map;
   armor: Armor;
   missProb: number;
   sightRadius: number;
@@ -55,18 +48,14 @@ export class Player {
     this.x = x;
     this.y = y;
 
-    this.map = new Map(game);
-
     Input.iListener = this.iListener;
     Input.iUpListener = this.iUpListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
-    Input.mListener = this.map.open;
-    Input.mUpListener = this.map.close;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 3;
+    this.health = 3000;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
@@ -81,7 +70,7 @@ export class Player {
 
     this.armor = null;
 
-    this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
+    this.sightRadius = 5; // maybe can be manipulated by items? e.g. better torch
   }
 
   iListener = () => {
@@ -229,43 +218,9 @@ export class Player {
         }
       }
     }
-    let other = this.game.level.getCollidable(x, y);
-    if (other === null) {
+    if (this.game.level.getCollidable(x, y) === null) {
       this.move(x, y);
       this.game.level.tick();
-    } else {
-      if (other instanceof Door) {
-        if (x - this.x === 0) {
-          this.move(x, y);
-          other.onCollide(this);
-        }
-      } else if (other instanceof UnlockedGoldenDoor) {
-        if (x - this.x === 0) {
-          this.move(x, y);
-          other.onCollide(this);
-        }
-      } else if (other instanceof LockedDoor) {
-        if (x - this.x === 0) {
-          this.drawX = (this.x - x) * 0.5;
-          this.drawY = (this.y - y) * 0.5;
-          other.unlock(this);
-          this.game.level.tick();
-        }
-      } else if (other instanceof GoldenDoor) {
-        if (x - this.x === 0) {
-          this.drawX = (this.x - x) * 0.5;
-          this.drawY = (this.y - y) * 0.5;
-          other.unlock(this);
-          this.game.level.tick();
-        }
-      } else if (other instanceof BottomDoor || other instanceof Trapdoor) {
-        this.move(x, y);
-        other.onCollide(this);
-      } else if (other instanceof Spike) {
-        this.move(x, y);
-        other.onCollide(this);
-        this.game.level.tick();
-      }
     }
   };
 
@@ -361,6 +316,7 @@ export class Player {
   };
 
   draw = () => {
+    Camera.translate();
     this.flashingFrame += 12 / GameConstants.FPS;
     if (!this.dead) {
       Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
@@ -370,6 +326,7 @@ export class Player {
         Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
       }
     }
+    Camera.translateBack();
   };
 
   drawTopLayer = () => {
@@ -379,7 +336,7 @@ export class Player {
       this.guiHeartFrame %= FREQ;
       for (let i = 0; i < this.health; i++) {
         let frame = (this.guiHeartFrame + FREQ) % FREQ >= FREQ - 4 ? 1 : 0;
-        Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
+        Game.drawFXNoCull(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
       }
       if (this.armor) this.armor.drawGUI(this.health);
       // this.stats.drawGUI(); TODO
@@ -399,7 +356,5 @@ export class Player {
       );
     }
     this.inventory.draw();
-
-    this.map.draw();
   };
 }

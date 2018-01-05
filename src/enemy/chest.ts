@@ -9,32 +9,38 @@ import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
 
 export class Chest extends Enemy {
-  constructor(level: Level, game: Game, x: number, y: number) {
+  dropItem: Item;
+
+  constructor(level: Level, game: Game, x: number, y: number, item?: Item) {
     super(level, game, x, y);
 
     this.tileX = 17;
     this.tileY = 0;
     this.health = 1;
+
+    this.dropItem = item;
+    console.log(this.dropItem);
   }
 
   kill = () => {
     this.dead = true;
-    // DROP TABLES!
 
-    let drop = Game.randTable([1, 2, 3, 3, 3]);
+    if (this.dropItem) this.game.level.items.push(this.dropItem);
+    else {
+      // DROP TABLES!
+      let drop = Game.randTable([1, 2, 3, 3, 3]);
 
-    switch (drop) {
-      case 1:
-        this.game.level.items.push(new Heart(this.x, this.y));
-        break;
-      case 2:
-        this.game.level.items.push(new Key(this.x, this.y));
-        break;
-      case 3:
-        this.game.level.items.push(
-          new Armor(this.x, this.y)
-        );
-        break;
+      switch (drop) {
+        case 1:
+          this.game.level.items.push(new Heart(this.x, this.y));
+          break;
+        case 2:
+          this.game.level.items.push(new Key(this.x, this.y));
+          break;
+        case 3:
+          this.game.level.items.push(new Armor(this.x, this.y));
+          break;
+      }
     }
   };
 

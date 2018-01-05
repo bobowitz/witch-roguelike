@@ -32,6 +32,7 @@ export class Enemy extends Collidable {
   }
 
   tryMove = (x: number, y: number) => {
+    if (x < 0 || x >= this.level.width || y < 0 || y >= this.level.height) return;
     for (const e of this.level.enemies) {
       if (e !== this && e.x === x && e.y === y) {
         return;
@@ -63,7 +64,7 @@ export class Enemy extends Collidable {
   };
 
   kill = () => {
-    this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
+    this.level.dropBonesAt(this.x, this.y);
     this.dead = true;
     this.level.particles.push(new DeathParticle(this.x, this.y));
   };

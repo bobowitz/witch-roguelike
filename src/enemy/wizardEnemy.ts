@@ -88,8 +88,9 @@ export class WizardEnemy extends Enemy {
           let oldX = this.x;
           let oldY = this.y;
           while (this.x === oldX && this.y === oldY) {
-            let newPos = Game.randTable(this.level.getEmptyTiles());
-            this.tryMove(newPos.x, newPos.y);
+            let newX = this.x + Game.rand(-10, 10);
+            let newY = this.y + Game.rand(-10, 10);
+            this.tryMove(newX, newY);
           }
           this.drawX = this.x - oldX;
           this.drawY = this.y - oldY;
@@ -139,11 +140,5 @@ export class WizardEnemy extends Enemy {
 
   dropXP = () => {
     return Game.randTable([4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 10]);
-  };
-
-  kill = () => {
-    this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
-    this.dead = true;
-    this.level.particles.push(new DeathParticle(this.x, this.y));
   };
 }

@@ -1,5 +1,6 @@
 import { Game } from "../game";
 import { GameConstants } from "../gameConstants";
+import { Camera } from "../camera";
 
 export class Item {
   x: number;
@@ -37,6 +38,6 @@ export class Item {
     );
   };
   drawIcon = (x: number, y: number) => {
-    Game.drawItem(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
+    Game.drawItemNoCull(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
   };
 }
