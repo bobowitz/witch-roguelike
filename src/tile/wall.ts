@@ -13,7 +13,7 @@ export class Wall extends CollidableLayeredTile {
   }
 
   draw = () => {
-    Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, 1, 1);
+    if (this.type === 0) Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, 1, 1);
   };
 
   drawCeiling = () => {

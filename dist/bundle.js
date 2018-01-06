@@ -231,7 +231,7 @@ var levelConstants_1 = __webpack_require__(1);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.0.22";
+    GameConstants.VERSION = "v0.0.23";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -1278,7 +1278,8 @@ var Wall = (function (_super) {
     function Wall(level, x, y, type) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(0, _this.level.env, 1, 1, _this.x, _this.y, 1, 1);
+            if (_this.type === 0)
+                game_1.Game.drawTile(0, _this.level.env, 1, 1, _this.x, _this.y, 1, 1);
         };
         _this.drawCeiling = function () {
             if (_this.level.visibilityArray[_this.x][_this.y] > 0) {
