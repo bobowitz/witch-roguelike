@@ -2910,6 +2910,11 @@ var Player = (function () {
                 _this.move(x, y);
                 _this.game.level.tick();
             }
+            else if (_this.game.level.getCollidable(x, y) instanceof spike_1.Spike) {
+                _this.game.level.getCollidable(x, y).onCollide(_this);
+                _this.move(x, y);
+                _this.game.level.tick();
+            }
         };
         this.hurt = function (damage) {
             if (_this.armor !== null && _this.armor.health > 0) {

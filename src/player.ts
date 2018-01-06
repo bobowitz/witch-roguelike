@@ -231,6 +231,10 @@ export class Player {
       }
       this.move(x, y);
       this.game.level.tick();
+    } else if (this.game.level.getCollidable(x, y) instanceof Spike) {
+      (this.game.level.getCollidable(x, y) as Spike).onCollide(this);
+      this.move(x, y);
+      this.game.level.tick();
     }
   };
 
