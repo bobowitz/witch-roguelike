@@ -142,7 +142,7 @@ var Game = (function () {
                 _this.levelData = JSON.parse(request.responseText);
                 _this.finishInit();
             };
-            request.open("GET", "res/castleLevelALTON.json", true);
+            request.open("GET", "res/castleLevel.json", true);
             request.send();
         });
     }
@@ -535,8 +535,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var layeredTile_1 = __webpack_require__(14);
 var game_1 = __webpack_require__(0);
-var doorLeft_1 = __webpack_require__(15);
-var doorRight_1 = __webpack_require__(16);
 var gameConstants_1 = __webpack_require__(1);
 var Door = (function (_super) {
     __extends(Door, _super);
@@ -544,23 +542,19 @@ var Door = (function (_super) {
         var _this = _super.call(this, level, x, y) || this;
         _this.open = function () {
             _this.opened = true;
-            if (_this.level.levelArray[_this.x - 1][_this.y] instanceof doorLeft_1.DoorLeft)
-                _this.level.levelArray[_this.x - 1][_this.y].open();
-            if (_this.level.levelArray[_this.x + 1][_this.y] instanceof doorRight_1.DoorRight)
-                _this.level.levelArray[_this.x + 1][_this.y].open();
         };
         _this.draw = function () {
             if (_this.opened) {
                 _this.frame += 0.5;
-                if (_this.frame > 3)
-                    _this.frame = 3;
+                if (_this.frame > 4)
+                    _this.frame = 4;
             }
             game_1.Game.drawTile(1, _this.level.env, 1, 1, _this.x, _this.y, 1, 1);
-            game_1.Game.drawTile(21 + Math.floor(_this.frame) * 3, 1, 1, 1, _this.x, _this.y, 1, 1);
+            game_1.Game.drawTile(20 + Math.floor(_this.frame), 1, 1, 1, _this.x, _this.y, 1, 1);
         };
         _this.drawCeiling = function () {
             if (_this.level.visibilityArray[_this.x][_this.y] > 0) {
-                game_1.Game.drawTile(21 + Math.floor(_this.frame) * 3, 0, 1, 1, _this.x, _this.y - 1, 1, 1);
+                game_1.Game.drawTile(20 + Math.floor(_this.frame), 0, 1, 1, _this.x, _this.y - 1, 1, 1);
             }
             else {
                 game_1.Game.ctx.fillStyle = "black";
@@ -1539,6 +1533,7 @@ var bones_1 = __webpack_require__(38);
 var doorLeft_1 = __webpack_require__(15);
 var doorRight_1 = __webpack_require__(16);
 var door_1 = __webpack_require__(10);
+var sideDoor_1 = __webpack_require__(46);
 var layeredTile_1 = __webpack_require__(14);
 var collidableLayeredTile_1 = __webpack_require__(5);
 var Level = (function () {
@@ -1870,8 +1865,11 @@ var Level = (function () {
                         case 20:
                             this.levelArray[x][y + 1] = new doorLeft_1.DoorLeft(this, x, y + 1);
                             break;
-                        case 53:
+                        case 52:
                             this.levelArray[x][y] = new door_1.Door(this, x, y);
+                            break;
+                        case 25:
+                            this.levelArray[x][y + 1] = new sideDoor_1.SideDoor(this, x, y + 1);
                             break;
                         case 22:
                             this.levelArray[x][y + 1] = new doorRight_1.DoorRight(this, x, y + 1);
@@ -3362,6 +3360,48 @@ var StatConstants = (function () {
     return StatConstants;
 }());
 exports.StatConstants = StatConstants;
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var door_1 = __webpack_require__(10);
+var SideDoor = (function (_super) {
+    __extends(SideDoor, _super);
+    function SideDoor(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.draw = function () {
+            if (_this.opened) {
+                _this.frame += 0.5;
+                if (_this.frame > 4)
+                    _this.frame = 4;
+            }
+            game_1.Game.drawTile(0, _this.level.env, 1, 1, _this.x, _this.y - 1, 1, 1);
+            game_1.Game.drawTile(25 + Math.floor(_this.frame), 0, 1, 1, _this.x, _this.y - 1, 1, 1);
+        };
+        _this.drawCeiling = function () { };
+        _this.opened = false;
+        _this.frame = 0;
+        return _this;
+    }
+    return SideDoor;
+}(door_1.Door));
+exports.SideDoor = SideDoor;
 
 
 /***/ })

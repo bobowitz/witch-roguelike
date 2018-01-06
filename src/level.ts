@@ -26,6 +26,7 @@ import { Bones } from "./tile/bones";
 import { DoorLeft } from "./tile/doorLeft";
 import { DoorRight } from "./tile/doorRight";
 import { Door } from "./tile/door";
+import { SideDoor } from "./tile/sideDoor";
 import { LayeredTile } from "./tile/layeredTile";
 import { CollidableLayeredTile } from "./tile/collidableLayeredTile";
 
@@ -143,8 +144,11 @@ export class Level {
             case 20:
               this.levelArray[x][y + 1] = new DoorLeft(this, x, y + 1);
               break;
-            case 53:
+            case 52:
               this.levelArray[x][y] = new Door(this, x, y);
+              break;
+            case 25:
+              this.levelArray[x][y + 1] = new SideDoor(this, x, y + 1);
               break;
             case 22:
               this.levelArray[x][y + 1] = new DoorRight(this, x, y + 1);
