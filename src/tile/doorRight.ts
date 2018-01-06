@@ -5,7 +5,7 @@ import { Wall } from "./wall";
 import { CollidableLayeredTile } from "./collidableLayeredTile";
 import { GameConstants } from "../gameConstants";
 
-export class DoorLeft extends CollidableLayeredTile {
+export class DoorRight extends CollidableLayeredTile {
   opened: boolean;
   frame: number;
 
@@ -29,7 +29,7 @@ export class DoorLeft extends CollidableLayeredTile {
       if (this.frame > 3) this.frame = 3;
     }
     if (this.level.visibilityArray[this.x][this.y] > 0) {
-      Game.drawTile(20 + Math.floor(this.frame) * 3, 0, 1, 1, this.x, this.y - 1, 1, 1);
+      Game.drawTile(22 + Math.floor(this.frame) * 3, 0, 1, 1, this.x, this.y - 1, 1, 1);
     } else {
       Game.ctx.fillStyle = "black";
       Game.ctx.fillRect(

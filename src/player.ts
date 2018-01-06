@@ -20,6 +20,7 @@ import { WizardFireball } from "./projectile/wizardFireball";
 import { Barrel } from "./enemy/barrel";
 import { Wall } from "./tile/wall";
 import { Camera } from "./camera";
+import { Door } from "./tile/door";
 
 export class Player {
   x: number;
@@ -55,7 +56,7 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 3000;
+    this.health = 3;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
@@ -121,6 +122,9 @@ export class Player {
       y += dy;
       let other = this.game.level.getCollidable(x, y);
       if (other === null) {
+        if (this.game.level.levelArray[x][y] instanceof Door) {
+          (this.game.level.levelArray[x][y] as Door).open();
+        }
       } else if (other instanceof Spike) {
         other.onCollide(this);
       } else {
@@ -219,6 +223,9 @@ export class Player {
       }
     }
     if (this.game.level.getCollidable(x, y) === null) {
+      if (this.game.level.levelArray[x][y] instanceof Door) {
+        (this.game.level.levelArray[x][y] as Door).open();
+      }
       this.move(x, y);
       this.game.level.tick();
     }

@@ -2,6 +2,13 @@
 TODO
 ****
 
+fix dashing through doors
+fix enemies going through doors
+sideways doors
+fix lighting (shouldn't be able to see wall sides below you)
+shadow tiles
+tiled update
+
 progression
 add indication of who's attacking you
 draw enemies' moves after player's

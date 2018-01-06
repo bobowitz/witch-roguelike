@@ -23,6 +23,11 @@ import { Arch } from "./tile/arch";
 import { SideArch } from "./tile/sideArch";
 import { Camera } from "./camera";
 import { Bones } from "./tile/bones";
+import { DoorLeft } from "./tile/doorLeft";
+import { DoorRight } from "./tile/doorRight";
+import { Door } from "./tile/door";
+import { LayeredTile } from "./tile/layeredTile";
+import { CollidableLayeredTile } from "./tile/collidableLayeredTile";
 
 export class Level {
   levelArray: Tile[][];
@@ -53,7 +58,21 @@ export class Level {
     return Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
   };
 
-  constructor(game: Game, env: number) {
+  private tilegidToTileset = (levelData, gid: number) => {
+    for (let i = 0; i < levelData.tilesets.length; i++) {
+      if (
+        gid >= levelData.tilesets[i].firstgid &&
+        (i === levelData.tilesets.length - 1 || gid < levelData.tilesets[i + 1].firstgid)
+      ) {
+        // if the tile is in the GID range of the ith tileset
+        return levelData.tilesets[i];
+      }
+    }
+    return null;
+  };
+
+  constructor(game: Game, levelData, env: number) {
+    this.game = game;
     this.env = env;
 
     this.items = Array<Item>();
@@ -61,20 +80,9 @@ export class Level {
     this.particles = Array<Particle>();
     this.enemies = Array<Enemy>();
 
-    let canvas = document.createElement("canvas");
-    canvas.width = Game.levelImage.width;
-    canvas.height = Game.levelImage.height;
-    canvas
-      .getContext("2d")
-      .drawImage(Game.levelImage, 0, 0, Game.levelImage.width, Game.levelImage.height);
-    let data = canvas
-      .getContext("2d")
-      .getImageData(0, 0, Game.levelImage.width, Game.levelImage.height).data;
+    this.width = levelData.width;
+    this.height = levelData.height;
 
-    this.width = Game.levelImage.width;
-    this.height = Game.levelImage.height;
-
-    this.game = game;
     this.levelArray = [];
     for (let x = 0; x < this.width; x++) {
       this.levelArray[x] = [];
@@ -87,55 +95,97 @@ export class Level {
       }
     }
 
-    for (let y = 0; y < Game.levelImage.height; y++) {
-      for (let x = 0; x < Game.levelImage.width; x++) {
-        let r = data[(x + y * Game.levelImage.width) * 4];
-        let g = data[(x + y * Game.levelImage.width) * 4 + 1];
-        let b = data[(x + y * Game.levelImage.width) * 4 + 2];
+    let baseLayer = levelData.layers[0].data;
+    let enemyLayer = levelData.layers[1].data;
+    for (let y = 0; y < levelData.height; y++) {
+      for (let x = 0; x < levelData.width; x++) {
+        /*
+        chest
+        chest w golden key
+        knight
+        skull
+        wizard
+        crate
+        player
+        */
 
-        this.levelArray[x][y] = null;
-        if (r === 0 && g === 0 && b === 0) {
-          this.levelArray[x][y] = new Wall(this, x, y, 0);
+        // tileID = tile index on tileset + firstGID offset
+        // figure out what tileset it's on based on ID range, then subtract out firstGID
+        // then run through a case statement to create proper tile
+
+        let tilegid = baseLayer[y * levelData.width + x];
+        let tileSourceSet = this.tilegidToTileset(levelData, tilegid);
+
+        if (tileSourceSet !== null) {
+          switch (tilegid - tileSourceSet.firstgid) {
+            case 1:
+              this.levelArray[x][y] = new Floor(this, x, y);
+              break;
+            case 2:
+              this.levelArray[x][y + 1] = new Wall(this, x, y + 1, 0);
+              break;
+            case 5:
+              this.levelArray[x][y + 1] = new Wall(this, x, y + 1, 1);
+              break;
+            case 11:
+              this.levelArray[x][y] = new Spike(this, x, y);
+              break;
+            case 14:
+              //this.levelArray[x][y] = new StairUp(this, x, y);
+              break;
+            case 16:
+              this.levelArray[x][y] = new SideArch(this, x, y);
+              break;
+            case 17:
+              this.levelArray[x][y] = new Arch(this, x, y);
+              break;
+            case 20:
+              this.levelArray[x][y + 1] = new DoorLeft(this, x, y + 1);
+              break;
+            case 53:
+              this.levelArray[x][y] = new Door(this, x, y);
+              break;
+            case 22:
+              this.levelArray[x][y + 1] = new DoorRight(this, x, y + 1);
+              break;
+          }
         }
-        if (r === 32 && g === 0 && b === 32) {
-          this.levelArray[x][y] = new Wall(this, x, y, 1);
-        }
-        if (r === 128 && g === 64 && b === 0) {
-          this.levelArray[x][y] = new Arch(this, x, y);
-        }
-        if (r === 128 && g === 64 && b === 64) {
-          this.levelArray[x][y] = new SideArch(this, x, y);
-        }
-        if (r === 255 && g === 255 && b === 0) {
+        if (!this.levelArray[x][y]) {
           this.levelArray[x][y] = new Floor(this, x, y);
-          this.enemies.push(new Chest(this, this.game, x, y));
         }
-        if (r === 255 && g === 255 && b === 128) {
-          this.levelArray[x][y] = new Floor(this, x, y);
-          this.enemies.push(new Chest(this, this.game, x, y, new GoldenKey(x, y)));
-        }
-        if (r === 255 && g === 0 && b === 0) {
-          this.levelArray[x][y] = new Floor(this, x, y);
-          this.enemies.push(new KnightEnemy(this, this.game, x, y));
-        }
-        if (r === 0 && g === 255 && b === 128) {
-          this.levelArray[x][y] = new Floor(this, x, y);
-          this.enemies.push(new SkullEnemy(this, this.game, x, y));
-        }
-        if (r === 0 && g === 0 && b === 255) {
-          this.levelArray[x][y] = new Floor(this, x, y);
-          this.enemies.push(new WizardEnemy(this, this.game, x, y));
-        }
-        if (r === 255 && g === 64 && b === 0) {
-          this.levelArray[x][y] = new Floor(this, x, y);
-          this.enemies.push(new Crate(this, this.game, x, y));
-        }
-        if (r === 255 && g === 255 && b === 255) {
-          this.levelArray[x][y] = new Floor(this, x, y);
-        }
-        if (r === 0 && g === 128 && b === 255) {
-          this.levelArray[x][y] = new Floor(this, x, y);
-          this.game.player.moveNoSmooth(x, y);
+
+        let mobgid = enemyLayer[y * levelData.width + x];
+        let mobSourceSet = this.tilegidToTileset(levelData, mobgid);
+
+        if (mobSourceSet !== null) {
+          switch (mobgid - mobSourceSet.firstgid) {
+            case 33:
+              this.game.player.moveNoSmooth(x, y);
+              console.log("moving player to (" + x + ", " + y + ")");
+              break;
+            case 34:
+              this.enemies.push(new SkullEnemy(this, this.game, x, y));
+              break;
+            case 36:
+              this.enemies.push(new KnightEnemy(this, this.game, x, y));
+              break;
+            case 38:
+              this.enemies.push(new WizardEnemy(this, this.game, x, y));
+              break;
+            case 45:
+              this.enemies.push(new Crate(this, this.game, x, y));
+              break;
+            case 46:
+              this.enemies.push(new Barrel(this, this.game, x, y));
+              break;
+            case 49:
+              if (x === 8 && y === 13) {
+                this.enemies.push(new Chest(this, this.game, x, y, new GoldenKey(x, y)));
+              } else {
+                this.enemies.push(new Chest(this, this.game, x, y));
+              }
+              break;
+          }
         }
       }
     }
@@ -238,7 +288,6 @@ export class Level {
     let py = this.game.player.y + 0.5;
     let returnVal = 0;
     let i = 0;
-    let hitWall = false; // flag for if we already hit a wall. we'll keep scanning and see if there's more walls. if so, light them up!
     this.visibilityArray[Math.floor(px)][Math.floor(py)] += LevelConstants.VISIBILITY_STEP;
     this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(
       this.visibilityArray[Math.floor(px)][Math.floor(py)],
@@ -248,25 +297,21 @@ export class Level {
       px += dx;
       py += dy;
       let tile = this.levelArray[Math.floor(px)][Math.floor(py)];
-      if (tile instanceof Wall && tile.type === 1) {
-        return returnVal;
-      }
-
-      if (!(tile instanceof Wall) && hitWall) {
-        // fun's over, we hit something that wasn't a wall
-        return returnVal;
-      }
-
-      if (tile instanceof Wall) {
-        if (!hitWall) returnVal = i;
-        hitWall = true;
-      }
 
       this.visibilityArray[Math.floor(px)][Math.floor(py)] += LevelConstants.VISIBILITY_STEP;
       this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(
         this.visibilityArray[Math.floor(px)][Math.floor(py)],
         2
       );
+
+      if (
+        tile instanceof Wall ||
+        tile instanceof DoorLeft ||
+        tile instanceof DoorRight ||
+        tile instanceof Door
+      ) {
+        return returnVal;
+      }
 
       // crates and chests can block visibility too!
       for (const e of this.enemies) {
@@ -275,8 +320,7 @@ export class Level {
           e.x === Math.floor(px) &&
           e.y === Math.floor(py)
         ) {
-          if (!hitWall) returnVal = i;
-          hitWall = true;
+          return i;
         }
       }
     }
@@ -370,10 +414,13 @@ export class Level {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
         if (this.levelArray[x][y] !== null) {
-          if (!(this.levelArray[x][y] instanceof Wall)) {
+          if (this.levelArray[x][y] instanceof LayeredTile) {
+            (this.levelArray[x][y] as LayeredTile).drawCeiling();
+          } else if (this.levelArray[x][y] instanceof CollidableLayeredTile) {
+            (this.levelArray[x][y] as CollidableLayeredTile).drawCeiling();
+          } else {
             continue;
           }
-          (this.levelArray[x][y] as Wall).drawCeiling();
         }
 
         if (Camera.cull(x, y, 1, 1)) continue;

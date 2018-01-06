@@ -1,8 +1,10 @@
 import { Game } from "../game";
 import { Collidable } from "./collidable";
 import { Level } from "../level";
+import { CollidableLayeredTile } from "./collidableLayeredTile";
+import { GameConstants } from "../gameConstants";
 
-export class Wall extends Collidable {
+export class Wall extends CollidableLayeredTile {
   type: number;
 
   constructor(level: Level, x: number, y: number, type: number) {
@@ -11,14 +13,24 @@ export class Wall extends Collidable {
   }
 
   draw = () => {
-    Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, 1, 1);
   };
 
   drawCeiling = () => {
-    if (this.type === 0) {
-      Game.drawTile(2, this.level.env, 1, 1, this.x, this.y - 1, this.w, this.h);
-    } else if (this.type === 1) {
-      Game.drawTile(5, this.level.env, 1, 1, this.x, this.y - 1, this.w, this.h);
+    if (this.level.visibilityArray[this.x][this.y] > 0) {
+      if (this.type === 0) {
+        Game.drawTile(2, this.level.env, 1, 1, this.x, this.y - 1, 1, 1);
+      } else if (this.type === 1) {
+        Game.drawTile(5, this.level.env, 1, 1, this.x, this.y - 1, 1, 1);
+      }
+    } else {
+      Game.ctx.fillStyle = "black";
+      Game.ctx.fillRect(
+        this.x * GameConstants.TILESIZE,
+        (this.y - 1) * GameConstants.TILESIZE,
+        GameConstants.TILESIZE,
+        GameConstants.TILESIZE
+      );
     }
   };
 }

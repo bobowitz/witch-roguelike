@@ -5,6 +5,7 @@ import { Bones } from "../tile/bones";
 import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
+import { Door } from "../tile/door";
 
 export class Enemy extends Collidable {
   drawX: number;
@@ -41,6 +42,11 @@ export class Enemy extends Collidable {
     if (this.game.player.x === x && this.game.player.y === y) {
       return;
     }
+    if (
+      this.game.level.levelArray[x][y] instanceof Door &&
+      !(this.game.level.levelArray[x][y] as Door).opened
+    )
+      return;
     if (this.game.level.getCollidable(x, y) === null) {
       this.x = x;
       this.y = y;

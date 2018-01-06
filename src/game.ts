@@ -8,6 +8,7 @@ import { Camera } from "./camera";
 
 export class Game {
   static ctx: CanvasRenderingContext2D;
+  levelData;
   level: Level;
   player: Player;
   static tileset: HTMLImageElement;
@@ -15,7 +16,6 @@ export class Game {
   static itemset: HTMLImageElement;
   static fxset: HTMLImageElement;
   static inventory: HTMLImageElement;
-  static levelImage: HTMLImageElement;
 
   // [min, max] inclusive
   static rand = (min: number, max: number): number => {
@@ -37,7 +37,7 @@ export class Game {
       Game.ctx.textBaseline = "top";
 
       Game.tileset = new Image();
-      Game.tileset.src = "res/tileset.png";
+      Game.tileset.src = "res/castleset.png";
       Game.mobset = new Image();
       Game.mobset.src = "res/mobset.png";
       Game.itemset = new Image();
@@ -46,19 +46,22 @@ export class Game {
       Game.fxset.src = "res/fxset.png";
       Game.inventory = new Image();
       Game.inventory.src = "res/inv.png";
-      Game.levelImage = new Image();
-      Game.levelImage.src = "res/castleLevel2.png";
-      Game.levelImage.crossOrigin = "Anonymous";
       Sound.loadSounds();
       Sound.playMusic(); // loops forever
 
-      Game.levelImage.onload = this.finishInit;
+      let request = new XMLHttpRequest();
+      request.onload = () => {
+        this.levelData = JSON.parse(request.responseText);
+        this.finishInit();
+      };
+      request.open("GET", "res/castleLevel.json", true);
+      request.send();
     });
   }
 
   finishInit = () => {
     this.player = new Player(this, 0, 0);
-    this.level = new Level(this, 0);
+    this.level = new Level(this, this.levelData, 0);
     this.level.enterLevel();
 
     setInterval(this.run, 1000.0 / GameConstants.FPS);
