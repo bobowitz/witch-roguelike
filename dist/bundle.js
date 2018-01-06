@@ -843,6 +843,7 @@ exports.DoorRight = DoorRight;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var floor_1 = __webpack_require__(4);
+var door_1 = __webpack_require__(10);
 var astar;
 (function (astar_1) {
     //================== start graph js
@@ -1015,7 +1016,9 @@ var astar;
             for (var x = 0, xl = grid.length; x < xl; x++) {
                 this.grid[x] = [];
                 for (var y = 0, yl = grid[x].length; y < yl; y++) {
-                    var cost = grid[x][y] instanceof floor_1.Floor ? 1 : 99999999;
+                    var cost = grid[x][y] instanceof floor_1.Floor || (grid[x][y] instanceof door_1.Door && grid[x][y].opened)
+                        ? 1
+                        : 99999999;
                     this.grid[x][y] = {
                         org: grid[x][y],
                         f: 0,

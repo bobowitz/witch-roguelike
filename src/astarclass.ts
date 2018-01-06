@@ -1,4 +1,5 @@
 import { Floor } from "./tile/floor";
+import { Door } from "./tile/door";
 
 export namespace astar {
   //================== start graph js
@@ -220,7 +221,10 @@ export namespace astar {
       for (var x = 0, xl = grid.length; x < xl; x++) {
         this.grid[x] = [];
         for (var y = 0, yl = grid[x].length; y < yl; y++) {
-          var cost = grid[x][y] instanceof Floor ? 1 : 99999999;
+          var cost =
+            grid[x][y] instanceof Floor || (grid[x][y] instanceof Door && grid[x][y].opened)
+              ? 1
+              : 99999999;
           this.grid[x][y] = {
             org: grid[x][y],
             f: 0,
