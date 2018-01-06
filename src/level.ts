@@ -97,6 +97,7 @@ export class Level {
 
     let baseLayer = levelData.layers[0].data;
     let enemyLayer = levelData.layers[1].data;
+    let itemLayer = levelData.layers[2].data;
     for (let y = 0; y < levelData.height; y++) {
       for (let x = 0; x < levelData.width; x++) {
         /*
@@ -161,7 +162,6 @@ export class Level {
           switch (mobgid - mobSourceSet.firstgid) {
             case 33:
               this.game.player.moveNoSmooth(x, y);
-              console.log("moving player to (" + x + ", " + y + ")");
               break;
             case 34:
               this.enemies.push(new SkullEnemy(this, this.game, x, y));
@@ -179,11 +179,18 @@ export class Level {
               this.enemies.push(new Barrel(this, this.game, x, y));
               break;
             case 49:
-              if (x === 8 && y === 13) {
-                this.enemies.push(new Chest(this, this.game, x, y, new GoldenKey(x, y)));
-              } else {
-                this.enemies.push(new Chest(this, this.game, x, y));
-              }
+              this.enemies.push(new Chest(this, this.game, x, y));
+              break;
+          }
+        }
+
+        let itemgid = itemLayer[y * levelData.width + x];
+        let itemSourceSet = this.tilegidToTileset(levelData, itemgid);
+
+        if (itemSourceSet !== null) {
+          switch (itemgid - itemSourceSet.firstgid) {
+            case 38:
+              this.enemies.push(new Chest(this, this.game, x, y, new GoldenKey(x, y)));
               break;
           }
         }

@@ -54,7 +54,7 @@ export class Game {
         this.levelData = JSON.parse(request.responseText);
         this.finishInit();
       };
-      request.open("GET", "res/castleLevel.json", true);
+      request.open("GET", "res/castleLevelALTON.json", true);
       request.send();
     });
   }

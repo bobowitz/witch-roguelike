@@ -333,7 +333,11 @@ export class Player {
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
         this.drawX += -0.5 * this.drawX;
         this.drawY += -0.5 * this.drawY;
-        Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+        if (this.armor && (this.armor.health > 0 || Math.floor(this.flashingFrame / 2) % 2 === 0)) {
+          Game.drawMob(1, 2, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+        } else {
+          Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+        }
       }
     }
     Camera.translateBack();

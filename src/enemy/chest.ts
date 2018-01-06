@@ -19,7 +19,6 @@ export class Chest extends Enemy {
     this.health = 1;
 
     this.dropItem = item;
-    console.log(this.dropItem);
   }
 
   kill = () => {
@@ -38,7 +37,7 @@ export class Chest extends Enemy {
           this.game.level.items.push(new Key(this.x, this.y));
           break;
         case 3:
-          this.game.level.items.push(new Armor(this.x, this.y));
+          this.game.level.items.push(new Armor(this.level, this.x, this.y));
           break;
       }
     }

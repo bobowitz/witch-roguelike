@@ -19,7 +19,6 @@ export class Inventory {
     this.game = game;
     this.items = new Array<Item>();
     Input.mouseLeftClickListener = this.mouseLeftClickListener;
-    this.items.push();
   }
 
   open = () => {

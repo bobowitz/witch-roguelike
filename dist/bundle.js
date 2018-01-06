@@ -142,7 +142,7 @@ var Game = (function () {
                 _this.levelData = JSON.parse(request.responseText);
                 _this.finishInit();
             };
-            request.open("GET", "res/castleLevel.json", true);
+            request.open("GET", "res/castleLevelALTON.json", true);
             request.send();
         });
     }
@@ -1212,7 +1212,7 @@ var Chest = (function (_super) {
                         _this.game.level.items.push(new key_1.Key(_this.x, _this.y));
                         break;
                     case 3:
-                        _this.game.level.items.push(new armor_1.Armor(_this.x, _this.y));
+                        _this.game.level.items.push(new armor_1.Armor(_this.level, _this.x, _this.y));
                         break;
                 }
             }
@@ -1227,7 +1227,6 @@ var Chest = (function (_super) {
         _this.tileY = 0;
         _this.health = 1;
         _this.dropItem = item;
-        console.log(_this.dropItem);
         return _this;
     }
     return Chest;
@@ -1825,6 +1824,7 @@ var Level = (function () {
         }
         var baseLayer = levelData.layers[0].data;
         var enemyLayer = levelData.layers[1].data;
+        var itemLayer = levelData.layers[2].data;
         for (var y = 0; y < levelData.height; y++) {
             for (var x = 0; x < levelData.width; x++) {
                 /*
@@ -1884,7 +1884,6 @@ var Level = (function () {
                     switch (mobgid - mobSourceSet.firstgid) {
                         case 33:
                             this.game.player.moveNoSmooth(x, y);
-                            console.log("moving player to (" + x + ", " + y + ")");
                             break;
                         case 34:
                             this.enemies.push(new skullEnemy_1.SkullEnemy(this, this.game, x, y));
@@ -1902,12 +1901,16 @@ var Level = (function () {
                             this.enemies.push(new barrel_1.Barrel(this, this.game, x, y));
                             break;
                         case 49:
-                            if (x === 8 && y === 13) {
-                                this.enemies.push(new chest_1.Chest(this, this.game, x, y, new goldenKey_1.GoldenKey(x, y)));
-                            }
-                            else {
-                                this.enemies.push(new chest_1.Chest(this, this.game, x, y));
-                            }
+                            this.enemies.push(new chest_1.Chest(this, this.game, x, y));
+                            break;
+                    }
+                }
+                var itemgid = itemLayer[y * levelData.width + x];
+                var itemSourceSet = this.tilegidToTileset(levelData, itemgid);
+                if (itemSourceSet !== null) {
+                    switch (itemgid - itemSourceSet.firstgid) {
+                        case 38:
+                            this.enemies.push(new chest_1.Chest(this, this.game, x, y, new goldenKey_1.GoldenKey(x, y)));
                             break;
                     }
                 }
@@ -2190,9 +2193,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var levelConstants_1 = __webpack_require__(2);
 var pickup_1 = __webpack_require__(11);
+var textParticle_1 = __webpack_require__(42);
+var gameConstants_1 = __webpack_require__(1);
 var Armor = (function (_super) {
     __extends(Armor, _super);
-    function Armor(x, y) {
+    function Armor(level, x, y) {
         var _this = _super.call(this, x, y) || this;
         _this.RECHARGE_TURNS = 18;
         _this.tick = function () {
@@ -2210,6 +2215,7 @@ var Armor = (function (_super) {
                 _this.health = 0;
                 _this.rechargeTurnCounter = _this.RECHARGE_TURNS;
             }
+            _this.level.particles.push(new textParticle_1.TextParticle("" + -damage, _this.level.game.player.x + 0.5, _this.level.game.player.y + 0.5, gameConstants_1.GameConstants.ARMOR_GREY));
         };
         _this.drawGUI = function (playerHealth) {
             if (_this.rechargeTurnCounter === -1)
@@ -2235,6 +2241,7 @@ var Armor = (function (_super) {
                 player.armor.rechargeTurnCounter = -1;
             }
         };
+        _this.level = level;
         _this.health = 1;
         _this.rechargeTurnCounter = -1;
         _this.tileX = 5;
@@ -2996,7 +3003,12 @@ var Player = (function () {
                 if (!_this.flashing || Math.floor(_this.flashingFrame) % 2 === 0) {
                     _this.drawX += -0.5 * _this.drawX;
                     _this.drawY += -0.5 * _this.drawY;
-                    game_1.Game.drawMob(1, 0, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                    if (_this.armor && (_this.armor.health > 0 || Math.floor(_this.flashingFrame / 2) % 2 === 0)) {
+                        game_1.Game.drawMob(1, 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                    }
+                    else {
+                        game_1.Game.drawMob(1, 0, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                    }
                 }
             }
             camera_1.Camera.translateBack();
@@ -3113,7 +3125,6 @@ var Inventory = (function () {
         this.game = game;
         this.items = new Array();
         input_1.Input.mouseLeftClickListener = this.mouseLeftClickListener;
-        this.items.push();
     }
     Inventory.prototype.hasItem = function (itemType) {
         for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
