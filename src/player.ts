@@ -212,6 +212,9 @@ export class Player {
             e.y += dy;
             e.drawX = dx;
             e.drawY = dy;
+            if (this.game.level.levelArray[e.x][e.y] instanceof Door) {
+              (this.game.level.levelArray[e.x][e.y] as Door).open();
+            }
             this.move(x, y);
             this.game.level.tick();
             return;

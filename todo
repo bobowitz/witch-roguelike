@@ -2,11 +2,9 @@
 TODO
 ****
 
-pushing stuff through doors
 sideways doors
 fix lighting (shouldn't be able to see wall sides below you)
 shadow tiles
-tiled update
 
 progression
 add indication of who's attacking you
@@ -24,10 +22,11 @@ do mockups for current environments
 LONG TERM GOALS
 ***************
 
-doors that open as you walk through them and stay open
-doors that open as you wakl through and close behind you
-doors that lock behind you
+different door behavior:
+-normal doors (stay open)
+-doors that close behind you
+-locked doors
+-doors that lock behind you
+
 inventory screen with more detailed pictures for items
-long rooms
 dungeon sub dungeon catacombs (rand-gen, infinite)
-draw adjacent levels in shadow
