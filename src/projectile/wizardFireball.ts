@@ -25,13 +25,13 @@ export class WizardFireball extends Projectile {
     }
   };
 
-  hit = (player: Player) => {
+  hitPlayer = (player: Player) => {
     if (this.state === 1 && !this.dead) {
       player.hurt(1);
     }
   };
 
-  draw = () => {
+  drawUnder = () => {
     if (this.state === 0) {
       this.frame += 0.25;
       if (this.frame >= 4) this.frame = 0;

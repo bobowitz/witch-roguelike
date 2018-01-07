@@ -13,6 +13,7 @@ import { Spike } from "./tile/spike";
 import { GameConstants } from "./gameConstants";
 import { WizardEnemy } from "./enemy/wizardEnemy";
 import { SkullEnemy } from "./enemy/skullEnemy";
+import { PyroEnemy } from "./enemy/pyroEnemy";
 import { Barrel } from "./enemy/barrel";
 import { Crate } from "./enemy/crate";
 import { Input } from "./input";
@@ -23,8 +24,6 @@ import { Arch } from "./tile/arch";
 import { SideArch } from "./tile/sideArch";
 import { Camera } from "./camera";
 import { Bones } from "./tile/bones";
-import { DoorLeft } from "./tile/doorLeft";
-import { DoorRight } from "./tile/doorRight";
 import { Door } from "./tile/door";
 import { SideDoor } from "./tile/sideDoor";
 import { LayeredTile } from "./tile/layeredTile";
@@ -141,17 +140,11 @@ export class Level {
             case 17:
               this.levelArray[x][y] = new Arch(this, x, y);
               break;
-            case 20:
-              this.levelArray[x][y + 1] = new DoorLeft(this, x, y + 1);
-              break;
             case 52:
               this.levelArray[x][y] = new Door(this, x, y);
               break;
             case 25:
               this.levelArray[x][y + 1] = new SideDoor(this, x, y + 1);
-              break;
-            case 22:
-              this.levelArray[x][y + 1] = new DoorRight(this, x, y + 1);
               break;
           }
         }
@@ -175,6 +168,9 @@ export class Level {
               break;
             case 38:
               this.enemies.push(new WizardEnemy(this, this.game, x, y));
+              break;
+            case 40:
+              this.enemies.push(new PyroEnemy(this, this.game, x, y));
               break;
             case 45:
               this.enemies.push(new Crate(this, this.game, x, y));
@@ -307,14 +303,12 @@ export class Level {
     let dy = this.sinTable[angle];
     let px = this.game.player.x + 0.5;
     let py = this.game.player.y + 0.5;
-    let returnVal = 0;
-    let i = 0;
     this.visibilityArray[Math.floor(px)][Math.floor(py)] += LevelConstants.VISIBILITY_STEP;
     this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(
       this.visibilityArray[Math.floor(px)][Math.floor(py)],
       2
     );
-    for (; i < radius; i++) {
+    for (let i = 0; i < radius; i++) {
       px += dx;
       py += dy;
       let tile = this.levelArray[Math.floor(px)][Math.floor(py)];
@@ -325,16 +319,10 @@ export class Level {
         2
       );
 
-      if (
-        tile instanceof Wall ||
-        tile instanceof DoorLeft ||
-        tile instanceof DoorRight ||
-        tile instanceof Door
-      ) {
-        return returnVal;
+      if (tile instanceof Wall || (tile instanceof Door && !(tile as Door).opened)) {
+        return i;
       }
     }
-    return returnVal;
   };
 
   tick = () => {
@@ -346,6 +334,19 @@ export class Level {
     for (const e of this.enemies) {
       e.tick();
     }
+
+    for (const p of this.projectiles) {
+      if (this.getCollidable(p.x, p.y) !== null) p.dead = true;
+      if (p.x === this.game.player.x && p.y === this.game.player.y) {
+        p.hitPlayer(this.game.player);
+      }
+      for (const e of this.enemies) {
+        if (p.x === e.x && p.y === e.y) {
+          p.hitEnemy(e);
+        }
+      }
+    }
+
     this.enemies = this.enemies.filter(e => !e.dead);
     this.game.player.finishTick();
     this.updateLighting();
@@ -402,7 +403,7 @@ export class Level {
 
     this.projectiles = this.projectiles.filter(p => !p.dead);
     for (const p of this.projectiles) {
-      p.draw();
+      p.drawUnder();
     }
 
     for (const e of this.enemies) {
@@ -410,6 +411,9 @@ export class Level {
     }
     for (const i of this.items) {
       if (i.y <= this.game.player.y && this.visibilityArray[i.x][i.y] > 0) i.draw();
+    }
+    for (const p of this.projectiles) {
+      if (p.y <= this.game.player.y && this.visibilityArray[p.x][p.y] > 0) p.drawOver();
     }
     Camera.translateBack();
   };
@@ -420,6 +424,9 @@ export class Level {
     }
     for (const i of this.items) {
       if (i.y > this.game.player.y && this.visibilityArray[i.x][i.y] > 0) i.draw();
+    }
+    for (const p of this.projectiles) {
+      if (p.y > this.game.player.y && this.visibilityArray[p.x][p.y] > 0) p.drawOver();
     }
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
@@ -433,6 +440,7 @@ export class Level {
           }
         }
 
+        if (this.levelArray[x][y] instanceof Wall) continue;
         if (Camera.cull(x, y, 1, 1)) continue;
 
         // fill in shadows too

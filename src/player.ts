@@ -42,6 +42,10 @@ export class Player {
   missProb: number;
   sightRadius: number;
   guiHeartFrame: number;
+  dashCoolDown: number;
+  dashFlashing: number;
+  readonly DASH_COOLDOWN = 1;
+  readonly DASH_FLASHING = GameConstants.FPS * 0.25;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -63,6 +67,8 @@ export class Player {
     this.flashingFrame = 0;
     this.lastTickHealth = this.health;
     this.guiHeartFrame = 0;
+    this.dashCoolDown = 0;
+    this.dashFlashing = 0;
 
     this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
@@ -83,26 +89,50 @@ export class Player {
   };
   leftListener = () => {
     if (!this.dead) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
-      else this.tryMove(this.x - 1, this.y);
+      if (Input.isDown(Input.SPACE)) {
+        if (this.dashCoolDown <= 0) {
+          this.tryDash(-1, 0);
+          this.dashCoolDown = this.DASH_COOLDOWN;
+        } else {
+          this.dashFlashing = this.DASH_FLASHING;
+        }
+      } else this.tryMove(this.x - 1, this.y);
     }
   };
   rightListener = () => {
     if (!this.dead) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
-      else this.tryMove(this.x + 1, this.y);
+      if (Input.isDown(Input.SPACE)) {
+        if (this.dashCoolDown <= 0) {
+          this.tryDash(1, 0);
+          this.dashCoolDown = this.DASH_COOLDOWN;
+        } else {
+          this.dashFlashing = this.DASH_FLASHING;
+        }
+      } else this.tryMove(this.x + 1, this.y);
     }
   };
   upListener = () => {
     if (!this.dead) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
-      else this.tryMove(this.x, this.y - 1);
+      if (Input.isDown(Input.SPACE)) {
+        if (this.dashCoolDown <= 0) {
+          this.tryDash(0, -1);
+          this.dashCoolDown = this.DASH_COOLDOWN;
+        } else {
+          this.dashFlashing = this.DASH_FLASHING;
+        }
+      } else this.tryMove(this.x, this.y - 1);
     }
   };
   downListener = () => {
     if (!this.dead) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
-      else this.tryMove(this.x, this.y + 1);
+      if (Input.isDown(Input.SPACE)) {
+        if (this.dashCoolDown <= 0) {
+          this.tryDash(0, 1);
+          this.dashCoolDown = this.DASH_COOLDOWN;
+        } else {
+          this.dashFlashing = this.DASH_FLASHING;
+        }
+      } else this.tryMove(this.x, this.y + 1);
     }
   };
 
@@ -136,7 +166,7 @@ export class Player {
       for (let e of this.game.level.enemies) {
         if (e.x === x && e.y === y) {
           let dmg = this.hit();
-          e.hurt(this, dmg);
+          e.hurt(dmg);
           this.game.level.particles.push(
             new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
           );
@@ -305,15 +335,8 @@ export class Player {
   startTick = () => {};
 
   finishTick = () => {
-    for (const p of this.game.level.projectiles) {
-      if (p instanceof WizardFireball) {
-        if (this.x === p.x && this.y === p.y) {
-          p.hit(this); // let fireball determine if it's in a damage-dealing state rn
-        }
-      }
-    }
-
     this.flashing = false;
+    if (this.dashCoolDown > 0) this.dashCoolDown--;
 
     let totalHealthDiff = this.health - this.lastTickHealth;
     this.lastTickHealth = this.health; // update last tick health
@@ -335,12 +358,20 @@ export class Player {
     if (!this.dead) {
       Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
-        this.drawX += -0.5 * this.drawX;
-        this.drawY += -0.5 * this.drawY;
-        if (this.armor && (this.armor.health > 0 || Math.floor(this.flashingFrame / 2) % 2 === 0)) {
-          Game.drawMob(1, 2, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
-        } else {
-          Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+        if (this.dashFlashing > 0) {
+          this.dashFlashing--;
+        }
+        if (!(this.dashFlashing > 0 && Math.floor(this.dashFlashing * 0.5) % 2 === 0)) {
+          this.drawX += -0.5 * this.drawX;
+          this.drawY += -0.5 * this.drawY;
+          if (
+            this.armor &&
+            (this.armor.health > 0 || Math.floor(this.flashingFrame / 2) % 2 === 0)
+          ) {
+            Game.drawMob(1, 2, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+          } else {
+            Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+          }
         }
       }
     }

@@ -18,12 +18,22 @@ export class SideDoor extends Door {
   }
 
   draw = () => {
-    if (this.opened) {
-      this.frame += 0.5;
-      if (this.frame > 4) this.frame = 4;
+    if (this.level.visibilityArray[this.x][this.y] > 0) {
+      if (this.opened) {
+        this.frame += 0.5;
+        if (this.frame > 4) this.frame = 4;
+      }
+      Game.drawTile(0, this.level.env, 1, 1, this.x, this.y - 1, 1, 1);
+      Game.drawTile(25 + Math.floor(this.frame), 0, 1, 1, this.x, this.y - 1, 1, 1);
+    } else {
+      Game.ctx.fillStyle = "black";
+      Game.ctx.fillRect(
+        this.x * GameConstants.TILESIZE,
+        (this.y - 1) * GameConstants.TILESIZE,
+        GameConstants.TILESIZE,
+        GameConstants.TILESIZE
+      );
     }
-    Game.drawTile(0, this.level.env, 1, 1, this.x, this.y - 1, 1, 1);
-    Game.drawTile(25 + Math.floor(this.frame), 0, 1, 1, this.x, this.y - 1, 1, 1);
   };
 
   drawCeiling = () => {};

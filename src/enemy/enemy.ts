@@ -57,14 +57,9 @@ export class Enemy extends Collidable {
     return 0;
   };
 
-  dropXP = () => {
-    return 0;
-  };
-
-  hurt = (player: Player, damage: number) => {
+  hurt = (damage: number) => {
     this.health -= damage;
     if (this.health <= 0) {
-      player.stats.getXP(this.dropXP());
       this.kill();
     }
   };
