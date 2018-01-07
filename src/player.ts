@@ -44,7 +44,7 @@ export class Player {
   guiHeartFrame: number;
   dashCoolDown: number;
   dashFlashing: number;
-  readonly DASH_COOLDOWN = 1;
+  readonly DASH_COOLDOWN = 0;
   readonly DASH_FLASHING = GameConstants.FPS * 0.25;
 
   constructor(game: Game, x: number, y: number) {

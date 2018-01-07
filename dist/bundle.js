@@ -2778,7 +2778,7 @@ var door_1 = __webpack_require__(5);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
-        this.DASH_COOLDOWN = 1;
+        this.DASH_COOLDOWN = 0;
         this.DASH_FLASHING = gameConstants_1.GameConstants.FPS * 0.25;
         this.iListener = function () {
             _this.inventory.open();
