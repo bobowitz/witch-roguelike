@@ -118,6 +118,16 @@ export class Level {
         let tileSourceSet = this.tilegidToTileset(levelData, tilegid);
 
         if (tileSourceSet !== null) {
+          let gid = tilegid - tileSourceSet.firstgid;
+          if (
+            (gid >= 78 && gid <= 83) ||
+            (gid >= 110 && gid <= 115) ||
+            (gid >= 142 && gid <= 159) ||
+            (gid >= 174 && gid <= 177) ||
+            (gid >= 180 && gid <= 191)
+          ) {
+            this.levelArray[x][y + 1] = new Wall(this, x, y + 1, gid);
+          }
           switch (tilegid - tileSourceSet.firstgid) {
             case 1:
               this.levelArray[x][y] = new Floor(this, x, y);

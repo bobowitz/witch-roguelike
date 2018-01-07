@@ -1756,6 +1756,14 @@ var Level = (function () {
                 var tilegid = baseLayer[y * levelData.width + x];
                 var tileSourceSet = this.tilegidToTileset(levelData, tilegid);
                 if (tileSourceSet !== null) {
+                    var gid = tilegid - tileSourceSet.firstgid;
+                    if ((gid >= 78 && gid <= 83) ||
+                        (gid >= 110 && gid <= 115) ||
+                        (gid >= 142 && gid <= 159) ||
+                        (gid >= 174 && gid <= 177) ||
+                        (gid >= 180 && gid <= 191)) {
+                        this.levelArray[x][y + 1] = new wall_1.Wall(this, x, y + 1, gid);
+                    }
                     switch (tilegid - tileSourceSet.firstgid) {
                         case 1:
                             this.levelArray[x][y] = new floor_1.Floor(this, x, y);
@@ -1872,7 +1880,7 @@ var Wall = (function (_super) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
             if (_this.y === _this.level.height - 1 || _this.level.visibilityArray[_this.x][_this.y + 1] > 0) {
-                if (_this.type === 0)
+                if (_this.type !== 1)
                     game_1.Game.drawTile(0, _this.level.env, 1, 1, _this.x, _this.y, 1, 1);
             }
             else {
@@ -1887,6 +1895,11 @@ var Wall = (function (_super) {
                 }
                 else if (_this.type === 1) {
                     game_1.Game.drawTile(5, _this.level.env, 1, 1, _this.x, _this.y - 1, 1, 1);
+                }
+                else {
+                    var tX = _this.type % (game_1.Game.tileset.width / gameConstants_1.GameConstants.TILESIZE);
+                    var tY = Math.floor(_this.type / (game_1.Game.tileset.width / gameConstants_1.GameConstants.TILESIZE));
+                    game_1.Game.drawTile(tX, tY, 1, 1, _this.x, _this.y - 1, 1, 1);
                 }
             }
             else {

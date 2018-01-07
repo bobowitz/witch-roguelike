@@ -15,7 +15,7 @@ export class Wall extends CollidableLayeredTile {
 
   draw = () => {
     if (this.y === this.level.height - 1 || this.level.visibilityArray[this.x][this.y + 1] > 0) {
-      if (this.type === 0) Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, 1, 1);
+      if (this.type !== 1) Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, 1, 1);
     } else {
       Game.ctx.fillStyle = "black";
       Game.ctx.fillRect(
@@ -33,6 +33,10 @@ export class Wall extends CollidableLayeredTile {
         Game.drawTile(2, this.level.env, 1, 1, this.x, this.y - 1, 1, 1);
       } else if (this.type === 1) {
         Game.drawTile(5, this.level.env, 1, 1, this.x, this.y - 1, 1, 1);
+      } else {
+        let tX = this.type % (Game.tileset.width / GameConstants.TILESIZE);
+        let tY = Math.floor(this.type / (Game.tileset.width / GameConstants.TILESIZE));
+        Game.drawTile(tX, tY, 1, 1, this.x, this.y - 1, 1, 1);
       }
     } else {
       Game.ctx.fillStyle = "black";
