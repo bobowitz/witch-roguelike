@@ -292,9 +292,19 @@ export class Level {
     }
   };
 
+  cosTable = [];
+  sinTable = [];
+
   castShadowsAtAngle = (angle: number, radius: number) => {
-    let dx = Math.cos(angle * Math.PI / 180);
-    let dy = Math.sin(angle * Math.PI / 180);
+    if (this.cosTable.length === 0) {
+      for (let i = 0; i < 360; i++) {
+        this.cosTable[i] = Math.cos(i * Math.PI / 180);
+        this.sinTable[i] = Math.sin(i * Math.PI / 180);
+      }
+    }
+
+    let dx = this.cosTable[angle];
+    let dy = this.sinTable[angle];
     let px = this.game.player.x + 0.5;
     let py = this.game.player.y + 0.5;
     let returnVal = 0;
@@ -322,17 +332,6 @@ export class Level {
         tile instanceof Door
       ) {
         return returnVal;
-      }
-
-      // crates and chests can block visibility too!
-      for (const e of this.enemies) {
-        if (
-          (e instanceof Crate || e instanceof Chest) &&
-          e.x === Math.floor(px) &&
-          e.y === Math.floor(py)
-        ) {
-          return i;
-        }
       }
     }
     return returnVal;

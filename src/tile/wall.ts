@@ -3,6 +3,7 @@ import { Collidable } from "./collidable";
 import { Level } from "../level";
 import { CollidableLayeredTile } from "./collidableLayeredTile";
 import { GameConstants } from "../gameConstants";
+import { LevelConstants } from "../levelConstants";
 
 export class Wall extends CollidableLayeredTile {
   type: number;
@@ -13,7 +14,17 @@ export class Wall extends CollidableLayeredTile {
   }
 
   draw = () => {
-    if (this.type === 0) Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, 1, 1);
+    if (this.y === this.level.height - 1 || this.level.visibilityArray[this.x][this.y + 1] > 0) {
+      if (this.type === 0) Game.drawTile(0, this.level.env, 1, 1, this.x, this.y, 1, 1);
+    } else {
+      Game.ctx.fillStyle = "black";
+      Game.ctx.fillRect(
+        this.x * GameConstants.TILESIZE,
+        this.y * GameConstants.TILESIZE,
+        GameConstants.TILESIZE,
+        GameConstants.TILESIZE
+      );
+    }
   };
 
   drawCeiling = () => {

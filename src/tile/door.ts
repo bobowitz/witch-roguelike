@@ -41,5 +41,22 @@ export class Door extends LayeredTile {
         GameConstants.TILESIZE
       );
     }
+    if (this.y === this.level.height - 1 || this.level.visibilityArray[this.x][this.y + 1] === 0) {
+      Game.ctx.fillStyle = "black";
+      Game.ctx.fillRect(
+        this.x * GameConstants.TILESIZE,
+        (this.y + 0.6) * GameConstants.TILESIZE,
+        GameConstants.TILESIZE,
+        0.4 * GameConstants.TILESIZE
+      );
+      Game.ctx.globalAlpha = 0.5;
+      Game.ctx.fillRect(
+        this.x * GameConstants.TILESIZE,
+        (this.y - 0.4) * GameConstants.TILESIZE,
+        GameConstants.TILESIZE,
+        1.4 * GameConstants.TILESIZE
+      );
+      Game.ctx.globalAlpha = 1;
+    }
   };
 }

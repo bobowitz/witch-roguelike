@@ -13,6 +13,7 @@ import { WizardFireball } from "../projectile/wizardFireball";
 
 enum WizardState {
   idle,
+  idle2,
   attack,
   justAttacked,
   teleport,
@@ -22,10 +23,14 @@ export class WizardEnemy extends Enemy {
   ticks: number;
   state: WizardState;
   frame: number;
+  startX: number;
+  startY: number;
   readonly ATTACK_RADIUS = 5;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
+    this.startX = this.x;
+    this.startY = this.y;
     this.ticks = 0;
     this.health = 1;
     this.tileX = 6;
@@ -88,8 +93,8 @@ export class WizardEnemy extends Enemy {
           let oldX = this.x;
           let oldY = this.y;
           while (this.x === oldX && this.y === oldY) {
-            let newX = this.x + Game.rand(-10, 10);
-            let newY = this.y + Game.rand(-10, 10);
+            let newX = this.startX + Game.rand(-3, 3);
+            let newY = this.startY + Game.rand(-3, 3);
             this.tryMove(newX, newY);
           }
           this.drawX = this.x - oldX;
@@ -103,6 +108,9 @@ export class WizardEnemy extends Enemy {
           }
           break;
         case WizardState.idle:
+          this.state = WizardState.idle2;
+          break;
+        case WizardState.idle2:
           this.state = WizardState.teleport;
           break;
       }

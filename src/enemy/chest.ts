@@ -27,7 +27,7 @@ export class Chest extends Enemy {
     if (this.dropItem) this.game.level.items.push(this.dropItem);
     else {
       // DROP TABLES!
-      let drop = Game.randTable([1, 2, 3, 3, 3]);
+      let drop = Game.randTable([1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3]);
 
       switch (drop) {
         case 1:
