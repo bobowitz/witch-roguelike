@@ -89,7 +89,7 @@ export class Player {
     this.inventory.close();
   };
   leftListener = () => {
-    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
+    if (!this.dead) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(-1, 0);
@@ -101,7 +101,7 @@ export class Player {
     }
   };
   rightListener = () => {
-    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
+    if (!this.dead) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(1, 0);
@@ -113,7 +113,7 @@ export class Player {
     }
   };
   upListener = () => {
-    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
+    if (!this.dead) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(0, -1);
@@ -125,7 +125,7 @@ export class Player {
     }
   };
   downListener = () => {
-    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
+    if (!this.dead) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(0, 1);

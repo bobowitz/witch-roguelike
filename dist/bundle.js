@@ -813,6 +813,8 @@ var Level = (function () {
             }
         };
         this.tick = function () {
+            if (_this.turn === TurnState.computerTurn)
+                _this.computerTurn(); // player is skipping our turn, catch up
             _this.game.player.startTick();
             if (_this.game.player.armor)
                 _this.game.player.armor.tick(); // replenish drained armor
@@ -825,33 +827,36 @@ var Level = (function () {
                 // is it the computers turn?
                 if (_this.game.player.doneMoving()) {
                     // wait for player to finish moving
-                    // take computer turn
-                    for (var _i = 0, _a = _this.projectiles; _i < _a.length; _i++) {
-                        var p = _a[_i];
-                        p.tick();
-                    }
-                    for (var _b = 0, _c = _this.enemies; _b < _c.length; _b++) {
-                        var e = _c[_b];
-                        e.tick();
-                    }
-                    for (var _d = 0, _e = _this.projectiles; _d < _e.length; _d++) {
-                        var p = _e[_d];
-                        if (_this.getCollidable(p.x, p.y) !== null)
-                            p.dead = true;
-                        if (p.x === _this.game.player.x && p.y === _this.game.player.y) {
-                            p.hitPlayer(_this.game.player);
-                        }
-                        for (var _f = 0, _g = _this.enemies; _f < _g.length; _f++) {
-                            var e = _g[_f];
-                            if (p.x === e.x && p.y === e.y) {
-                                p.hitEnemy(e);
-                            }
-                        }
-                    }
-                    _this.game.player.finishTick();
-                    _this.turn = TurnState.playerTurn; // now it's the player's turn
+                    _this.computerTurn();
                 }
             }
+        };
+        this.computerTurn = function () {
+            // take computer turn
+            for (var _i = 0, _a = _this.projectiles; _i < _a.length; _i++) {
+                var p = _a[_i];
+                p.tick();
+            }
+            for (var _b = 0, _c = _this.enemies; _b < _c.length; _b++) {
+                var e = _c[_b];
+                e.tick();
+            }
+            for (var _d = 0, _e = _this.projectiles; _d < _e.length; _d++) {
+                var p = _e[_d];
+                if (_this.getCollidable(p.x, p.y) !== null)
+                    p.dead = true;
+                if (p.x === _this.game.player.x && p.y === _this.game.player.y) {
+                    p.hitPlayer(_this.game.player);
+                }
+                for (var _f = 0, _g = _this.enemies; _f < _g.length; _f++) {
+                    var e = _g[_f];
+                    if (p.x === e.x && p.y === e.y) {
+                        p.hitEnemy(e);
+                    }
+                }
+            }
+            _this.game.player.finishTick();
+            _this.turn = TurnState.playerTurn; // now it's the player's turn
         };
         this.draw = function () {
             camera_1.Camera.translate();
@@ -2966,7 +2971,6 @@ var chest_1 = __webpack_require__(17);
 var barrel_1 = __webpack_require__(21);
 var camera_1 = __webpack_require__(12);
 var door_1 = __webpack_require__(5);
-var level_1 = __webpack_require__(13);
 var Player = (function () {
     function Player(game, x, y) {
         var _this = this;
@@ -2980,7 +2984,7 @@ var Player = (function () {
             _this.inventory.close();
         };
         this.leftListener = function () {
-            if (!_this.dead && _this.game.level.turn === level_1.TurnState.playerTurn) {
+            if (!_this.dead) {
                 if (input_1.Input.isDown(input_1.Input.SPACE)) {
                     if (_this.dashCoolDown <= 0) {
                         _this.tryDash(-1, 0);
@@ -2995,7 +2999,7 @@ var Player = (function () {
             }
         };
         this.rightListener = function () {
-            if (!_this.dead && _this.game.level.turn === level_1.TurnState.playerTurn) {
+            if (!_this.dead) {
                 if (input_1.Input.isDown(input_1.Input.SPACE)) {
                     if (_this.dashCoolDown <= 0) {
                         _this.tryDash(1, 0);
@@ -3010,7 +3014,7 @@ var Player = (function () {
             }
         };
         this.upListener = function () {
-            if (!_this.dead && _this.game.level.turn === level_1.TurnState.playerTurn) {
+            if (!_this.dead) {
                 if (input_1.Input.isDown(input_1.Input.SPACE)) {
                     if (_this.dashCoolDown <= 0) {
                         _this.tryDash(0, -1);
@@ -3025,7 +3029,7 @@ var Player = (function () {
             }
         };
         this.downListener = function () {
-            if (!_this.dead && _this.game.level.turn === level_1.TurnState.playerTurn) {
+            if (!_this.dead) {
                 if (input_1.Input.isDown(input_1.Input.SPACE)) {
                     if (_this.dashCoolDown <= 0) {
                         _this.tryDash(0, 1);

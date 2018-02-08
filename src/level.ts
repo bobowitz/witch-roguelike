@@ -344,6 +344,8 @@ export class Level {
   };
 
   tick = () => {
+    if (this.turn === TurnState.computerTurn) this.computerTurn(); // player is skipping our turn, catch up
+
     this.game.player.startTick();
     if (this.game.player.armor) this.game.player.armor.tick(); // replenish drained armor
     this.enemies = this.enemies.filter(e => !e.dead);
@@ -358,31 +360,35 @@ export class Level {
       if (this.game.player.doneMoving()) {
         // wait for player to finish moving
 
-        // take computer turn
-        for (const p of this.projectiles) {
-          p.tick();
-        }
-        for (const e of this.enemies) {
-          e.tick();
-        }
-
-        for (const p of this.projectiles) {
-          if (this.getCollidable(p.x, p.y) !== null) p.dead = true;
-          if (p.x === this.game.player.x && p.y === this.game.player.y) {
-            p.hitPlayer(this.game.player);
-          }
-          for (const e of this.enemies) {
-            if (p.x === e.x && p.y === e.y) {
-              p.hitEnemy(e);
-            }
-          }
-        }
-
-        this.game.player.finishTick();
-
-        this.turn = TurnState.playerTurn; // now it's the player's turn
+        this.computerTurn();
       }
     }
+  };
+
+  computerTurn = () => {
+    // take computer turn
+    for (const p of this.projectiles) {
+      p.tick();
+    }
+    for (const e of this.enemies) {
+      e.tick();
+    }
+
+    for (const p of this.projectiles) {
+      if (this.getCollidable(p.x, p.y) !== null) p.dead = true;
+      if (p.x === this.game.player.x && p.y === this.game.player.y) {
+        p.hitPlayer(this.game.player);
+      }
+      for (const e of this.enemies) {
+        if (p.x === e.x && p.y === e.y) {
+          p.hitEnemy(e);
+        }
+      }
+    }
+
+    this.game.player.finishTick();
+
+    this.turn = TurnState.playerTurn; // now it's the player's turn
   };
 
   draw = () => {
