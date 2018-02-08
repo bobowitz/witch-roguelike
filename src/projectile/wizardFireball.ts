@@ -21,7 +21,7 @@ export class WizardFireball extends Projectile {
     this.state++;
     if (this.state === 1) {
       this.frame = 0;
-      this.delay = Game.rand(0, 10);
+      this.delay = Game.rand(0, 5);
     }
   };
 

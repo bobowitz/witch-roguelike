@@ -76,6 +76,9 @@ export class SkullEnemy extends Enemy {
               this.game.player.y === this.moves[0].pos.y
             ) {
               this.game.player.hurt(this.hit());
+              this.drawX = 0.8 * (this.x - this.game.player.x);
+              this.drawY = 0.8 * (this.y - this.game.player.y);
+              return;
             } else {
               this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
             }

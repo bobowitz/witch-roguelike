@@ -2,22 +2,25 @@
 TODO
 ****
 
-sideways doors
 fix lighting (shouldn't be able to see wall sides below you)
 shadow tiles
 pyro
 
 progression
 add indication of who's attacking you
-draw enemies' moves after player's
 add a proper inventory, so you can equip equippables and use usables
 add a bunch more items, and make the monsters drop them
 add stairs
 add fountains
-add xp and leveling up
 add a bunch more monsters
 
 do mockups for current environments
+
+********
+FINISHED
+********
+
+draw enemies' moves after player's
 
 ***************
 LONG TERM GOALS

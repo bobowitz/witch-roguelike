@@ -8,6 +8,4 @@ export class Collidable extends Tile {
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
   }
-
-  onCollide = (player: Player) => {};
 }

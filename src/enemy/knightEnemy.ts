@@ -63,6 +63,9 @@ export class KnightEnemy extends Enemy {
               this.game.player.y === this.moves[0].pos.y
             ) {
               this.game.player.hurt(this.hit());
+              this.drawX = 0.8 * (this.x - this.game.player.x);
+              this.drawY = 0.8 * (this.y - this.game.player.y);
+              return;
             } else {
               this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
             }
@@ -72,9 +75,5 @@ export class KnightEnemy extends Enemy {
         }
       }
     }
-  };
-
-  dropXP = () => {
-    return Game.randTable([4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 10]);
   };
 }

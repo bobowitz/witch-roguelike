@@ -2,8 +2,6 @@ import { Collidable } from "./collidable";
 import { Level } from "../level";
 import { LayeredTile } from "./layeredTile";
 import { Game } from "../game";
-import { DoorLeft } from "./doorLeft";
-import { DoorRight } from "./doorRight";
 import { GameConstants } from "../gameConstants";
 import { Door } from "./door";
 

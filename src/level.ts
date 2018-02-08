@@ -29,6 +29,11 @@ import { SideDoor } from "./tile/sideDoor";
 import { LayeredTile } from "./tile/layeredTile";
 import { CollidableLayeredTile } from "./tile/collidableLayeredTile";
 
+export enum TurnState {
+  playerTurn,
+  computerTurn,
+}
+
 export class Level {
   levelArray: Tile[][];
   visibilityArray: number[][]; // visibility is 0, 1, or 2 (0 = black, 2 = fully lit)
@@ -40,6 +45,7 @@ export class Level {
   width: number;
   height: number;
   env: number; // which environment is this level?
+  turn: TurnState;
 
   private pointInside(
     x: number,
@@ -74,6 +80,8 @@ export class Level {
   constructor(game: Game, levelData, env: number) {
     this.game = game;
     this.env = env;
+
+    this.turn = TurnState.playerTurn;
 
     this.items = Array<Item>();
     this.projectiles = Array<Projectile>();
@@ -337,33 +345,44 @@ export class Level {
 
   tick = () => {
     this.game.player.startTick();
-    if (this.game.player.armor) this.game.player.armor.tick();
-    for (const p of this.projectiles) {
-      p.tick();
-    }
-    for (const e of this.enemies) {
-      e.tick();
-    }
-
-    for (const p of this.projectiles) {
-      if (this.getCollidable(p.x, p.y) !== null) p.dead = true;
-      if (p.x === this.game.player.x && p.y === this.game.player.y) {
-        p.hitPlayer(this.game.player);
-      }
-      for (const e of this.enemies) {
-        if (p.x === e.x && p.y === e.y) {
-          p.hitEnemy(e);
-        }
-      }
-    }
-
+    if (this.game.player.armor) this.game.player.armor.tick(); // replenish drained armor
     this.enemies = this.enemies.filter(e => !e.dead);
-    this.game.player.finishTick();
     this.updateLighting();
+
+    this.turn = TurnState.computerTurn;
   };
 
   update = () => {
-    //
+    if (this.turn === TurnState.computerTurn) {
+      // is it the computers turn?
+      if (this.game.player.doneMoving()) {
+        // wait for player to finish moving
+
+        // take computer turn
+        for (const p of this.projectiles) {
+          p.tick();
+        }
+        for (const e of this.enemies) {
+          e.tick();
+        }
+
+        for (const p of this.projectiles) {
+          if (this.getCollidable(p.x, p.y) !== null) p.dead = true;
+          if (p.x === this.game.player.x && p.y === this.game.player.y) {
+            p.hitPlayer(this.game.player);
+          }
+          for (const e of this.enemies) {
+            if (p.x === e.x && p.y === e.y) {
+              p.hitEnemy(e);
+            }
+          }
+        }
+
+        this.game.player.finishTick();
+
+        this.turn = TurnState.playerTurn; // now it's the player's turn
+      }
+    }
   };
 
   draw = () => {

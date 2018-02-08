@@ -21,6 +21,7 @@ import { Barrel } from "./enemy/barrel";
 import { Wall } from "./tile/wall";
 import { Camera } from "./camera";
 import { Door } from "./tile/door";
+import { TurnState } from "./level";
 
 export class Player {
   x: number;
@@ -88,7 +89,7 @@ export class Player {
     this.inventory.close();
   };
   leftListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(-1, 0);
@@ -100,7 +101,7 @@ export class Player {
     }
   };
   rightListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(1, 0);
@@ -112,7 +113,7 @@ export class Player {
     }
   };
   upListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(0, -1);
@@ -124,7 +125,7 @@ export class Player {
     }
   };
   downListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.level.turn === TurnState.playerTurn) {
       if (Input.isDown(Input.SPACE)) {
         if (this.dashCoolDown <= 0) {
           this.tryDash(0, 1);
@@ -298,6 +299,11 @@ export class Player {
     }
 
     this.game.level.updateLighting();
+  };
+
+  doneMoving = (): boolean => {
+    let EPSILON = 0.01;
+    return Math.abs(this.drawX) < EPSILON && Math.abs(this.drawY) < EPSILON;
   };
 
   move = (x: number, y: number) => {

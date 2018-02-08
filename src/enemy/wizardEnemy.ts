@@ -59,28 +59,12 @@ export class WizardEnemy extends Enemy {
       switch (this.state) {
         case WizardState.attack:
           this.tileX = 7;
-          if (this.level.getCollidable(this.x - 1, this.y) === null) {
-            this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
-            if (this.level.getCollidable(this.x - 2, this.y) === null) {
-              this.level.projectiles.push(new WizardFireball(this, this.x - 2, this.y));
-            }
-          }
-          if (this.level.getCollidable(this.x + 1, this.y) === null) {
-            this.level.projectiles.push(new WizardFireball(this, this.x + 1, this.y));
-            if (this.level.getCollidable(this.x + 2, this.y) === null) {
-              this.level.projectiles.push(new WizardFireball(this, this.x + 2, this.y));
-            }
-          }
-          if (this.level.getCollidable(this.x, this.y - 1) === null) {
-            this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 1));
-            if (this.level.getCollidable(this.x, this.y - 2) === null) {
-              this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 2));
-            }
-          }
-          if (this.level.getCollidable(this.x, this.y + 1) === null) {
-            this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 1));
-            if (this.level.getCollidable(this.x, this.y + 2) === null) {
-              this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 2));
+          for (let xx = -2; xx <= 2; xx++) {
+            for (let yy = -2; yy <= 2; yy++) {
+              if (xx === 0 && yy === 0) continue;
+              if (this.level.getCollidable(this.x + xx, this.y + yy) === null) {
+                this.level.projectiles.push(new WizardFireball(this, this.x + xx, this.y + yy));
+              }
             }
           }
           this.state = WizardState.justAttacked;
