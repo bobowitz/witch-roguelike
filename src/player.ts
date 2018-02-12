@@ -302,7 +302,7 @@ export class Player {
   };
 
   doneMoving = (): boolean => {
-    let EPSILON = 0.01;
+    let EPSILON = 0.001;
     return Math.abs(this.drawX) < EPSILON && Math.abs(this.drawY) < EPSILON;
   };
 
