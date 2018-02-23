@@ -84,122 +84,11 @@ var Game = (function () {
        finishInit starts game */
     function Game() {
         var _this = this;
-        this.createShader = function (type, source) {
-            var shader = Game.gl.createShader(type);
-            Game.gl.shaderSource(shader, source);
-            Game.gl.compileShader(shader);
-            var success = Game.gl.getShaderParameter(shader, Game.gl.COMPILE_STATUS);
-            if (success) {
-                return shader;
-            }
-            console.log(Game.gl.getShaderInfoLog(shader));
-            Game.gl.deleteShader(shader);
-        };
-        this.initGL = function () {
-            //<script src="src/shader/shader.frag" id="2d-fragment-shader" type="notjs"></script>
-            var shaderScript = document.createElement("script");
-            shaderScript.src = "src/shader/shader.frag";
-            shaderScript.onload = function () {
-                console.log(document.getElementById("2d-fragment-shader"));
-            };
-            var fragShaderRequest = new XMLHttpRequest();
-            fragShaderRequest.onload = function () {
-                var vertShaderRequest = new XMLHttpRequest();
-                vertShaderRequest.onload = function () {
-                    _this.finishInitGL(vertShaderRequest.responseText, fragShaderRequest.responseText);
-                };
-                vertShaderRequest.open("GET", "src/shader/shader.vert", true);
-                vertShaderRequest.send();
-            };
-            fragShaderRequest.open("GET", "src/shader/shader.frag", true);
-            fragShaderRequest.send();
-        };
-        this.finishInitGL = function (vertShaderSource, fragShaderSource) {
-            var vertexShader = _this.createShader(Game.gl.VERTEX_SHADER, vertShaderSource);
-            var fragmentShader = _this.createShader(Game.gl.FRAGMENT_SHADER, fragShaderSource);
-            Game.shaderProgram = Game.gl.createProgram();
-            Game.gl.attachShader(Game.shaderProgram, vertexShader);
-            Game.gl.attachShader(Game.shaderProgram, fragmentShader);
-            Game.gl.linkProgram(Game.shaderProgram);
-            if (!Game.gl.getProgramParameter(Game.shaderProgram, Game.gl.LINK_STATUS)) {
-                console.log(Game.gl.getProgramInfoLog(Game.shaderProgram));
-                Game.gl.deleteProgram(Game.shaderProgram);
-            }
-            // look up where the vertex data needs to go.
-            var positionLocation = Game.gl.getAttribLocation(Game.shaderProgram, "a_position");
-            var texcoordLocation = Game.gl.getAttribLocation(Game.shaderProgram, "a_texcoord");
-            // lookup uniforms
-            var matrixLocation = Game.gl.getUniformLocation(Game.shaderProgram, "u_matrix");
-            var textureLocation = Game.gl.getUniformLocation(Game.shaderProgram, "u_texture");
-            // Create a buffer.
-            var positionBuffer = Game.gl.createBuffer();
-            Game.gl.bindBuffer(Game.gl.ARRAY_BUFFER, positionBuffer);
-            // Put a unit quad in the buffer
-            var positions = [0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1];
-            Game.gl.bufferData(Game.gl.ARRAY_BUFFER, new Float32Array(positions), Game.gl.STATIC_DRAW);
-            // Create a buffer for texture coords
-            var texcoordBuffer = Game.gl.createBuffer();
-            Game.gl.bindBuffer(Game.gl.ARRAY_BUFFER, texcoordBuffer);
-            // Put texcoords in the buffer
-            var texcoords = [0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1];
-            Game.gl.bufferData(Game.gl.ARRAY_BUFFER, new Float32Array(texcoords), Game.gl.STATIC_DRAW);
-            _this.resumeInit();
-        };
-        this.resumeInit = function () {
-            Game.ctx2d.font = gameConstants_1.GameConstants.FONT_SIZE + "px PixelFont";
-            Game.ctx2d.textBaseline = "top";
-            Game.textures = {};
-            var loaded = 0;
-            var loadCallback = function () {
-                loaded++;
-                if (loaded === 5)
-                    _this.continueInit();
-            };
-            Game.tileset = new Image();
-            Game.tileset.src = "res/castleset.png";
-            Game.tileset.onload = loadCallback;
-            Game.mobset = new Image();
-            Game.mobset.src = "res/mobset.png";
-            Game.mobset.onload = loadCallback;
-            Game.itemset = new Image();
-            Game.itemset.src = "res/itemset.png";
-            Game.itemset.onload = loadCallback;
-            Game.fxset = new Image();
-            Game.fxset.src = "res/fxset.png";
-            Game.fxset.onload = loadCallback;
-            Game.inventory = new Image();
-            Game.inventory.src = "res/inv.png";
-            Game.inventory.onload = loadCallback;
-        };
-        this.continueInit = function () {
-            _this.addTexture(Game.tileset);
-            _this.addTexture(Game.mobset);
-            _this.addTexture(Game.itemset);
-            _this.addTexture(Game.fxset);
-            _this.addTexture(Game.inventory);
-            sound_1.Sound.loadSounds();
-            sound_1.Sound.playMusic(); // loops forever
-            var request = new XMLHttpRequest();
-            request.onload = function () {
-                _this.levelData = JSON.parse(request.responseText);
-                _this.finishInit();
-            };
-            request.open("GET", "res/castleLevel.json", true);
-            request.send();
-        };
         this.finishInit = function () {
             _this.player = new player_1.Player(_this, 0, 0);
             _this.level = new level_1.Level(_this, _this.levelData, 0);
             _this.level.enterLevel();
             setInterval(_this.run, 1000.0 / gameConstants_1.GameConstants.FPS);
-        };
-        this.addTexture = function (image) {
-            Game.textures[image.src] = Game.gl.createTexture();
-            Game.gl.bindTexture(Game.gl.TEXTURE_2D, Game.textures[image.src]);
-            Game.gl.texParameteri(Game.gl.TEXTURE_2D, Game.gl.TEXTURE_WRAP_S, Game.gl.CLAMP_TO_EDGE);
-            Game.gl.texParameteri(Game.gl.TEXTURE_2D, Game.gl.TEXTURE_WRAP_T, Game.gl.CLAMP_TO_EDGE);
-            Game.gl.texParameteri(Game.gl.TEXTURE_2D, Game.gl.TEXTURE_MIN_FILTER, Game.gl.LINEAR);
-            Game.gl.texImage2D(Game.gl.TEXTURE_2D, 0, Game.gl.RGBA, Game.gl.RGBA, Game.gl.UNSIGNED_BYTE, image);
         };
         this.changeLevel = function (newLevel) {
             _this.level.exitLevel();
@@ -232,17 +121,35 @@ var Game = (function () {
             _this.level.drawTopLayer();
             _this.player.drawTopLayer();
             // game version
-            Game.ctx2d.globalAlpha = 0.2;
-            Game.ctx2d.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
-            Game.ctx2d.fillText(gameConstants_1.GameConstants.VERSION, gameConstants_1.GameConstants.WIDTH - Game.ctx2d.measureText(gameConstants_1.GameConstants.VERSION).width - 1, gameConstants_1.GameConstants.HEIGHT - (gameConstants_1.GameConstants.FONT_SIZE - 1));
-            Game.ctx2d.globalAlpha = 1;
+            Game.ctx.globalAlpha = 0.2;
+            Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
+            Game.ctx.fillText(gameConstants_1.GameConstants.VERSION, gameConstants_1.GameConstants.WIDTH - Game.ctx.measureText(gameConstants_1.GameConstants.VERSION).width - 1, gameConstants_1.GameConstants.HEIGHT - (gameConstants_1.GameConstants.FONT_SIZE - 1));
+            Game.ctx.globalAlpha = 1;
         };
         window.addEventListener("load", function () {
-            var canvas3d = document.getElementById("canvas3d");
-            var canvas2d = document.getElementById("canvas2d");
-            Game.gl = canvas3d.getContext("webgl");
-            Game.ctx2d = canvas2d.getContext("2d");
-            _this.initGL();
+            var canvas = document.getElementById("canvas2d");
+            Game.ctx = canvas.getContext("2d");
+            Game.ctx.font = gameConstants_1.GameConstants.FONT_SIZE + "px PixelFont";
+            Game.ctx.textBaseline = "top";
+            Game.tileset = new Image();
+            Game.tileset.src = "res/castleset.png";
+            Game.mobset = new Image();
+            Game.mobset.src = "res/mobset.png";
+            Game.itemset = new Image();
+            Game.itemset.src = "res/itemset.png";
+            Game.fxset = new Image();
+            Game.fxset.src = "res/fxset.png";
+            Game.inventory = new Image();
+            Game.inventory.src = "res/inv.png";
+            sound_1.Sound.loadSounds();
+            sound_1.Sound.playMusic(); // loops forever
+            var request = new XMLHttpRequest();
+            request.onload = function () {
+                _this.levelData = JSON.parse(request.responseText);
+                _this.finishInit();
+            };
+            request.open("GET", "res/castleLevel.json", true);
+            request.send();
         });
     }
     // [min, max] inclusive
@@ -254,177 +161,37 @@ var Game = (function () {
     Game.randTable = function (table) {
         return table[Game.rand(0, table.length - 1)];
     };
-    Game.drawImageGL = function (image, sX, sY, sW, sH, dX, dY, dW, dH) {
-        var tex = Game.textures[image.src];
-        var texWidth = image.width;
-        var texHeight = image.height;
-        Game.gl.bindTexture(Game.gl.TEXTURE_2D, tex);
-        // Tell WebGL to use our shader program pair
-        Game.gl.useProgram(Game.shaderProgram);
-        // Setup the attributes to pull data from our buffers
-        Game.gl.bindBuffer(Game.gl.ARRAY_BUFFER, Game.positionBuffer);
-        Game.gl.enableVertexAttribArray(Game.positionLocation);
-        Game.gl.vertexAttribPointer(Game.positionLocation, 2, Game.gl.FLOAT, false, 0, 0);
-        Game.gl.bindBuffer(Game.gl.ARRAY_BUFFER, Game.texcoordBuffer);
-        Game.gl.enableVertexAttribArray(Game.texcoordLocation);
-        Game.gl.vertexAttribPointer(Game.texcoordLocation, 2, Game.gl.FLOAT, false, 0, 0);
-        // this matirx will convert from pixels to clip space
-        var matrix = Game.orthographic(0, Game.gl.canvas.width, Game.gl.canvas.height, 0, -1, 1);
-        // this matrix will translate our quad to dX, dY
-        matrix = Game.translate(matrix, dX, dY, 0);
-        // this matrix will scale our 1 unit quad
-        // from 1 unit to texWidth, texHeight units
-        matrix = Game.scale(matrix, dW, dH, 1);
-        // Set the matrix.
-        Game.gl.uniformMatrix4fv(Game.matrixLocation, false, matrix);
-        // Because texture coordinates go from 0 to 1
-        // and because our texture coordinates are already a unit quad
-        // we can select an area of the texture by scaling the unit quad
-        // down
-        var texMatrix = Game.translation(sX / texWidth, sY / texHeight, 0);
-        texMatrix = Game.scale(texMatrix, sW / texWidth, sH / texHeight, 1);
-        // Set the texture matrix.
-        Game.gl.uniformMatrix4fv(Game.textureMatrixLocation, false, texMatrix);
-        // Tell the shader to get the texture from texture unit 0
-        Game.gl.uniform1i(Game.textureLocation, 0);
-        // draw the quad (2 triangles, 6 vertices)
-        Game.gl.drawArrays(Game.gl.TRIANGLES, 0, 6);
-    };
     Game.drawTile = function (sX, sY, sW, sH, dX, dY, dW, dH) {
         if (camera_1.Camera.cull(dX, dY, dW, dH))
             return;
-        Game.drawImageGL(Game.tileset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+        Game.ctx.drawImage(Game.tileset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawTileNoCull = function (sX, sY, sW, sH, dX, dY, dW, dH) {
-        Game.drawImageGL(Game.tileset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+        Game.ctx.drawImage(Game.tileset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawMob = function (sX, sY, sW, sH, dX, dY, dW, dH) {
         if (camera_1.Camera.cull(dX, dY, dW, dH))
             return;
-        Game.drawImageGL(Game.mobset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+        Game.ctx.drawImage(Game.mobset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawMobNoCull = function (sX, sY, sW, sH, dX, dY, dW, dH) {
-        Game.drawImageGL(Game.mobset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+        Game.ctx.drawImage(Game.mobset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawItem = function (sX, sY, sW, sH, dX, dY, dW, dH) {
         if (camera_1.Camera.cull(dX, dY, dW, dH))
             return;
-        Game.drawImageGL(Game.itemset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+        Game.ctx.drawImage(Game.itemset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawItemNoCull = function (sX, sY, sW, sH, dX, dY, dW, dH) {
-        Game.drawImageGL(Game.itemset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+        Game.ctx.drawImage(Game.itemset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawFX = function (sX, sY, sW, sH, dX, dY, dW, dH) {
         if (camera_1.Camera.cull(dX, dY, dW, dH))
             return;
-        Game.drawImageGL(Game.fxset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+        Game.ctx.drawImage(Game.fxset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawFXNoCull = function (sX, sY, sW, sH, dX, dY, dW, dH) {
-        Game.drawImageGL(Game.fxset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
-    };
-    Game.scale = function (m, sx, sy, sz, dst) {
-        // This is the optimized verison of
-        // return multiply(m, scaling(sx, sy, sz), dst);
-        dst = dst || new Float32Array(16);
-        dst[0] = sx * m[0 * 4 + 0];
-        dst[1] = sx * m[0 * 4 + 1];
-        dst[2] = sx * m[0 * 4 + 2];
-        dst[3] = sx * m[0 * 4 + 3];
-        dst[4] = sy * m[1 * 4 + 0];
-        dst[5] = sy * m[1 * 4 + 1];
-        dst[6] = sy * m[1 * 4 + 2];
-        dst[7] = sy * m[1 * 4 + 3];
-        dst[8] = sz * m[2 * 4 + 0];
-        dst[9] = sz * m[2 * 4 + 1];
-        dst[10] = sz * m[2 * 4 + 2];
-        dst[11] = sz * m[2 * 4 + 3];
-        if (m !== dst) {
-            dst[12] = m[12];
-            dst[13] = m[13];
-            dst[14] = m[14];
-            dst[15] = m[15];
-        }
-        return dst;
-    };
-    Game.translation = function (tx, ty, tz, dst) {
-        dst = dst || new Float32Array(16);
-        dst[0] = 1;
-        dst[1] = 0;
-        dst[2] = 0;
-        dst[3] = 0;
-        dst[4] = 0;
-        dst[5] = 1;
-        dst[6] = 0;
-        dst[7] = 0;
-        dst[8] = 0;
-        dst[9] = 0;
-        dst[10] = 1;
-        dst[11] = 0;
-        dst[12] = tx;
-        dst[13] = ty;
-        dst[14] = tz;
-        dst[15] = 1;
-        return dst;
-    };
-    Game.translate = function (m, tx, ty, tz, dst) {
-        // This is the optimized version of
-        // return multiply(m, translation(tx, ty, tz), dst);
-        dst = dst || new Float32Array(16);
-        var m00 = m[0];
-        var m01 = m[1];
-        var m02 = m[2];
-        var m03 = m[3];
-        var m10 = m[1 * 4 + 0];
-        var m11 = m[1 * 4 + 1];
-        var m12 = m[1 * 4 + 2];
-        var m13 = m[1 * 4 + 3];
-        var m20 = m[2 * 4 + 0];
-        var m21 = m[2 * 4 + 1];
-        var m22 = m[2 * 4 + 2];
-        var m23 = m[2 * 4 + 3];
-        var m30 = m[3 * 4 + 0];
-        var m31 = m[3 * 4 + 1];
-        var m32 = m[3 * 4 + 2];
-        var m33 = m[3 * 4 + 3];
-        if (m !== dst) {
-            dst[0] = m00;
-            dst[1] = m01;
-            dst[2] = m02;
-            dst[3] = m03;
-            dst[4] = m10;
-            dst[5] = m11;
-            dst[6] = m12;
-            dst[7] = m13;
-            dst[8] = m20;
-            dst[9] = m21;
-            dst[10] = m22;
-            dst[11] = m23;
-        }
-        dst[12] = m00 * tx + m10 * ty + m20 * tz + m30;
-        dst[13] = m01 * tx + m11 * ty + m21 * tz + m31;
-        dst[14] = m02 * tx + m12 * ty + m22 * tz + m32;
-        dst[15] = m03 * tx + m13 * ty + m23 * tz + m33;
-        return dst;
-    };
-    Game.orthographic = function (left, right, bottom, top, near, far, dst) {
-        dst = dst || new Float32Array(16);
-        dst[0] = 2 / (right - left);
-        dst[1] = 0;
-        dst[2] = 0;
-        dst[3] = 0;
-        dst[4] = 0;
-        dst[5] = 2 / (top - bottom);
-        dst[6] = 0;
-        dst[7] = 0;
-        dst[8] = 0;
-        dst[9] = 0;
-        dst[10] = 2 / (near - far);
-        dst[11] = 0;
-        dst[12] = (left + right) / (left - right);
-        dst[13] = (bottom + top) / (bottom - top);
-        dst[14] = (near + far) / (near - far);
-        dst[15] = 1;
-        return dst;
+        Game.ctx.drawImage(Game.fxset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     return Game;
 }());
@@ -657,15 +424,15 @@ var Door = (function (_super) {
                 game_1.Game.drawTile(20 + Math.floor(_this.frame), 0, 1, 1, _this.x, _this.y - 1, 1, 1);
             }
             else {
-                game_1.Game.ctx2d.fillStyle = "black";
-                game_1.Game.ctx2d.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                game_1.Game.ctx.fillStyle = "black";
+                game_1.Game.ctx.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
             }
             if (_this.y === _this.level.height - 1 || _this.level.visibilityArray[_this.x][_this.y + 1] === 0) {
-                game_1.Game.ctx2d.fillStyle = "black";
-                game_1.Game.ctx2d.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y + 0.6) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, 0.4 * gameConstants_1.GameConstants.TILESIZE);
-                game_1.Game.ctx2d.globalAlpha = 0.5;
-                game_1.Game.ctx2d.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 0.4) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, 1.4 * gameConstants_1.GameConstants.TILESIZE);
-                game_1.Game.ctx2d.globalAlpha = 1;
+                game_1.Game.ctx.fillStyle = "black";
+                game_1.Game.ctx.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y + 0.6) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, 0.4 * gameConstants_1.GameConstants.TILESIZE);
+                game_1.Game.ctx.globalAlpha = 0.5;
+                game_1.Game.ctx.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 0.4) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, 1.4 * gameConstants_1.GameConstants.TILESIZE);
+                game_1.Game.ctx.globalAlpha = 1;
             }
         };
         _this.opened = false;
@@ -887,10 +654,10 @@ var Camera = (function () {
                 gameConstants_1.GameConstants.HEIGHT);
     };
     Camera.translate = function () {
-        game_1.Game.ctx2d.translate(Math.floor(-Camera.x * gameConstants_1.GameConstants.TILESIZE), Math.floor(-Camera.y * gameConstants_1.GameConstants.TILESIZE));
+        game_1.Game.ctx.translate(Math.floor(-Camera.x * gameConstants_1.GameConstants.TILESIZE), Math.floor(-Camera.y * gameConstants_1.GameConstants.TILESIZE));
     };
     Camera.translateBack = function () {
-        game_1.Game.ctx2d.translate(Math.ceil(Camera.x * gameConstants_1.GameConstants.TILESIZE), Math.ceil(Camera.y * gameConstants_1.GameConstants.TILESIZE));
+        game_1.Game.ctx.translate(Math.ceil(Camera.x * gameConstants_1.GameConstants.TILESIZE), Math.ceil(Camera.y * gameConstants_1.GameConstants.TILESIZE));
     };
     return Camera;
 }());
@@ -1401,15 +1168,15 @@ var TextParticle = (function (_super) {
                 _this.time++;
                 if (_this.time > gameConstants_1.GameConstants.FPS * TIMEOUT)
                     _this.dead = true;
-                var width = game_1.Game.ctx2d.measureText(_this.text).width;
+                var width = game_1.Game.ctx.measureText(_this.text).width;
                 for (var xx = -1; xx <= 1; xx++) {
                     for (var yy = -1; yy <= 1; yy++) {
-                        game_1.Game.ctx2d.fillStyle = gameConstants_1.GameConstants.OUTLINE;
-                        game_1.Game.ctx2d.fillText(_this.text, _this.x - width / 2 + xx, _this.y - _this.z + yy);
+                        game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
+                        game_1.Game.ctx.fillText(_this.text, _this.x - width / 2 + xx, _this.y - _this.z + yy);
                     }
                 }
-                game_1.Game.ctx2d.fillStyle = _this.color;
-                game_1.Game.ctx2d.fillText(_this.text, _this.x - width / 2, _this.y - _this.z);
+                game_1.Game.ctx.fillStyle = _this.color;
+                game_1.Game.ctx.fillText(_this.text, _this.x - width / 2, _this.y - _this.z);
             }
         };
         _this.text = text;
@@ -1875,18 +1642,18 @@ var Level = (function () {
                     // fill in shadows too
                     switch (_this.visibilityArray[x][y]) {
                         case 0:
-                            game_1.Game.ctx2d.globalAlpha = 1;
+                            game_1.Game.ctx.globalAlpha = 1;
                             break;
                         case 1:
-                            game_1.Game.ctx2d.globalAlpha = 0.6;
+                            game_1.Game.ctx.globalAlpha = 0.6;
                             break;
                         case 2:
-                            game_1.Game.ctx2d.globalAlpha = 0;
+                            game_1.Game.ctx.globalAlpha = 0;
                             break;
                     }
-                    game_1.Game.ctx2d.fillStyle = "black";
-                    game_1.Game.ctx2d.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                    game_1.Game.ctx2d.globalAlpha = 1;
+                    game_1.Game.ctx.fillStyle = "black";
+                    game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                    game_1.Game.ctx.globalAlpha = 1;
                 }
             }
             camera_1.Camera.translateBack();
@@ -1958,18 +1725,18 @@ var Level = (function () {
                     // fill in shadows too
                     switch (_this.visibilityArray[x][y]) {
                         case 0:
-                            game_1.Game.ctx2d.globalAlpha = 1;
+                            game_1.Game.ctx.globalAlpha = 1;
                             break;
                         case 1:
-                            game_1.Game.ctx2d.globalAlpha = 0.6;
+                            game_1.Game.ctx.globalAlpha = 0.6;
                             break;
                         case 2:
-                            game_1.Game.ctx2d.globalAlpha = 0;
+                            game_1.Game.ctx.globalAlpha = 0;
                             break;
                     }
-                    game_1.Game.ctx2d.fillStyle = "black";
-                    game_1.Game.ctx2d.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                    game_1.Game.ctx2d.globalAlpha = 1;
+                    game_1.Game.ctx.fillStyle = "black";
+                    game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                    game_1.Game.ctx.globalAlpha = 1;
                 }
             }
             camera_1.Camera.translateBack();
@@ -2163,8 +1930,8 @@ var Wall = (function (_super) {
                     game_1.Game.drawTile(0, _this.level.env, 1, 1, _this.x, _this.y, 1, 1);
             }
             else {
-                game_1.Game.ctx2d.fillStyle = "black";
-                game_1.Game.ctx2d.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, _this.y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                game_1.Game.ctx.fillStyle = "black";
+                game_1.Game.ctx.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, _this.y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
             }
         };
         _this.drawCeiling = function () {
@@ -2182,8 +1949,8 @@ var Wall = (function (_super) {
                 }
             }
             else {
-                game_1.Game.ctx2d.fillStyle = "black";
-                game_1.Game.ctx2d.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                game_1.Game.ctx.fillStyle = "black";
+                game_1.Game.ctx.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
             }
         };
         _this.type = type;
@@ -3173,8 +2940,8 @@ var SideDoor = (function (_super) {
                 game_1.Game.drawTile(25 + Math.floor(_this.frame), 0, 1, 1, _this.x, _this.y - 1, 1, 1);
             }
             else {
-                game_1.Game.ctx2d.fillStyle = "black";
-                game_1.Game.ctx2d.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                game_1.Game.ctx.fillStyle = "black";
+                game_1.Game.ctx.fillRect(_this.x * gameConstants_1.GameConstants.TILESIZE, (_this.y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
             }
         };
         _this.drawCeiling = function () { };
@@ -3537,11 +3304,11 @@ var Player = (function () {
                 // this.stats.drawGUI(); TODO
             }
             else {
-                game_1.Game.ctx2d.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
+                game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
                 var gameOverString = "Game Over.";
-                game_1.Game.ctx2d.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx2d.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2);
+                game_1.Game.ctx.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2);
                 var refreshString = "[refresh to restart]";
-                game_1.Game.ctx2d.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx2d.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + gameConstants_1.GameConstants.FONT_SIZE);
+                game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + gameConstants_1.GameConstants.FONT_SIZE);
             }
             _this.inventory.draw();
         };
@@ -3616,9 +3383,9 @@ var Inventory = (function () {
         };
         this.draw = function () {
             if (_this.isOpen) {
-                game_1.Game.ctx2d.fillStyle = "rgb(0, 0, 0, 0.9)";
-                game_1.Game.ctx2d.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
-                game_1.Game.ctx2d.drawImage(game_1.Game.inventory, gameConstants_1.GameConstants.WIDTH / 2 - 48, gameConstants_1.GameConstants.HEIGHT / 2 - 48);
+                game_1.Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
+                game_1.Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
+                game_1.Game.ctx.drawImage(game_1.Game.inventory, gameConstants_1.GameConstants.WIDTH / 2 - 48, gameConstants_1.GameConstants.HEIGHT / 2 - 48);
                 // check equips too
                 _this.items = _this.items.filter(function (x) { return !x.dead; });
                 _this.game.player.equipped = _this.items.filter(function (x) { return x instanceof equippable_1.Equippable && x.equipped; });

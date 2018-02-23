@@ -393,17 +393,17 @@ export class Player {
       if (this.armor) this.armor.drawGUI(this.health);
       // this.stats.drawGUI(); TODO
     } else {
-      Game.ctx2d.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
+      Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
-      Game.ctx2d.fillText(
+      Game.ctx.fillText(
         gameOverString,
-        GameConstants.WIDTH / 2 - Game.ctx2d.measureText(gameOverString).width / 2,
+        GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
         GameConstants.HEIGHT / 2
       );
       let refreshString = "[refresh to restart]";
-      Game.ctx2d.fillText(
+      Game.ctx.fillText(
         refreshString,
-        GameConstants.WIDTH / 2 - Game.ctx2d.measureText(refreshString).width / 2,
+        GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
         GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
       );
     }

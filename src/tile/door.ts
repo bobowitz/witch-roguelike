@@ -31,8 +31,8 @@ export class Door extends LayeredTile {
     if (this.level.visibilityArray[this.x][this.y] > 0) {
       Game.drawTile(20 + Math.floor(this.frame), 0, 1, 1, this.x, this.y - 1, 1, 1);
     } else {
-      Game.ctx2d.fillStyle = "black";
-      Game.ctx2d.fillRect(
+      Game.ctx.fillStyle = "black";
+      Game.ctx.fillRect(
         this.x * GameConstants.TILESIZE,
         (this.y - 1) * GameConstants.TILESIZE,
         GameConstants.TILESIZE,
@@ -40,21 +40,21 @@ export class Door extends LayeredTile {
       );
     }
     if (this.y === this.level.height - 1 || this.level.visibilityArray[this.x][this.y + 1] === 0) {
-      Game.ctx2d.fillStyle = "black";
-      Game.ctx2d.fillRect(
+      Game.ctx.fillStyle = "black";
+      Game.ctx.fillRect(
         this.x * GameConstants.TILESIZE,
         (this.y + 0.6) * GameConstants.TILESIZE,
         GameConstants.TILESIZE,
         0.4 * GameConstants.TILESIZE
       );
-      Game.ctx2d.globalAlpha = 0.5;
-      Game.ctx2d.fillRect(
+      Game.ctx.globalAlpha = 0.5;
+      Game.ctx.fillRect(
         this.x * GameConstants.TILESIZE,
         (this.y - 0.4) * GameConstants.TILESIZE,
         GameConstants.TILESIZE,
         1.4 * GameConstants.TILESIZE
       );
-      Game.ctx2d.globalAlpha = 1;
+      Game.ctx.globalAlpha = 1;
     }
   };
 }
