@@ -14,7 +14,6 @@ import { Equippable } from "./item/equippable";
 import { LevelConstants } from "./levelConstants";
 import { Pickup } from "./item/pickup";
 import { Crate } from "./enemy/crate";
-import { Stats } from "./stats";
 import { Chest } from "./enemy/chest";
 import { WizardFireball } from "./projectile/wizardFireball";
 import { Barrel } from "./enemy/barrel";
@@ -34,7 +33,6 @@ export class Player {
   flashing: boolean;
   flashingFrame: number;
   health: number;
-  stats: Stats;
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
@@ -62,7 +60,6 @@ export class Player {
     Input.downListener = this.downListener;
 
     this.health = 3;
-    this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
@@ -396,17 +393,17 @@ export class Player {
       if (this.armor) this.armor.drawGUI(this.health);
       // this.stats.drawGUI(); TODO
     } else {
-      Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
+      Game.ctx2d.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
-      Game.ctx.fillText(
+      Game.ctx2d.fillText(
         gameOverString,
-        GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
+        GameConstants.WIDTH / 2 - Game.ctx2d.measureText(gameOverString).width / 2,
         GameConstants.HEIGHT / 2
       );
       let refreshString = "[refresh to restart]";
-      Game.ctx.fillText(
+      Game.ctx2d.fillText(
         refreshString,
-        GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
+        GameConstants.WIDTH / 2 - Game.ctx2d.measureText(refreshString).width / 2,
         GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
       );
     }

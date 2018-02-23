@@ -24,8 +24,8 @@ export class SideDoor extends Door {
       Game.drawTile(0, this.level.env, 1, 1, this.x, this.y - 1, 1, 1);
       Game.drawTile(25 + Math.floor(this.frame), 0, 1, 1, this.x, this.y - 1, 1, 1);
     } else {
-      Game.ctx.fillStyle = "black";
-      Game.ctx.fillRect(
+      Game.ctx2d.fillStyle = "black";
+      Game.ctx2d.fillRect(
         this.x * GameConstants.TILESIZE,
         (this.y - 1) * GameConstants.TILESIZE,
         GameConstants.TILESIZE,

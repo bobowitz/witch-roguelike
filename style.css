@@ -2,9 +2,6 @@ canvas {
   width: 544px;
   height: 544px;
 
-  display: block;
-  margin: 0 auto;
-
   image-rendering: optimizeSpeed; /* Older versions of FF          */
   image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
   image-rendering: -webkit-optimize-contrast; /* Safari                        */
@@ -17,6 +14,28 @@ canvas {
 @font-face {
   font-family: PixelFont;
   src: url("./res/pixel.ttf");
+}
+
+.container {
+  position: relative;
+  width: 544px;
+  height: 544px;
+  display: block;
+  margin: 0 auto;
+}
+
+#canvas2d {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 10;
+}
+
+#canvas3d {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 20;
 }
 
 .center-text {

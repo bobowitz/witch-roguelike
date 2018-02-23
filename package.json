@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bobowitz/tree-generator.git"
+    "url": "git+https://github.com/bobowitz/witch-roguelike.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/bobowitz/tree-generator/issues"
+    "url": "https://github.com/bobowitz/witch-roguelike/issues"
   },
-  "homepage": "https://github.com/bobowitz/tree-generator#readme",
+  "homepage": "https://github.com/bobowitz/witch-roguelike#readme",
   "devDependencies": {
     "ts-loader": "^2.3.2",
     "typings": "^2.1.1",

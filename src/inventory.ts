@@ -63,10 +63,10 @@ export class Inventory {
 
   draw = () => {
     if (this.isOpen) {
-      Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
-      Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
+      Game.ctx2d.fillStyle = "rgb(0, 0, 0, 0.9)";
+      Game.ctx2d.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
-      Game.ctx.drawImage(
+      Game.ctx2d.drawImage(
         Game.inventory,
         GameConstants.WIDTH / 2 - 48,
         GameConstants.HEIGHT / 2 - 48

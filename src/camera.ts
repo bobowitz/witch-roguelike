@@ -25,13 +25,13 @@ export class Camera {
   };
 
   static translate = () => {
-    Game.ctx.translate(
+    Game.ctx2d.translate(
       Math.floor(-Camera.x * GameConstants.TILESIZE),
       Math.floor(-Camera.y * GameConstants.TILESIZE)
     );
   };
   static translateBack = () => {
-    Game.ctx.translate(
+    Game.ctx2d.translate(
       Math.ceil(Camera.x * GameConstants.TILESIZE),
       Math.ceil(Camera.y * GameConstants.TILESIZE)
     );

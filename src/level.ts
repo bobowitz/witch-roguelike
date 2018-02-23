@@ -404,23 +404,23 @@ export class Level {
         // fill in shadows too
         switch (this.visibilityArray[x][y]) {
           case 0:
-            Game.ctx.globalAlpha = 1;
+            Game.ctx2d.globalAlpha = 1;
             break;
           case 1:
-            Game.ctx.globalAlpha = 0.6;
+            Game.ctx2d.globalAlpha = 0.6;
             break;
           case 2:
-            Game.ctx.globalAlpha = 0;
+            Game.ctx2d.globalAlpha = 0;
             break;
         }
-        Game.ctx.fillStyle = "black";
-        Game.ctx.fillRect(
+        Game.ctx2d.fillStyle = "black";
+        Game.ctx2d.fillRect(
           x * GameConstants.TILESIZE,
           y * GameConstants.TILESIZE,
           GameConstants.TILESIZE,
           GameConstants.TILESIZE
         );
-        Game.ctx.globalAlpha = 1;
+        Game.ctx2d.globalAlpha = 1;
       }
     }
     Camera.translateBack();
@@ -481,23 +481,23 @@ export class Level {
         // fill in shadows too
         switch (this.visibilityArray[x][y]) {
           case 0:
-            Game.ctx.globalAlpha = 1;
+            Game.ctx2d.globalAlpha = 1;
             break;
           case 1:
-            Game.ctx.globalAlpha = 0.6;
+            Game.ctx2d.globalAlpha = 0.6;
             break;
           case 2:
-            Game.ctx.globalAlpha = 0;
+            Game.ctx2d.globalAlpha = 0;
             break;
         }
-        Game.ctx.fillStyle = "black";
-        Game.ctx.fillRect(
+        Game.ctx2d.fillStyle = "black";
+        Game.ctx2d.fillRect(
           x * GameConstants.TILESIZE,
           y * GameConstants.TILESIZE,
           GameConstants.TILESIZE,
           GameConstants.TILESIZE
         );
-        Game.ctx.globalAlpha = 1;
+        Game.ctx2d.globalAlpha = 1;
       }
     }
     Camera.translateBack();
