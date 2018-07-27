@@ -31,9 +31,7 @@ export class Chest extends Enemy {
         this.game.level.items.push(new Key(this.x, this.y));
         break;
       case 3:
-        this.game.level.items.push(
-          new Armor(this.x, this.y)
-        );
+        this.game.level.items.push(new Armor(this.game, this.x, this.y));
         break;
     }
   };

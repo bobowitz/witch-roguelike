@@ -1,3 +1,6 @@
+import { Player } from "../player";
+import { Enemy } from "../enemy/enemy";
+
 export class Projectile {
   x: number;
   y: number;
@@ -8,6 +11,9 @@ export class Projectile {
     this.y = y;
     this.dead = false;
   }
+
+  hitPlayer = (player: Player) => {};
+  hitEnemy = (enemy: Enemy) => {};
 
   tick = () => {};
   draw = () => {};

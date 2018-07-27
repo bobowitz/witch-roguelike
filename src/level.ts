@@ -27,6 +27,13 @@ import { Input } from "./input";
 import { Armor } from "./item/armor";
 import { Particle } from "./particle/particle";
 import { Projectile } from "./projectile/projectile";
+import { SpikeTrap } from "./tile/spiketrap";
+import { TickCollidable } from "./tile/tickCollidable";
+
+export enum TurnState {
+  playerTurn,
+  computerTurn,
+}
 
 export class Level {
   levelArray: Tile[][];
@@ -50,6 +57,7 @@ export class Level {
   env: number; // which environment is this level?
   difficulty: number;
   name: string;
+  turn: TurnState;
 
   private pointInside(
     x: number,
@@ -307,7 +315,7 @@ export class Level {
 
   private addSpikes(): number {
     // add spikes
-    let numSpikes = Game.rand(1, 10);
+    let numSpikes = 1; //Game.rand(1, 10);
     if (numSpikes === 1) {
       numSpikes = Game.randTable([1, 1, 1, 1, 2, 3]);
     } else numSpikes = 0;
@@ -318,7 +326,7 @@ export class Level {
         x = Game.rand(this.roomX, this.roomX + this.width - 1);
         y = Game.rand(this.roomY, this.roomY + this.height - 1);
       }
-      this.levelArray[x][y] = new Spike(this, x, y);
+      this.levelArray[x][y] = new SpikeTrap(this, x, y);
     }
 
     return numSpikes;
@@ -402,6 +410,8 @@ export class Level {
 
     this.distFromStart = distFromStart;
     this.env = env;
+
+    this.turn = TurnState.playerTurn;
 
     this.items = Array<Item>();
     this.projectiles = Array<Projectile>();
@@ -623,8 +633,8 @@ export class Level {
   };
 
   castShadowsAtAngle = (angle: number, radius: number) => {
-    let dx = Math.cos(angle * Math.PI / 180);
-    let dy = Math.sin(angle * Math.PI / 180);
+    let dx = Math.cos((angle * Math.PI) / 180);
+    let dy = Math.sin((angle * Math.PI) / 180);
     let px = this.game.player.x + 0.5;
     let py = this.game.player.y + 0.5;
     let returnVal = 0;
@@ -696,27 +706,60 @@ export class Level {
   };
 
   tick = () => {
+    if (this.turn === TurnState.computerTurn) this.computerTurn();
+
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        if (this.levelArray[x][y] instanceof TickCollidable) {
+          (this.levelArray[x][y] as TickCollidable).tick();
+        }
+      }
+    }
+
     this.game.player.startTick();
     if (this.game.player.armor) this.game.player.armor.tick();
+    this.enemies = this.enemies.filter(e => !e.dead);
+    this.updateLighting();
+
+    this.turn = TurnState.computerTurn;
+  };
+
+  update = () => {
+    if (this.turn == TurnState.computerTurn) {
+      if (this.game.player.doneMoving()) {
+        this.computerTurn();
+      }
+    }
+  };
+
+  computerTurn = () => {
+    // take computer turn
     for (const p of this.projectiles) {
       p.tick();
     }
     for (const e of this.enemies) {
       e.tick();
     }
-    this.enemies = this.enemies.filter(e => !e.dead);
-    this.game.player.finishTick();
-    this.updateLighting();
-  };
 
-  update = () => {
-    //
+    for (const p of this.projectiles) {
+      if (this.getCollidable(p.x, p.y) !== null) p.dead = true;
+      if (p.x === this.game.player.x && p.y === this.game.player.y) {
+        p.hitPlayer(this.game.player);
+      }
+      for (const e of this.enemies) {
+        if (p.x === e.x && p.y === e.y) {
+          p.hitEnemy(e);
+        }
+      }
+    }
+    this.game.player.finishTick();
+    this.turn = TurnState.playerTurn; // now it's the player's turn
   };
 
   draw = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        this.levelArray[x][y].draw();
+        if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].draw();
 
         // fill in shadows too
         switch (this.visibilityArray[x][y]) {

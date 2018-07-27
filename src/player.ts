@@ -26,6 +26,14 @@ import { Chest } from "./enemy/chest";
 import { WizardFireball } from "./projectile/wizardFireball";
 import { Barrel } from "./enemy/barrel";
 import { Wall } from "./tile/wall";
+import { SpikeTrap } from "./tile/spiketrap";
+
+enum PlayerDirection {
+  DOWN = 0,
+  UP = 1,
+  RIGHT = 2,
+  LEFT = 3,
+}
 
 export class Player {
   x: number;
@@ -34,6 +42,7 @@ export class Player {
   h: number;
   drawX: number;
   drawY: number;
+  direction: PlayerDirection;
   game: Game;
   flashing: boolean;
   flashingFrame: number;
@@ -55,14 +64,16 @@ export class Player {
     this.x = x;
     this.y = y;
 
+    this.direction = PlayerDirection.UP;
+
     this.map = new Map(game);
 
     Input.iListener = this.iListener;
     Input.iUpListener = this.iUpListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
-    Input.mListener = this.map.open;
-    Input.mUpListener = this.map.close;
+    //Input.mListener = this.map.open; MAP DISABLED
+    //Input.mUpListener = this.map.close;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
@@ -95,24 +106,28 @@ export class Player {
     if (!this.dead) {
       if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
       else this.tryMove(this.x - 1, this.y);
+      this.direction = PlayerDirection.LEFT;
     }
   };
   rightListener = () => {
     if (!this.dead) {
       if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
       else this.tryMove(this.x + 1, this.y);
+      this.direction = PlayerDirection.RIGHT;
     }
   };
   upListener = () => {
     if (!this.dead) {
       if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
       else this.tryMove(this.x, this.y - 1);
+      this.direction = PlayerDirection.UP;
     }
   };
   downListener = () => {
     if (!this.dead) {
       if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
       else this.tryMove(this.x, this.y + 1);
+      this.direction = PlayerDirection.DOWN;
     }
   };
 
@@ -132,7 +147,7 @@ export class Player {
       y += dy;
       let other = this.game.level.getCollidable(x, y);
       if (other === null) {
-      } else if (other instanceof Spike) {
+      } else if (other instanceof Spike || other instanceof SpikeTrap) {
         other.onCollide(this);
       } else {
         break;
@@ -149,6 +164,9 @@ export class Player {
           );
           if (e instanceof Chest) {
             breakFlag = true;
+            if (this.game.level.getCollidable(this.x, this.y) instanceof SpikeTrap) {
+              (this.game.level.getCollidable(this.x, this.y) as SpikeTrap).onCollide(this);
+            }
             this.game.level.tick();
             break;
           }
@@ -261,7 +279,7 @@ export class Player {
       } else if (other instanceof BottomDoor || other instanceof Trapdoor) {
         this.move(x, y);
         other.onCollide(this);
-      } else if (other instanceof Spike) {
+      } else if (other instanceof Spike || other instanceof SpikeTrap) {
         this.move(x, y);
         other.onCollide(this);
         this.game.level.tick();
@@ -270,7 +288,7 @@ export class Player {
   };
 
   hurt = (damage: number) => {
-    if (this.armor !== null && this.armor.health > 0) {
+    if (this.armor && this.armor.health > 0) {
       this.armor.hurt(damage);
     } else {
       this.flashing = true;
@@ -299,6 +317,11 @@ export class Player {
     }
 
     this.game.level.updateLighting();
+  };
+
+  doneMoving = (): boolean => {
+    let EPSILON = 0.01;
+    return Math.abs(this.drawX) < EPSILON && Math.abs(this.drawY) < EPSILON;
   };
 
   move = (x: number, y: number) => {
@@ -336,14 +359,6 @@ export class Player {
   startTick = () => {};
 
   finishTick = () => {
-    for (const p of this.game.level.projectiles) {
-      if (p instanceof WizardFireball) {
-        if (this.x === p.x && this.y === p.y) {
-          p.hit(this); // let fireball determine if it's in a damage-dealing state rn
-        }
-      }
-    }
-
     this.flashing = false;
 
     let totalHealthDiff = this.health - this.lastTickHealth;
@@ -360,6 +375,22 @@ export class Player {
     }
   };
 
+  drawPlayerSprite = () => {
+    Game.drawMob(1, this.direction * 2, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+    if (this.armor && this.armor.health > 0) {
+      Game.drawMob(
+        1,
+        8 + this.direction * 2,
+        1,
+        2,
+        this.x - this.drawX,
+        this.y - 1.5 - this.drawY,
+        1,
+        2
+      );
+    }
+  };
+
   draw = () => {
     this.flashingFrame += 12 / GameConstants.FPS;
     if (!this.dead) {
@@ -367,7 +398,7 @@ export class Player {
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
         this.drawX += -0.5 * this.drawX;
         this.drawY += -0.5 * this.drawY;
-        Game.drawMob(1, 0, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+        this.drawPlayerSprite();
       }
     }
   };
