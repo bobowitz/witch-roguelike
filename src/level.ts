@@ -28,6 +28,9 @@ import { Door } from "./tile/door";
 import { SideDoor } from "./tile/sideDoor";
 import { LayeredTile } from "./tile/layeredTile";
 import { CollidableLayeredTile } from "./tile/collidableLayeredTile";
+import { StairUp } from "./tile/stairUp";
+import { StairDown } from "./tile/stairDown";
+import { OnCollideLayeredTile } from "./tile/onCollideLayeredTile";
 
 export enum TurnState {
   playerTurn,
@@ -46,6 +49,8 @@ export class Level {
   height: number;
   env: number; // which environment is this level?
   turn: TurnState;
+  playerExitX: number;
+  playerExitY: number;
 
   private pointInside(
     x: number,
@@ -150,7 +155,10 @@ export class Level {
               this.levelArray[x][y] = new Spike(this, x, y);
               break;
             case 14:
-              //this.levelArray[x][y] = new StairUp(this, x, y);
+              this.levelArray[x][y] = new StairUp(this, x, y);
+              break;
+            case 15:
+              this.levelArray[x][y] = new StairDown(this, x, y);
               break;
             case 16:
               this.levelArray[x][y] = new SideArch(this, x, y);
@@ -176,7 +184,8 @@ export class Level {
         if (mobSourceSet !== null) {
           switch (mobgid - mobSourceSet.firstgid) {
             case 33:
-              this.game.player.moveNoSmooth(x, y);
+              this.playerExitX = x;
+              this.playerExitY = y;
               break;
             case 34:
               this.enemies.push(new SkullEnemy(this, this.game, x, y));
@@ -218,6 +227,8 @@ export class Level {
 
   exitLevel = () => {
     this.particles.splice(0, this.particles.length);
+    this.playerExitX = this.game.player.x;
+    this.playerExitY = this.game.player.y;
   };
 
   updateLevelTextColor = () => {
@@ -238,10 +249,14 @@ export class Level {
   enterLevel = () => {
     this.updateLevelTextColor();
 
+    this.game.player.moveNoSmooth(this.playerExitX, this.playerExitY);
+
     this.updateLighting();
 
-    Camera.x = this.game.player.x - LevelConstants.SCREEN_W * 0.5 + 0.5;
-    Camera.y = this.game.player.y - LevelConstants.SCREEN_H * 0.5 + 0.5;
+    Camera.snap(
+      this.game.player.x - LevelConstants.SCREEN_W * 0.5 + 0.5,
+      this.game.player.y - LevelConstants.SCREEN_H * 0.5 + 0.5
+    );
   };
 
   //TODO: stairs n stuff (w/r/t entering level)
@@ -469,6 +484,8 @@ export class Level {
           if (this.levelArray[x][y] instanceof LayeredTile) {
             (this.levelArray[x][y] as LayeredTile).drawCeiling();
           } else if (this.levelArray[x][y] instanceof CollidableLayeredTile) {
+            (this.levelArray[x][y] as CollidableLayeredTile).drawCeiling();
+          } else if (this.levelArray[x][y] instanceof OnCollideLayeredTile) {
             (this.levelArray[x][y] as CollidableLayeredTile).drawCeiling();
           } else {
             continue;

@@ -1,8 +1,9 @@
 import { Collidable } from "./collidable";
 import { Player } from "../player";
 import { Game } from "../game";
+import { OnCollideTile } from "./onCollideTile";
 
-export class Spike extends Collidable {
+export class Spike extends OnCollideTile {
   onCollide = (player: Player) => {
     player.hurt(1);
   };

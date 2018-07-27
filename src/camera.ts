@@ -12,6 +12,13 @@ export class Camera {
     Camera.y += 0.05 * (Camera.targetY - Camera.y);
   };
 
+  static snap = (x: number, y: number) => {
+    Camera.x = x;
+    Camera.y = y;
+    Camera.targetX = x;
+    Camera.targetY = y;
+  };
+
   static cull = (x: number, y: number, w: number, h: number) => {
     // give a tile coord, returns true if off-screen
     return (

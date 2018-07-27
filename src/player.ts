@@ -22,6 +22,7 @@ import { Wall } from "./tile/wall";
 import { Camera } from "./camera";
 import { Door } from "./tile/door";
 import { TurnState } from "./level";
+import { OnCollideTile } from "./tile/onCollideTile";
 
 export class Player {
   x: number;
@@ -158,6 +159,7 @@ export class Player {
         }
       } else if (other instanceof Spike) {
         other.onCollide(this);
+      } else if (other instanceof OnCollideTile) {
       } else {
         break;
       }
@@ -257,14 +259,14 @@ export class Player {
       }
     }
     if (this.game.level.getCollidable(x, y) === null) {
+      this.move(x, y);
       if (this.game.level.levelArray[x][y] instanceof Door) {
         (this.game.level.levelArray[x][y] as Door).open();
       }
-      this.move(x, y);
       this.game.level.tick();
-    } else if (this.game.level.getCollidable(x, y) instanceof Spike) {
-      (this.game.level.getCollidable(x, y) as Spike).onCollide(this);
+    } else if (this.game.level.getCollidable(x, y) instanceof OnCollideTile) {
       this.move(x, y);
+      (this.game.level.getCollidable(x, y) as OnCollideTile).onCollide(this);
       this.game.level.tick();
     }
   };
