@@ -16,7 +16,6 @@ import { Armor } from "./item/armor";
 import { Item } from "./item/item";
 import { Equippable } from "./item/equippable";
 import { LevelConstants } from "./levelConstants";
-import { Map } from "./map";
 import { Pickup } from "./item/pickup";
 import { Crate } from "./enemy/crate";
 import { Stats } from "./stats";
@@ -52,7 +51,6 @@ export class Player {
   lastTickHealth: number;
   inventory: Inventory;
   equipped: Array<Equippable>;
-  map: Map;
   armor: Armor;
   missProb: number;
   sightRadius: number;
@@ -66,8 +64,6 @@ export class Player {
 
     this.direction = PlayerDirection.UP;
 
-    this.map = new Map(game);
-
     Input.iListener = this.iListener;
     Input.iUpListener = this.iUpListener;
     Input.leftListener = this.leftListener;
@@ -77,7 +73,7 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 3;
+    this.health = 300;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
@@ -430,7 +426,5 @@ export class Player {
       );
     }
     this.inventory.draw();
-
-    this.map.draw();
   };
 }

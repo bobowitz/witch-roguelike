@@ -12,7 +12,7 @@ export class Sound {
     Sound.footsteps.push(new Audio("res/step2.wav"));
     Sound.footsteps.push(new Audio("res/step3.wav"));
     Sound.footsteps.push(new Audio("res/step4.wav"));
-    for (let f of Sound.footsteps) f.volume = 0.1;
+    for (let f of Sound.footsteps) f.volume = 1.0;
 
     Sound.powerupSound = new Audio("res/powerup.wav");
     Sound.powerupSound.volume = 0.5;
@@ -48,6 +48,6 @@ export class Sound {
       },
       false
     );
-    Sound.music.play();
+    //Sound.music.play();
   };
 }

@@ -4,10 +4,13 @@ import { Player } from "./player";
 import { Door } from "./tile/door";
 import { Sound } from "./sound";
 import { LevelConstants } from "./levelConstants";
+import { LevelGenerator } from "./levelGenerator";
 
 export class Game {
   static ctx: CanvasRenderingContext2D;
   level: Level;
+  levels: Array<Level>;
+  levelgen: LevelGenerator;
   player: Player;
   static tileset: HTMLImageElement;
   static mobset: HTMLImageElement;
@@ -49,7 +52,9 @@ export class Game {
       Sound.playMusic(); // loops forever
 
       this.player = new Player(this, 0, 0);
-      this.level = new Level(this, null, false, true, 0, 0, 1);
+      this.levels = Array<Level>();
+      let levelgen = new LevelGenerator(this);
+      this.level = this.levels[0];
       this.level.enterLevel();
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
@@ -62,7 +67,7 @@ export class Game {
     this.level.enterLevel();
   };
 
-  changeLevelThroughDoor = (door: Door) => {
+  changeLevelThroughDoor = (door: any) => {
     this.level.exitLevel();
     this.level = door.level;
     this.level.enterLevelThroughDoor(door);

@@ -2,46 +2,23 @@ import { Collidable } from "./collidable";
 import { Player } from "../player";
 import { Game } from "../game";
 import { Level } from "../level";
+import { BottomDoor } from "./bottomDoor";
 
 export class Door extends Collidable {
-  linkedLevel: Level;
+  linkedDoor: BottomDoor;
   game: Game;
-  deadEnd: boolean;
-  goldenKey: boolean;
-  distFromStart: number;
   opened: boolean;
 
-  constructor(
-    level: Level,
-    game: Game,
-    x: number,
-    y: number,
-    deadEnd: boolean,
-    goldenKey: boolean,
-    distFromStart: number
-  ) {
+  constructor(level: Level, game: Game, x: number, y: number, linkedDoor: BottomDoor) {
     super(level, x, y);
     this.game = game;
-    this.linkedLevel = null;
-    this.deadEnd = deadEnd;
-    this.goldenKey = goldenKey;
-    this.distFromStart = distFromStart;
+    this.linkedDoor = linkedDoor;
     this.opened = false;
   }
 
   onCollide = (player: Player) => {
     this.opened = true;
-    if (this.linkedLevel === null)
-      this.linkedLevel = new Level(
-        this.game,
-        this,
-        this.deadEnd,
-        this.goldenKey,
-        this.distFromStart,
-        this.level.env,
-        this.level.difficulty
-      );
-    this.game.changeLevel(this.linkedLevel);
+    this.game.changeLevelThroughDoor(this.linkedDoor);
   };
 
   draw = () => {

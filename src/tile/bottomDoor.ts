@@ -5,17 +5,17 @@ import { Door } from "./door";
 import { Player } from "../player";
 
 export class BottomDoor extends Collidable {
-  linkedTopDoor: Door;
+  linkedDoor: Door;
   game: Game;
 
-  constructor(level: Level, game: Game, linkedTopDoor: Door, x: number, y: number) {
+  constructor(level: Level, game: Game, x: number, y: number, linkedDoor: Door) {
     super(level, x, y);
     this.game = game;
-    this.linkedTopDoor = linkedTopDoor;
+    this.linkedDoor = linkedDoor;
   }
 
   onCollide = (player: Player) => {
-    this.game.changeLevelThroughDoor(this.linkedTopDoor);
+    this.game.changeLevelThroughDoor(this.linkedDoor);
   };
 
   draw = () => {
