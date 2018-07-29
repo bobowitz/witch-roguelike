@@ -87,7 +87,7 @@ export class LevelGenerator {
     switch (Game.rand(1, 12)) {
       case 1:
         type = RoomType.FOUNTAIN;
-        if (r.h <= 5) type = this.pickType(r);
+        if (r.h <= 5 || (r.w > 7 && r.h > 7)) type = this.pickType(r);
         break;
       case 2:
         type = RoomType.COFFIN;

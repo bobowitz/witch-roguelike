@@ -11,6 +11,7 @@ export class LevelConstants {
   static readonly SCREEN_H = 17; // screen size in tiles
 
   static readonly TURN_TIME = 1000; // milliseconds
+  static readonly LEVEL_TRANSITION_TIME = 300; // milliseconds
 
   static readonly VISIBILITY_CUTOFF = 1;
   static SMOOTH_LIGHTING = false;

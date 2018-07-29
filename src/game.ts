@@ -5,13 +5,25 @@ import { Door } from "./tile/door";
 import { Sound } from "./sound";
 import { LevelConstants } from "./levelConstants";
 import { LevelGenerator } from "./levelGenerator";
+import { BottomDoor } from "./tile/bottomDoor";
+
+export enum LevelState {
+  IN_LEVEL,
+  TRANSITIONING,
+}
 
 export class Game {
   static ctx: CanvasRenderingContext2D;
+  prevLevel: Level; // for transitions
   level: Level;
   levels: Array<Level>;
   levelgen: LevelGenerator;
   player: Player;
+  levelState: LevelState;
+  transitionStartTime: number;
+  transitionX: number;
+  transitionY: number;
+  upwardTransition: boolean;
   static tileset: HTMLImageElement;
   static objset: HTMLImageElement;
   static mobset: HTMLImageElement;
@@ -69,6 +81,8 @@ export class Game {
       this.level = this.levels[0];
       this.level.enterLevel();
 
+      this.levelState = LevelState.IN_LEVEL;
+
       setInterval(this.run, 1000.0 / GameConstants.FPS);
     });
   }
@@ -80,9 +94,22 @@ export class Game {
   };
 
   changeLevelThroughDoor = (door: any) => {
+    this.levelState = LevelState.TRANSITIONING;
+    this.transitionStartTime = Date.now();
+
+    this.transitionX = this.player.x;
+    this.transitionY = this.player.y;
+
+    this.prevLevel = this.level;
     this.level.exitLevel();
     this.level = door.level;
     this.level.enterLevelThroughDoor(door);
+
+    this.transitionX = (this.player.x - this.transitionX) * GameConstants.TILESIZE;
+    this.transitionY = (this.player.y - this.transitionY) * GameConstants.TILESIZE;
+
+    this.upwardTransition = false;
+    if (door instanceof BottomDoor) this.upwardTransition = true;
   };
 
   run = () => {
@@ -91,17 +118,114 @@ export class Game {
   };
 
   update = () => {
+    if (this.levelState === LevelState.TRANSITIONING) {
+      Level.turnStartTime = Date.now(); // don't tick until finished transitioning
+      if (Date.now() - this.transitionStartTime >= LevelConstants.LEVEL_TRANSITION_TIME) {
+        this.levelState = LevelState.IN_LEVEL;
+      }
+    }
+
     this.player.update();
     this.level.update();
   };
 
+  lerp = (a: number, b: number, t: number): number => {
+    return (1 - t) * a + t * b;
+  };
+
   draw = () => {
-    this.level.draw();
-    this.level.drawEntitiesBehindPlayer();
-    this.player.draw();
-    this.level.drawEntitiesInFrontOfPlayer();
-    this.level.drawTopLayer();
-    this.player.drawTopLayer();
+    Game.ctx.fillStyle = "black";
+    Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
+
+    if (this.levelState === LevelState.TRANSITIONING) {
+      let levelOffsetX = Math.floor(
+        this.lerp(
+          (Date.now() - this.transitionStartTime) / LevelConstants.LEVEL_TRANSITION_TIME,
+          0,
+          -this.transitionX
+        )
+      );
+      let levelOffsetY = Math.floor(
+        this.lerp(
+          (Date.now() - this.transitionStartTime) / LevelConstants.LEVEL_TRANSITION_TIME,
+          0,
+          -this.transitionY
+        )
+      );
+      let playerOffsetX = levelOffsetX - this.transitionX;
+      let playerOffsetY = levelOffsetY - this.transitionY;
+
+      let extraTileLerp = Math.floor(
+        this.lerp(
+          (Date.now() - this.transitionStartTime) / LevelConstants.LEVEL_TRANSITION_TIME,
+          0,
+          GameConstants.TILESIZE
+        )
+      );
+
+      let newLevelOffsetX = playerOffsetX;
+      let newLevelOffsetY = playerOffsetY;
+
+      if (this.upwardTransition) {
+        levelOffsetY -= extraTileLerp;
+        newLevelOffsetY += -extraTileLerp - GameConstants.TILESIZE;
+      } else {
+        levelOffsetY += extraTileLerp;
+        newLevelOffsetY += extraTileLerp + GameConstants.TILESIZE;
+      }
+
+      let ditherFrame = Math.floor(
+        (7 * (Date.now() - this.transitionStartTime)) / LevelConstants.LEVEL_TRANSITION_TIME
+      );
+
+      Game.ctx.translate(levelOffsetX, levelOffsetY);
+      this.prevLevel.draw();
+      this.prevLevel.drawEntitiesBehindPlayer();
+      Game.ctx.translate(-levelOffsetX, -levelOffsetY);
+      Game.ctx.translate(levelOffsetX, levelOffsetY);
+      this.prevLevel.drawEntitiesInFrontOfPlayer();
+      for (
+        let x = this.prevLevel.roomX - 1;
+        x <= this.prevLevel.roomX + this.prevLevel.width;
+        x++
+      ) {
+        for (
+          let y = this.prevLevel.roomY - 1;
+          y <= this.prevLevel.roomY + this.prevLevel.height;
+          y++
+        ) {
+          Game.drawFX(7 - ditherFrame, 10, 1, 1, x, y, 1, 1);
+        }
+      }
+      Game.ctx.translate(-levelOffsetX, -levelOffsetY);
+
+      this.player.drawTopLayer();
+
+      Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
+      this.level.draw();
+      this.level.drawEntitiesBehindPlayer();
+      this.level.drawEntitiesInFrontOfPlayer();
+      for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
+        for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
+          Game.drawFX(ditherFrame, 10, 1, 1, x, y, 1, 1);
+        }
+      }
+      Game.ctx.translate(-newLevelOffsetX, -newLevelOffsetY);
+
+      Game.ctx.translate(playerOffsetX, playerOffsetY);
+      this.player.draw();
+      Game.ctx.translate(-playerOffsetX, -playerOffsetY);
+
+      this.level.drawTopLayer();
+      this.player.drawTopLayer();
+    } else {
+      this.level.draw();
+      this.level.drawEntitiesBehindPlayer();
+      this.player.draw();
+      this.level.drawEntitiesInFrontOfPlayer();
+      this.level.drawTopLayer();
+      this.player.drawTopLayer();
+    }
 
     // game version
     Game.ctx.globalAlpha = 0.2;

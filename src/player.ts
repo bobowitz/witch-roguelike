@@ -1,6 +1,6 @@
 import { Input } from "./input";
 import { GameConstants } from "./gameConstants";
-import { Game } from "./game";
+import { Game, LevelState } from "./game";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { Trapdoor } from "./tile/trapdoor";
@@ -99,28 +99,28 @@ export class Player {
     this.inventory.close();
   };
   leftListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
       else this.tryMove(this.x - 1, this.y);
       this.direction = PlayerDirection.LEFT;
     }
   };
   rightListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
       else this.tryMove(this.x + 1, this.y);
       this.direction = PlayerDirection.RIGHT;
     }
   };
   upListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
       else this.tryMove(this.x, this.y - 1);
       this.direction = PlayerDirection.UP;
     }
   };
   downListener = () => {
-    if (!this.dead) {
+    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
       else this.tryMove(this.x, this.y + 1);
       this.direction = PlayerDirection.DOWN;

@@ -1,7 +1,7 @@
 import { Wall } from "./tile/wall";
 import { LevelConstants } from "./levelConstants";
 import { Floor } from "./tile/floor";
-import { Game } from "./game";
+import { Game, LevelState } from "./game";
 import { Collidable } from "./tile/collidable";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
@@ -544,23 +544,36 @@ export class Level {
         d = new Door(this, this.game, this.roomX + this.width - 1, this.roomY, link);
         break;
       case 3:
-        d = new BottomDoor(this, this.game, this.roomX, this.roomY + this.height, link);
+        this.levelArray[this.roomX][this.roomY + this.height] = new Floor(
+          this,
+          this.roomX,
+          this.roomY + this.height
+        );
+        d = new BottomDoor(this, this.game, this.roomX, this.roomY + this.height + 1, link);
         break;
       case 4:
+        this.levelArray[this.roomX + Math.floor(this.width / 2)][
+          this.roomY + this.height
+        ] = new Floor(this, this.roomX + Math.floor(this.width / 2), this.roomY + this.height);
         d = new BottomDoor(
           this,
           this.game,
           this.roomX + Math.floor(this.width / 2),
-          this.roomY + this.height,
+          this.roomY + this.height + 1,
           link
         );
         break;
       case 5:
+        this.levelArray[this.roomX + this.width - 1][this.roomY + this.height] = new Floor(
+          this,
+          this.roomX + this.width - 1,
+          this.roomY + this.height
+        );
         d = new BottomDoor(
           this,
           this.game,
           this.roomX + this.width - 1,
-          this.roomY + this.height,
+          this.roomY + this.height + 1,
           link
         );
         break;
@@ -792,8 +805,8 @@ export class Level {
   };
 
   draw = () => {
-    for (let x = 0; x < this.levelArray.length; x++) {
-      for (let y = 0; y < this.levelArray[0].length; y++) {
+    for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
+      for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
         if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].draw();
 
         // fill in shadows too
@@ -851,27 +864,7 @@ export class Level {
     }
   };
 
-  // for stuff rendered on top of the player
-  drawTopLayer = () => {
-    for (const e of this.enemies) {
-      e.drawTopLayer(); // health bars
-    }
-
-    this.particles = this.particles.filter(x => !x.dead);
-    for (const p of this.particles) {
-      p.draw();
-    }
-
-    // gui stuff
-
-    // room name
-    Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
-    Game.ctx.fillText(
-      this.name,
-      GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
-      (this.roomY - 1) * GameConstants.TILESIZE - (GameConstants.FONT_SIZE - 1)
-    );
-
+  drawTurnTimer = () => {
     let timeFraction =
       (LevelConstants.TURN_TIME - (Date.now() - Level.turnStartTime)) / LevelConstants.TURN_TIME;
     let cX =
@@ -894,5 +887,31 @@ export class Level {
     Game.ctx.beginPath();
     Game.ctx.arc(cX, cY, 1, 0, Math.PI * 2);
     Game.ctx.stroke();
+  };
+
+  // for stuff rendered on top of the player
+  drawTopLayer = () => {
+    for (const e of this.enemies) {
+      e.drawTopLayer(); // health bars
+    }
+
+    this.particles = this.particles.filter(x => !x.dead);
+    for (const p of this.particles) {
+      p.draw();
+    }
+
+    // gui stuff
+
+    // room name
+    Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
+    Game.ctx.fillText(
+      this.name,
+      GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
+      (this.roomY - 1) * GameConstants.TILESIZE - (GameConstants.FONT_SIZE - 1)
+    );
+
+    if (this.game.levelState === LevelState.IN_LEVEL) {
+      this.drawTurnTimer();
+    }
   };
 }

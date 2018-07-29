@@ -3,12 +3,11 @@ import { Game } from "../game";
 import { Level } from "../level";
 import { Door } from "./door";
 import { Player } from "../player";
-import { SkinType } from "./tile";
+import { GameConstants } from "../gameConstants";
 
 export class BottomDoor extends Collidable {
   linkedDoor: Door;
   game: Game;
-  skin: SkinType;
 
   constructor(level: Level, game: Game, x: number, y: number, linkedDoor: Door) {
     super(level, x, y);
@@ -21,6 +20,12 @@ export class BottomDoor extends Collidable {
   };
 
   draw = () => {
-    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.ctx.fillStyle = "black";
+    Game.ctx.fillRect(
+      this.x * GameConstants.TILESIZE,
+      this.y * GameConstants.TILESIZE,
+      GameConstants.TILESIZE,
+      GameConstants.TILESIZE
+    );
   };
 }
