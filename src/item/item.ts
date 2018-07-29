@@ -33,7 +33,7 @@ export class Item {
       1,
       2,
       this.x,
-      this.y + Math.sin(this.frame) * 0.0625 - 1,
+      this.y + Math.sin(this.frame) * 0.07 - 1,
       this.w,
       this.h
     );

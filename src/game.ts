@@ -253,14 +253,14 @@ export class Game {
     if (shaded) set = Game.tilesetShadow;
     Game.ctx.drawImage(
       set,
-      sX * GameConstants.TILESIZE,
-      sY * GameConstants.TILESIZE,
-      sW * GameConstants.TILESIZE,
-      sH * GameConstants.TILESIZE,
-      dX * GameConstants.TILESIZE,
-      dY * GameConstants.TILESIZE,
-      dW * GameConstants.TILESIZE,
-      dH * GameConstants.TILESIZE
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
     );
   };
 
@@ -279,14 +279,14 @@ export class Game {
     if (shaded) set = Game.objsetShadow;
     Game.ctx.drawImage(
       set,
-      sX * GameConstants.TILESIZE,
-      sY * GameConstants.TILESIZE,
-      sW * GameConstants.TILESIZE,
-      sH * GameConstants.TILESIZE,
-      dX * GameConstants.TILESIZE,
-      dY * GameConstants.TILESIZE,
-      dW * GameConstants.TILESIZE,
-      dH * GameConstants.TILESIZE
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
     );
   };
 
@@ -305,14 +305,14 @@ export class Game {
     if (shaded) set = Game.mobsetShadow;
     Game.ctx.drawImage(
       set,
-      sX * GameConstants.TILESIZE,
-      sY * GameConstants.TILESIZE,
-      sW * GameConstants.TILESIZE,
-      sH * GameConstants.TILESIZE,
-      dX * GameConstants.TILESIZE,
-      dY * GameConstants.TILESIZE,
-      dW * GameConstants.TILESIZE,
-      dH * GameConstants.TILESIZE
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
     );
   };
 
@@ -328,14 +328,14 @@ export class Game {
   ) => {
     Game.ctx.drawImage(
       Game.itemset,
-      sX * GameConstants.TILESIZE,
-      sY * GameConstants.TILESIZE,
-      sW * GameConstants.TILESIZE,
-      sH * GameConstants.TILESIZE,
-      dX * GameConstants.TILESIZE,
-      dY * GameConstants.TILESIZE,
-      dW * GameConstants.TILESIZE,
-      dH * GameConstants.TILESIZE
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
     );
   };
 
@@ -351,14 +351,14 @@ export class Game {
   ) => {
     Game.ctx.drawImage(
       Game.fxset,
-      sX * GameConstants.TILESIZE,
-      sY * GameConstants.TILESIZE,
-      sW * GameConstants.TILESIZE,
-      sH * GameConstants.TILESIZE,
-      dX * GameConstants.TILESIZE,
-      dY * GameConstants.TILESIZE,
-      dW * GameConstants.TILESIZE,
-      dH * GameConstants.TILESIZE
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
     );
   };
 }
