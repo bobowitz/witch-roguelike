@@ -131,8 +131,6 @@ var Game = (function () {
             Game.objsetShadow.src = "res/objsetShadow.png";
             Game.mobsetShadow = new Image();
             Game.mobsetShadow.src = "res/mobsetShadow.png";
-            Game.itemsetShadow = new Image();
-            Game.itemsetShadow.src = "res/itemsetShadow.png";
             sound_1.Sound.loadSounds();
             sound_1.Sound.playMusic(); // loops forever
             _this.player = new player_1.Player(_this, 0, 0);
@@ -173,12 +171,8 @@ var Game = (function () {
             set = Game.mobsetShadow;
         Game.ctx.drawImage(set, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
-    Game.drawItem = function (sX, sY, sW, sH, dX, dY, dW, dH, shaded) {
-        if (shaded === void 0) { shaded = false; }
-        var set = Game.itemset;
-        if (shaded)
-            set = Game.itemsetShadow;
-        Game.ctx.drawImage(set, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+    Game.drawItem = function (sX, sY, sW, sH, dX, dY, dW, dH) {
+        Game.ctx.drawImage(Game.itemset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawFX = function (sX, sY, sW, sH, dX, dY, dW, dH) {
         Game.ctx.drawImage(Game.fxset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
@@ -301,6 +295,13 @@ var game_1 = __webpack_require__(0);
 var bones_1 = __webpack_require__(18);
 var levelConstants_1 = __webpack_require__(1);
 var deathParticle_1 = __webpack_require__(19);
+var EnemyDirection;
+(function (EnemyDirection) {
+    EnemyDirection[EnemyDirection["DOWN"] = 0] = "DOWN";
+    EnemyDirection[EnemyDirection["UP"] = 1] = "UP";
+    EnemyDirection[EnemyDirection["RIGHT"] = 2] = "RIGHT";
+    EnemyDirection[EnemyDirection["LEFT"] = 3] = "LEFT";
+})(EnemyDirection = exports.EnemyDirection || (exports.EnemyDirection = {}));
 var Enemy = (function (_super) {
     __extends(Enemy, _super);
     function Enemy(level, game, x, y) {
@@ -345,13 +346,36 @@ var Enemy = (function (_super) {
         _this.isShaded = function () {
             return _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF;
         };
+        _this.doneMoving = function () {
+            var EPSILON = 0.01;
+            return Math.abs(_this.drawX) < EPSILON && Math.abs(_this.drawY) < EPSILON;
+        };
+        _this.facePlayer = function () {
+            var dx = _this.game.player.x - _this.x;
+            var dy = _this.game.player.y - _this.y;
+            if (Math.abs(dx) === Math.abs(dy)) {
+                // just moved, already facing player
+            }
+            else if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx > 0)
+                    _this.direction = EnemyDirection.RIGHT;
+                if (dx < 0)
+                    _this.direction = EnemyDirection.LEFT;
+            }
+            else {
+                if (dy > 0)
+                    _this.direction = EnemyDirection.DOWN;
+                if (dy < 0)
+                    _this.direction = EnemyDirection.UP;
+            }
+        };
         _this.draw = function () {
             if (!_this.dead) {
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
-                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
+                game_1.Game.drawMob(_this.tileX, _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
         _this.tick = function () { };
@@ -364,6 +388,7 @@ var Enemy = (function (_super) {
         _this.tileY = 0;
         _this.hasShadow = true;
         _this.skipNextTurns = 0;
+        _this.direction = EnemyDirection.DOWN;
         return _this;
     }
     return Enemy;
@@ -379,17 +404,13 @@ exports.Enemy = Enemy;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
-var levelConstants_1 = __webpack_require__(1);
 var Item = (function () {
     function Item(x, y) {
         var _this = this;
-        this.isShaded = function () {
-            return _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF;
-        };
         this.draw = function () {
             game_1.Game.drawItem(0, 0, 1, 1, _this.x, _this.y, 1, 1);
             _this.frame += (Math.PI * 2) / 60;
-            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.frame) * 0.0625 - 1, _this.w, _this.h, _this.isShaded());
+            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.frame) * 0.0625 - 1, _this.w, _this.h);
         };
         this.drawIcon = function (x, y) {
             game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
@@ -3437,12 +3458,28 @@ var KnightEnemy = (function (_super) {
                         }
                         _this.drawX = _this.x - oldX;
                         _this.drawY = _this.y - oldY;
+                        if (_this.x > oldX)
+                            _this.direction = enemy_1.EnemyDirection.RIGHT;
+                        else if (_this.x < oldX)
+                            _this.direction = enemy_1.EnemyDirection.LEFT;
+                        else if (_this.y > oldY)
+                            _this.direction = enemy_1.EnemyDirection.DOWN;
+                        else if (_this.y < oldY)
+                            _this.direction = enemy_1.EnemyDirection.UP;
                     }
                 }
             }
         };
-        _this.dropXP = function () {
-            return game_1.Game.randTable([4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 10]);
+        _this.draw = function () {
+            if (!_this.dead) {
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
+                if (_this.doneMoving() && _this.game.player.doneMoving())
+                    _this.facePlayer();
+                if (_this.hasShadow)
+                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
+                game_1.Game.drawMob(_this.tileX, _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
+            }
         };
         _this.moves = new Array(); // empty move list
         _this.ticks = 0;
@@ -3578,9 +3615,6 @@ var WizardEnemy = (function (_super) {
                     game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
                 }
             }
-        };
-        _this.dropXP = function () {
-            return game_1.Game.randTable([4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 10]);
         };
         _this.kill = function () {
             _this.level.levelArray[_this.x][_this.y] = new bones_1.Bones(_this.level, _this.x, _this.y);
@@ -3803,12 +3837,17 @@ var SkullEnemy = (function (_super) {
                         }
                         _this.drawX = _this.x - oldX;
                         _this.drawY = _this.y - oldY;
+                        if (_this.x > oldX)
+                            _this.direction = enemy_1.EnemyDirection.RIGHT;
+                        else if (_this.x < oldX)
+                            _this.direction = enemy_1.EnemyDirection.LEFT;
+                        else if (_this.y > oldY)
+                            _this.direction = enemy_1.EnemyDirection.DOWN;
+                        else if (_this.y < oldY)
+                            _this.direction = enemy_1.EnemyDirection.UP;
                     }
                 }
             }
-        };
-        _this.dropXP = function () {
-            return game_1.Game.randTable([10, 11, 12, 13, 14, 15, 16]);
         };
         _this.draw = function () {
             if (!_this.dead) {
@@ -3827,9 +3866,11 @@ var SkullEnemy = (function (_super) {
                 }
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
+                if (_this.health === 2 && _this.doneMoving() && _this.game.player.doneMoving())
+                    _this.facePlayer();
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
-                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
+                game_1.Game.drawMob(_this.tileX, _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
         _this.moves = new Array(); // empty move list

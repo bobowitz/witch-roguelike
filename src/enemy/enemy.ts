@@ -6,7 +6,15 @@ import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
 
+export enum EnemyDirection {
+  DOWN = 0,
+  UP = 1,
+  RIGHT = 2,
+  LEFT = 3,
+}
+
 export class Enemy extends Collidable {
+  direction: EnemyDirection;
   drawX: number;
   drawY: number;
   dead: boolean;
@@ -27,6 +35,7 @@ export class Enemy extends Collidable {
     this.tileY = 0;
     this.hasShadow = true;
     this.skipNextTurns = 0;
+    this.direction = EnemyDirection.DOWN;
   }
 
   tryMove = (x: number, y: number) => {
@@ -75,6 +84,25 @@ export class Enemy extends Collidable {
     return this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF;
   };
 
+  doneMoving = (): boolean => {
+    let EPSILON = 0.01;
+    return Math.abs(this.drawX) < EPSILON && Math.abs(this.drawY) < EPSILON;
+  };
+
+  facePlayer = () => {
+    let dx = this.game.player.x - this.x;
+    let dy = this.game.player.y - this.y;
+    if (Math.abs(dx) === Math.abs(dy)) {
+      // just moved, already facing player
+    } else if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0) this.direction = EnemyDirection.RIGHT;
+      if (dx < 0) this.direction = EnemyDirection.LEFT;
+    } else {
+      if (dy > 0) this.direction = EnemyDirection.DOWN;
+      if (dy < 0) this.direction = EnemyDirection.UP;
+    }
+  };
+
   draw = () => {
     if (!this.dead) {
       this.drawX += -0.5 * this.drawX;
@@ -83,7 +111,7 @@ export class Enemy extends Collidable {
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
       Game.drawMob(
         this.tileX,
-        this.tileY,
+        this.tileY + this.direction * 2,
         1,
         2,
         this.x - this.drawX,

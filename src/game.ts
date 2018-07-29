@@ -21,7 +21,6 @@ export class Game {
   static tilesetShadow: HTMLImageElement;
   static objsetShadow: HTMLImageElement;
   static mobsetShadow: HTMLImageElement;
-  static itemsetShadow: HTMLImageElement;
 
   // [min, max] inclusive
   static rand = (min: number, max: number): number => {
@@ -60,8 +59,6 @@ export class Game {
       Game.objsetShadow.src = "res/objsetShadow.png";
       Game.mobsetShadow = new Image();
       Game.mobsetShadow.src = "res/mobsetShadow.png";
-      Game.itemsetShadow = new Image();
-      Game.itemsetShadow.src = "res/itemsetShadow.png";
 
       Sound.loadSounds();
       Sound.playMusic(); // loops forever
@@ -203,13 +200,10 @@ export class Game {
     dX: number,
     dY: number,
     dW: number,
-    dH: number,
-    shaded = false
+    dH: number
   ) => {
-    let set = Game.itemset;
-    if (shaded) set = Game.itemsetShadow;
     Game.ctx.drawImage(
-      set,
+      Game.itemset,
       sX * GameConstants.TILESIZE,
       sY * GameConstants.TILESIZE,
       sW * GameConstants.TILESIZE,

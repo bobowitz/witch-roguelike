@@ -24,10 +24,6 @@ export class Item {
     this.dead = false;
   }
 
-  isShaded = () => {
-    return this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF;
-  };
-
   draw = () => {
     Game.drawItem(0, 0, 1, 1, this.x, this.y, 1, 1);
     this.frame += (Math.PI * 2) / 60;
@@ -39,8 +35,7 @@ export class Item {
       this.x,
       this.y + Math.sin(this.frame) * 0.0625 - 1,
       this.w,
-      this.h,
-      this.isShaded()
+      this.h
     );
   };
   drawIcon = (x: number, y: number) => {
