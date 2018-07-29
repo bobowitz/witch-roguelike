@@ -2562,7 +2562,7 @@ var LevelGenerator = (function () {
         r.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         r.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         var type = level_1.RoomType.DUNGEON;
-        switch (game_1.Game.rand(1, 6)) {
+        switch (game_1.Game.rand(1, 8)) {
             case 1:
                 type = level_1.RoomType.FOUNTAIN;
                 break;
@@ -2572,11 +2572,7 @@ var LevelGenerator = (function () {
             case 3:
                 type = level_1.RoomType.TREASURE;
                 break;
-            case 6:
-                type = level_1.RoomType.PUZZLE;
-                break;
         }
-        type = level_1.RoomType.COFFIN;
         var level = new level_1.Level(this.game, r.x, r.y, r.w, r.h, type, 0, 0);
         this.game.levels.push(level);
         this.rooms.push(r);

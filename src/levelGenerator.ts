@@ -122,7 +122,7 @@ export class LevelGenerator {
     r.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
     r.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
     let type = RoomType.DUNGEON;
-    switch (Game.rand(1, 6)) {
+    switch (Game.rand(1, 8)) {
       case 1:
         type = RoomType.FOUNTAIN;
         break;
@@ -132,11 +132,7 @@ export class LevelGenerator {
       case 3:
         type = RoomType.TREASURE;
         break;
-      case 6:
-        type = RoomType.PUZZLE;
-        break;
     }
-    type = RoomType.COFFIN;
     let level = new Level(this.game, r.x, r.y, r.w, r.h, type, 0, 0);
     this.game.levels.push(level);
     this.rooms.push(r);
