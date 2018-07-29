@@ -82,7 +82,7 @@ export class WizardEnemy extends Enemy {
           break;
         case WizardState.justAttacked:
           this.tileX = 6;
-          this.state = WizardState.teleport;
+          this.state = WizardState.idle;
           break;
         case WizardState.teleport:
           let oldX = this.x;

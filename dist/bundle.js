@@ -200,6 +200,7 @@ var LevelConstants = (function () {
     LevelConstants.SCREEN_W = 17; // screen size in tiles
     LevelConstants.SCREEN_H = 17; // screen size in tiles
     LevelConstants.ENVIRONMENTS = 5;
+    LevelConstants.TURN_TIME = 1000; // milliseconds
     LevelConstants.VISIBILITY_CUTOFF = 1;
     LevelConstants.SMOOTH_LIGHTING = false;
     LevelConstants.MIN_VISIBILITY = 1; // visibility level of places you've already seen
@@ -1205,17 +1206,31 @@ var SpikeTrap = (function (_super) {
     function SpikeTrap(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
         _this.tick = function () {
-            _this.on = !_this.on;
-        };
-        _this.onCollide = function (player) {
-            if (!_this.on)
-                player.hurt(1); // player moves before tick, so we check if the spikes are off
+            _this.tickCount++;
+            if (_this.tickCount >= 4)
+                _this.tickCount = 0;
+            if (_this.tickCount === 0)
+                _this.on = true;
+            else if (_this.tickCount === 1)
+                _this.on = false;
+            if (_this.on && _this.level.game.player.x === _this.x && _this.level.game.player.y === _this.y)
+                _this.level.game.player.hurt(1);
         };
         _this.draw = function () {
             game_1.Game.drawTile(1, 0, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
         };
+        _this.t = 0;
         _this.drawUnderPlayer = function () {
-            game_1.Game.drawObj(5 + Math.floor(_this.frame), 0, 1, 2, _this.x, _this.y - 1, 1, 2, _this.isShaded());
+            var rumbleOffsetX = 0;
+            var rumbleOffsetY = 0;
+            _this.t++;
+            if (!_this.on && _this.tickCount === 3) {
+                if (_this.t % 4 === 1)
+                    rumbleOffsetX = 0.0325;
+                if (_this.t % 4 === 3)
+                    rumbleOffsetX = -0.0325;
+            }
+            game_1.Game.drawObj(5 + Math.floor(_this.frame), 0, 1, 2, _this.x + rumbleOffsetX, _this.y - 1 + rumbleOffsetY, 1, 2, _this.isShaded());
             if (_this.on && _this.frame < 3)
                 _this.frame += 0.4;
             if (!_this.on && _this.frame != 0) {
@@ -1228,6 +1243,7 @@ var SpikeTrap = (function (_super) {
                 }
             }
         };
+        _this.tickCount = 0;
         _this.on = false;
         _this.frame = 0;
         return _this;
@@ -1741,6 +1757,13 @@ var Player = (function () {
                 else if (other instanceof spike_1.Spike || other instanceof spiketrap_1.SpikeTrap) {
                     other.onCollide(_this);
                 }
+                else if (other instanceof door_1.Door || other instanceof bottomDoor_1.BottomDoor) {
+                    if (x - _this.x === 0) {
+                        _this.move(x, y);
+                        other.onCollide(_this);
+                        return;
+                    }
+                }
                 else {
                     break;
                 }
@@ -1984,13 +2007,18 @@ var Player = (function () {
                 }
             }
         };
+        this.heartbeat = function () {
+            _this.guiHeartFrame = 1;
+        };
         this.drawTopLayer = function () {
             if (!_this.dead) {
-                _this.guiHeartFrame += 1;
-                var FREQ = gameConstants_1.GameConstants.FPS * 1.5;
-                _this.guiHeartFrame %= FREQ;
+                if (_this.guiHeartFrame > 0)
+                    _this.guiHeartFrame++;
+                if (_this.guiHeartFrame > 5) {
+                    _this.guiHeartFrame = 0;
+                }
                 for (var i = 0; i < _this.health; i++) {
-                    var frame = (_this.guiHeartFrame + FREQ) % FREQ >= FREQ - 4 ? 1 : 0;
+                    var frame = _this.guiHeartFrame > 0 ? 1 : 0;
                     game_1.Game.drawFX(frame, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
                 }
                 if (_this.armor)
@@ -2575,6 +2603,25 @@ var LevelGenerator = (function () {
             }
             return true;
         };
+        this.pickType = function (r) {
+            var type = level_1.RoomType.DUNGEON;
+            switch (game_1.Game.rand(1, 12)) {
+                case 1:
+                    type = level_1.RoomType.FOUNTAIN;
+                    if (r.h <= 5)
+                        type = _this.pickType(r);
+                    break;
+                case 2:
+                    type = level_1.RoomType.COFFIN;
+                    if (r.w <= 5)
+                        type = _this.pickType(r);
+                    break;
+                case 3:
+                    type = level_1.RoomType.TREASURE;
+                    break;
+            }
+            return type;
+        };
         this.addRooms = function () {
             for (var i = 0; i < _this.rooms.length; i++) {
                 if (!_this.rooms[i].doneAdding) {
@@ -2589,7 +2636,8 @@ var LevelGenerator = (function () {
                             var newLevelDoorDir = r.generateAroundPoint(points[ind], ind, _this.rooms[i]);
                             if (_this.noCollisions(r)) {
                                 // TODO: trapdoors
-                                var level = new level_1.Level(_this.game, r.x, r.y, r.w, r.h, level_1.RoomType.DUNGEON, 0, 0);
+                                var type = _this.pickType(r);
+                                var level = new level_1.Level(_this.game, r.x, r.y, r.w, r.h, type, 0, 0);
                                 _this.game.levels.push(level);
                                 var newDoor = level.addDoor(newLevelDoorDir, null);
                                 _this.rooms[i].doors[ind] = _this.game.levels[i].addDoor(ind, newDoor);
@@ -2612,18 +2660,7 @@ var LevelGenerator = (function () {
         r.y = 128;
         r.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         r.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-        var type = level_1.RoomType.DUNGEON;
-        switch (game_1.Game.rand(1, 8)) {
-            case 1:
-                type = level_1.RoomType.FOUNTAIN;
-                break;
-            case 2:
-                type = level_1.RoomType.COFFIN;
-                break;
-            case 3:
-                type = level_1.RoomType.TREASURE;
-                break;
-        }
+        var type = this.pickType(r);
         var level = new level_1.Level(this.game, r.x, r.y, r.w, r.h, type, 0, 0);
         this.game.levels.push(level);
         this.rooms.push(r);
@@ -2692,7 +2729,7 @@ var Level = (function () {
             _this.fixWalls();
             _this.addSpikes(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
-            _this.addEnemies(Math.floor(numEmptyTiles * game_1.Game.randTable([0, 0.08, 0.1, 0.14])) // 0.25, 0.2, 0.3, 0.5
+            _this.addEnemies(Math.floor(numEmptyTiles * game_1.Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])) // 0.25, 0.2, 0.3, 0.5
             );
             _this.addObstacles(game_1.Game.randTable([0, 0, 1, 1, 2, 3, 5]));
         };
@@ -2726,7 +2763,7 @@ var Level = (function () {
         this.generateTreasure = function () {
             _this.addWallBlocks();
             _this.fixWalls();
-            _this.addChests(game_1.Game.randTable([2, 2, 3, 3, 3, 3, 4, 4, 5]));
+            _this.addChests(game_1.Game.randTable([2, 4, 4, 5, 5, 6, 7, 8]));
         };
         this.generateChessboard = function () {
             _this.fixWalls();
@@ -2924,16 +2961,16 @@ var Level = (function () {
             _this.enemies = _this.enemies.filter(function (e) { return !e.dead; });
             _this.updateLighting();
             _this.turn = TurnState.computerTurn;
-            _this.turnStartTime = Date.now();
+            Level.turnStartTime = Date.now();
         };
         this.update = function () {
-            var TURN_TIME = 500;
             if (_this.turn == TurnState.computerTurn) {
                 if (_this.game.player.doneMoving()) {
                     _this.computerTurn();
                 }
             }
-            if (Date.now() - _this.turnStartTime >= TURN_TIME) {
+            if (Date.now() - Level.turnStartTime >= levelConstants_1.LevelConstants.TURN_TIME) {
+                _this.game.player.heartbeat();
                 _this.tick();
             }
         };
@@ -3039,6 +3076,25 @@ var Level = (function () {
             // room name
             game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
             game_1.Game.ctx.fillText(_this.name, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(_this.name).width / 2, (_this.roomY - 1) * gameConstants_1.GameConstants.TILESIZE - (gameConstants_1.GameConstants.FONT_SIZE - 1));
+            var timeFraction = (levelConstants_1.LevelConstants.TURN_TIME - (Date.now() - Level.turnStartTime)) / levelConstants_1.LevelConstants.TURN_TIME;
+            var cX = (_this.game.player.health + (_this.game.player.armor ? 1 : 0) + 0.4) * gameConstants_1.GameConstants.TILESIZE;
+            var cY = gameConstants_1.GameConstants.HEIGHT - gameConstants_1.GameConstants.TILESIZE / 2;
+            var dX = gameConstants_1.GameConstants.TILESIZE * 0.45 * -Math.sin(timeFraction * Math.PI * 2);
+            var dY = gameConstants_1.GameConstants.TILESIZE * 0.45 * -Math.cos(timeFraction * Math.PI * 2);
+            game_1.Game.ctx.strokeStyle = gameConstants_1.GameConstants.RED;
+            game_1.Game.ctx.fill;
+            game_1.Game.ctx.beginPath();
+            game_1.Game.ctx.moveTo(cX, cY);
+            game_1.Game.ctx.lineTo(cX, cY - gameConstants_1.GameConstants.TILESIZE * 0.45);
+            game_1.Game.ctx.stroke();
+            game_1.Game.ctx.strokeStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
+            game_1.Game.ctx.beginPath();
+            game_1.Game.ctx.moveTo(cX, cY);
+            game_1.Game.ctx.lineTo(cX + dX, cY + dY);
+            game_1.Game.ctx.stroke();
+            game_1.Game.ctx.beginPath();
+            game_1.Game.ctx.arc(cX, cY, 1, 0, Math.PI * 2);
+            game_1.Game.ctx.stroke();
         };
         this.difficulty = difficulty;
         this.x = x;
@@ -3093,7 +3149,7 @@ var Level = (function () {
                 break;
         }
         this.name = ""; // + RoomType[this.type];
-        this.turnStartTime = Date.now();
+        Level.turnStartTime = Date.now();
     }
     Level.prototype.pointInside = function (x, y, rX, rY, rW, rH) {
         if (x < rX || x >= rX + rW)
@@ -3580,7 +3636,7 @@ var WizardEnemy = (function (_super) {
                         break;
                     case WizardState.justAttacked:
                         _this.tileX = 6;
-                        _this.state = WizardState.teleport;
+                        _this.state = WizardState.idle;
                         break;
                     case WizardState.teleport:
                         var oldX = _this.x;
@@ -3712,13 +3768,13 @@ var WizardFireball = (function (_super) {
             if (_this.parent.dead)
                 _this.dead = true;
             _this.state++;
-            if (_this.state === 1) {
+            if (_this.state === 2) {
                 _this.frame = 0;
                 _this.delay = game_1.Game.rand(0, 10);
             }
         };
         _this.hitPlayer = function (player) {
-            if (_this.state === 1 && !_this.dead) {
+            if (_this.state === 2 && !_this.dead) {
                 player.hurt(1);
             }
         };
@@ -3727,7 +3783,13 @@ var WizardFireball = (function (_super) {
                 _this.frame += 0.25;
                 if (_this.frame >= 4)
                     _this.frame = 0;
-                game_1.Game.drawFX(18 + Math.floor(_this.frame), 6, 1, 2, _this.x, _this.y - 1, 1, 2);
+                game_1.Game.drawFX(22 + Math.floor(_this.frame), 6, 1, 2, _this.x, _this.y - 1, 1, 2);
+            }
+            else if (_this.state === 1) {
+                _this.frame += 0.25;
+                if (_this.frame >= 4)
+                    _this.frame = 0;
+                game_1.Game.drawFX(18 + Math.floor(_this.frame), 7, 1, 1, _this.x, _this.y, 1, 1);
             }
             else {
                 if (_this.delay > 0) {

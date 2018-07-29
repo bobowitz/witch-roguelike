@@ -19,14 +19,14 @@ export class WizardFireball extends Projectile {
   tick = () => {
     if (this.parent.dead) this.dead = true;
     this.state++;
-    if (this.state === 1) {
+    if (this.state === 2) {
       this.frame = 0;
       this.delay = Game.rand(0, 10);
     }
   };
 
   hitPlayer = (player: Player) => {
-    if (this.state === 1 && !this.dead) {
+    if (this.state === 2 && !this.dead) {
       player.hurt(1);
     }
   };
@@ -35,7 +35,11 @@ export class WizardFireball extends Projectile {
     if (this.state === 0) {
       this.frame += 0.25;
       if (this.frame >= 4) this.frame = 0;
-      Game.drawFX(18 + Math.floor(this.frame), 6, 1, 2, this.x, this.y - 1, 1, 2);
+      Game.drawFX(22 + Math.floor(this.frame), 6, 1, 2, this.x, this.y - 1, 1, 2);
+    } else if (this.state === 1) {
+      this.frame += 0.25;
+      if (this.frame >= 4) this.frame = 0;
+      Game.drawFX(18 + Math.floor(this.frame), 7, 1, 1, this.x, this.y, 1, 1);
     } else {
       if (this.delay > 0) {
         this.delay--;

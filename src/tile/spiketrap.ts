@@ -7,28 +7,51 @@ import { LevelConstants } from "../levelConstants";
 
 export class SpikeTrap extends TickCollidable {
   on: boolean;
+  tickCount: number;
   frame: number;
 
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
+    this.tickCount = 0;
     this.on = false;
     this.frame = 0;
   }
 
   tick = () => {
-    this.on = !this.on;
-  };
+    this.tickCount++;
+    if (this.tickCount >= 4) this.tickCount = 0;
+    if (this.tickCount === 0) this.on = true;
+    else if (this.tickCount === 1) this.on = false;
 
-  onCollide = (player: Player) => {
-    if (!this.on) player.hurt(1); // player moves before tick, so we check if the spikes are off
+    if (this.on && this.level.game.player.x === this.x && this.level.game.player.y === this.y)
+      this.level.game.player.hurt(1);
   };
 
   draw = () => {
     Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 
+  t = 0;
+
   drawUnderPlayer = () => {
-    Game.drawObj(5 + Math.floor(this.frame), 0, 1, 2, this.x, this.y - 1, 1, 2, this.isShaded());
+    let rumbleOffsetX = 0;
+    let rumbleOffsetY = 0;
+    this.t++;
+    if (!this.on && this.tickCount === 3) {
+      if (this.t % 4 === 1) rumbleOffsetX = 0.0325;
+      if (this.t % 4 === 3) rumbleOffsetX = -0.0325;
+    }
+    Game.drawObj(
+      5 + Math.floor(this.frame),
+      0,
+      1,
+      2,
+      this.x + rumbleOffsetX,
+      this.y - 1 + rumbleOffsetY,
+      1,
+      2,
+      this.isShaded()
+    );
     if (this.on && this.frame < 3) this.frame += 0.4;
     if (!this.on && this.frame != 0) {
       if (this.frame < 3 && this.frame + 0.4 >= 3) this.frame = 0;

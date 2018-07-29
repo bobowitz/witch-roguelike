@@ -70,7 +70,7 @@ export class Level {
   difficulty: number;
   name: string;
   turn: TurnState;
-  turnStartTime: number; // in milliseconds
+  static turnStartTime: number; // in milliseconds
 
   private pointInside(
     x: number,
@@ -339,7 +339,7 @@ export class Level {
     this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
-      Math.floor(numEmptyTiles * Game.randTable([0, 0.08, 0.1, 0.14])) // 0.25, 0.2, 0.3, 0.5
+      Math.floor(numEmptyTiles * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])) // 0.25, 0.2, 0.3, 0.5
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
   };
@@ -395,7 +395,7 @@ export class Level {
     this.addWallBlocks();
     this.fixWalls();
 
-    this.addChests(Game.randTable([2, 2, 3, 3, 3, 3, 4, 4, 5]));
+    this.addChests(Game.randTable([2, 4, 4, 5, 5, 6, 7, 8]));
   };
   generateChessboard = () => {
     this.fixWalls();
@@ -474,7 +474,7 @@ export class Level {
     }
     this.name = ""; // + RoomType[this.type];
 
-    this.turnStartTime = Date.now();
+    Level.turnStartTime = Date.now();
   }
 
   addDoor = (location: number, link: any) => {
@@ -698,18 +698,17 @@ export class Level {
 
     this.turn = TurnState.computerTurn;
 
-    this.turnStartTime = Date.now();
+    Level.turnStartTime = Date.now();
   };
 
   update = () => {
-    let TURN_TIME = 500;
-
     if (this.turn == TurnState.computerTurn) {
       if (this.game.player.doneMoving()) {
         this.computerTurn();
       }
     }
-    if (Date.now() - this.turnStartTime >= TURN_TIME) {
+    if (Date.now() - Level.turnStartTime >= LevelConstants.TURN_TIME) {
+      this.game.player.heartbeat();
       this.tick();
     }
   };
@@ -818,5 +817,28 @@ export class Level {
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
       (this.roomY - 1) * GameConstants.TILESIZE - (GameConstants.FONT_SIZE - 1)
     );
+
+    let timeFraction =
+      (LevelConstants.TURN_TIME - (Date.now() - Level.turnStartTime)) / LevelConstants.TURN_TIME;
+    let cX =
+      (this.game.player.health + (this.game.player.armor ? 1 : 0) + 0.4) * GameConstants.TILESIZE;
+    let cY = GameConstants.HEIGHT - GameConstants.TILESIZE / 2;
+    let dX = GameConstants.TILESIZE * 0.45 * -Math.sin(timeFraction * Math.PI * 2);
+    let dY = GameConstants.TILESIZE * 0.45 * -Math.cos(timeFraction * Math.PI * 2);
+    Game.ctx.strokeStyle = GameConstants.RED;
+    Game.ctx.fill;
+    Game.ctx.beginPath();
+    Game.ctx.moveTo(cX, cY);
+    Game.ctx.lineTo(cX, cY - GameConstants.TILESIZE * 0.45);
+    Game.ctx.stroke();
+
+    Game.ctx.strokeStyle = LevelConstants.LEVEL_TEXT_COLOR;
+    Game.ctx.beginPath();
+    Game.ctx.moveTo(cX, cY);
+    Game.ctx.lineTo(cX + dX, cY + dY);
+    Game.ctx.stroke();
+    Game.ctx.beginPath();
+    Game.ctx.arc(cX, cY, 1, 0, Math.PI * 2);
+    Game.ctx.stroke();
   };
 }

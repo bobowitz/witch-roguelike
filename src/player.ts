@@ -145,6 +145,12 @@ export class Player {
       if (other === null) {
       } else if (other instanceof Spike || other instanceof SpikeTrap) {
         other.onCollide(this);
+      } else if (other instanceof Door || other instanceof BottomDoor) {
+        if (x - this.x === 0) {
+          this.move(x, y);
+          other.onCollide(this);
+          return;
+        }
       } else {
         break;
       }
@@ -399,13 +405,18 @@ export class Player {
     }
   };
 
+  heartbeat = () => {
+    this.guiHeartFrame = 1;
+  };
+
   drawTopLayer = () => {
     if (!this.dead) {
-      this.guiHeartFrame += 1;
-      let FREQ = GameConstants.FPS * 1.5;
-      this.guiHeartFrame %= FREQ;
+      if (this.guiHeartFrame > 0) this.guiHeartFrame++;
+      if (this.guiHeartFrame > 5) {
+        this.guiHeartFrame = 0;
+      }
       for (let i = 0; i < this.health; i++) {
-        let frame = (this.guiHeartFrame + FREQ) % FREQ >= FREQ - 4 ? 1 : 0;
+        let frame = this.guiHeartFrame > 0 ? 1 : 0;
         Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
       }
       if (this.armor) this.armor.drawGUI(this.health);
