@@ -255,7 +255,7 @@ var levelConstants_1 = __webpack_require__(1);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.1.1";
+    GameConstants.VERSION = "v0.1.2";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -1676,7 +1676,6 @@ var sound_1 = __webpack_require__(8);
 var spike_1 = __webpack_require__(32);
 var textParticle_1 = __webpack_require__(16);
 var dashParticle_1 = __webpack_require__(33);
-var armor_1 = __webpack_require__(38);
 var levelConstants_1 = __webpack_require__(1);
 var pickup_1 = __webpack_require__(9);
 var crate_1 = __webpack_require__(17);
@@ -2057,7 +2056,7 @@ var Player = (function () {
         this.equipped = Array();
         this.inventory = new inventory_1.Inventory(game);
         this.missProb = 0.1;
-        this.armor = new armor_1.Armor(this.game, 0, 0);
+        this.armor = null;
         this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
     }
     return Player;

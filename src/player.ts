@@ -86,7 +86,7 @@ export class Player {
 
     this.missProb = 0.1;
 
-    this.armor = new Armor(this.game, 0, 0);
+    this.armor = null;
 
     this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
   }
