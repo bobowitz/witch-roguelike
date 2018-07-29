@@ -272,20 +272,17 @@ export class Level {
 
   private addChests(): number {
     // add chests
+    let tiles = this.getEmptyTiles();
     let numChests = Game.rand(1, 8);
     if (numChests === 1) {
       numChests = Game.randTable([0, 1, 1, 2, 3, 4, 5, 6]);
     } else numChests = 0;
     for (let i = 0; i < numChests; i++) {
-      let x = 0;
-      let y = 0;
-      while (
-        !(this.getTile(x, y) instanceof Floor) ||
-        this.enemies.filter(e => e.x === x && e.y === y).length > 0 // don't overlap other enemies!
-      ) {
-        x = Game.rand(this.roomX, this.roomX + this.width - 1);
-        y = Game.rand(this.roomY + 2, this.roomY + this.height - 2);
-      }
+      let t, x, y;
+      if (tiles.length == 0) return;
+      t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      x = t.x;
+      y = t.y;
       this.enemies.push(new Chest(this, this.game, x, y));
     }
 
@@ -294,17 +291,17 @@ export class Level {
 
   private addSpikes(): number {
     // add spikes
-    let numSpikes = 1; //Game.rand(1, 10);
+    let tiles = this.getEmptyTiles();
+    let numSpikes = Game.rand(1, 10);
     if (numSpikes === 1) {
       numSpikes = Game.randTable([1, 1, 1, 1, 2, 3]);
     } else numSpikes = 0;
     for (let i = 0; i < numSpikes; i++) {
-      let x = 0;
-      let y = 0;
-      while (!(this.getTile(x, y) instanceof Floor)) {
-        x = Game.rand(this.roomX, this.roomX + this.width - 1);
-        y = Game.rand(this.roomY + 2, this.roomY + this.height - 2);
-      }
+      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      if (tiles.length == 0) return;
+      let x = t.x;
+      let y = t.y;
+
       this.levelArray[x][y] = new SpikeTrap(this, x, y);
     }
 
@@ -312,20 +309,13 @@ export class Level {
   }
 
   private addEnemies(): number {
-    let numEnemies = (this.getEmptyTiles().length - this.width * 2) / 16;
+    let tiles = this.getEmptyTiles();
+    let numEnemies = Math.floor(tiles.length / 16);
     for (let i = 0; i < numEnemies; i++) {
-      let x = 0;
-      let y = 0;
-      let tries = 0;
-      while (
-        !(this.getTile(x, y) instanceof Floor) ||
-        this.enemies.some(e => e.x === x && e.y === y) // don't overlap other enemies!
-      ) {
-        x = Game.rand(this.roomX, this.roomX + this.width - 1);
-        y = Game.rand(this.roomY + 2, this.roomY + this.height - 2);
-        tries++;
-        if (tries > 100) return;
-      }
+      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      if (tiles.length == 0) return;
+      let x = t.x;
+      let y = t.y;
       switch (Game.rand(1, 3)) {
         case 1:
           this.enemies.push(new KnightEnemy(this, this.game, x, y));
@@ -344,20 +334,16 @@ export class Level {
 
   private addObstacles(): number {
     // add crates/barrels
+    let tiles = this.getEmptyTiles();
     let numObstacles = Game.rand(1, 2);
     if (numObstacles === 1 || this.width * this.height > 8 * 8) {
       numObstacles = Game.randTable([1, 1, 1, 2, 2, 3, 3]);
     } else numObstacles = 0;
     for (let i = 0; i < numObstacles; i++) {
-      let x = 0;
-      let y = 0;
-      while (
-        !(this.getTile(x, y) instanceof Floor) ||
-        this.enemies.filter(e => e.x === x && e.y === y).length > 0 // don't overlap other enemies!
-      ) {
-        x = Game.rand(this.roomX, this.roomX + this.width - 1);
-        y = Game.rand(this.roomY + 2, this.roomY + this.height - 2);
-      }
+      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      if (tiles.length == 0) return;
+      let x = t.x;
+      let y = t.y;
       switch (Game.rand(1, 2)) {
         case 1:
           this.enemies.push(new Crate(this, this.game, x, y));
@@ -446,11 +432,10 @@ export class Level {
       numObstacles = 0;
     /* add trapdoors back in after we figure out how they're gonna work */
     numTrapdoors = 0; // this.addTrapdoors();
-    //numChests = this.addChests();
-    //numSpikes = this.addSpikes();
-    //numEnemies = this.addEnemies();
-    //numObstacles = this.addObstacles();
-    this.getEmptyTiles();
+    numChests = this.addChests();
+    numSpikes = this.addSpikes();
+    numEnemies = this.addEnemies();
+    numObstacles = this.addObstacles();
     this.classify(numTrapdoors, numChests, numEnemies, type);
   }
 
@@ -570,11 +555,12 @@ export class Level {
     for (let x = this.roomX; x < this.roomX + this.width; x++) {
       for (let y = this.roomY + 2; y < this.roomY + this.height - 1; y++) {
         if (this.getCollidable(x, y) === null) {
-          if (this.levelArray[x][y] instanceof Floor)
-            (this.levelArray[x][y] as Floor).highlight = true;
           returnVal.push(this.levelArray[x][y]);
         }
       }
+    }
+    for (const e of this.enemies) {
+      returnVal = returnVal.filter(t => t.x !== e.x || t.y !== e.y);
     }
     return returnVal;
   };
@@ -696,7 +682,6 @@ export class Level {
   };
 
   tick = () => {
-    console.log(this.game.player.x, this.game.player.y, this);
     if (this.turn === TurnState.computerTurn) this.computerTurn(); // player skipped computer's turn, catch up
 
     for (let x = 0; x < this.levelArray.length; x++) {

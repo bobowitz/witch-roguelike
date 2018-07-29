@@ -3,7 +3,7 @@ import { Level, RoomType } from "./level";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 
-let ROOM_SIZE = [5, 5, 5, 5, 5, 7, 7, 7, 9, 9, 11, 13];
+let ROOM_SIZE = [5, 5, 5, 7, 7, 7, 9, 9, 11, 13];
 
 class Room {
   x: number;
@@ -125,7 +125,6 @@ export class LevelGenerator {
     this.rooms.push(r);
 
     while (this.rooms.length < this.MAX_ROOMS) {
-      console.log("adding rooms...");
       this.addRooms();
     }
 

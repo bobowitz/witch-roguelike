@@ -19,6 +19,6 @@ export class LockedDoor extends Collidable {
   };
 
   draw = () => {
-    Game.drawTile(16, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(17, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
   };
 }

@@ -3,8 +3,6 @@ BUGS
 ****
 
 Dashing doesn't show armor on trail
-SideWall can spawn in front of a Door
-Randomly placed objects run out of room, generator hangs
 
 ***********
 NEEDS JUICE
@@ -20,6 +18,8 @@ opening doors
 TODO
 ****
 
+room transitions
+room types
 ripple effect ground smash
 mages have a rare drop (or boss drop): spell item, lets you use spell
 progression

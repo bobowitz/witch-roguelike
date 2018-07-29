@@ -73,7 +73,7 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 300;
+    this.health = 3;
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
