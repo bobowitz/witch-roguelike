@@ -70,6 +70,7 @@ export class Level {
   difficulty: number;
   name: string;
   turn: TurnState;
+  turnStartTime: number; // in milliseconds
 
   private pointInside(
     x: number,
@@ -338,7 +339,7 @@ export class Level {
     this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
-      Math.floor(numEmptyTiles * Game.randTable([0, 0.1, 0.15, 0.2, 0.25, 0.2, 0.3, 0.5]))
+      Math.floor(numEmptyTiles * Game.randTable([0, 0.08, 0.1, 0.14])) // 0.25, 0.2, 0.3, 0.5
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
   };
@@ -471,7 +472,9 @@ export class Level {
         this.generateKeyRoom();
         break;
     }
-    this.name = "" + RoomType[this.type];
+    this.name = ""; // + RoomType[this.type];
+
+    this.turnStartTime = Date.now();
   }
 
   addDoor = (location: number, link: any) => {
@@ -694,13 +697,20 @@ export class Level {
     this.updateLighting();
 
     this.turn = TurnState.computerTurn;
+
+    this.turnStartTime = Date.now();
   };
 
   update = () => {
+    let TURN_TIME = 500;
+
     if (this.turn == TurnState.computerTurn) {
       if (this.game.player.doneMoving()) {
         this.computerTurn();
       }
+    }
+    if (Date.now() - this.turnStartTime >= TURN_TIME) {
+      this.tick();
     }
   };
 

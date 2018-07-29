@@ -254,7 +254,7 @@ var levelConstants_1 = __webpack_require__(1);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.1.0";
+    GameConstants.VERSION = "v0.1.1";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -2692,7 +2692,8 @@ var Level = (function () {
             _this.fixWalls();
             _this.addSpikes(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
-            _this.addEnemies(Math.floor(numEmptyTiles * game_1.Game.randTable([0, 0.1, 0.15, 0.2, 0.25, 0.2, 0.3, 0.5])));
+            _this.addEnemies(Math.floor(numEmptyTiles * game_1.Game.randTable([0, 0.08, 0.1, 0.14])) // 0.25, 0.2, 0.3, 0.5
+            );
             _this.addObstacles(game_1.Game.randTable([0, 0, 1, 1, 2, 3, 5]));
         };
         this.generateKeyRoom = function () {
@@ -2923,12 +2924,17 @@ var Level = (function () {
             _this.enemies = _this.enemies.filter(function (e) { return !e.dead; });
             _this.updateLighting();
             _this.turn = TurnState.computerTurn;
+            _this.turnStartTime = Date.now();
         };
         this.update = function () {
+            var TURN_TIME = 500;
             if (_this.turn == TurnState.computerTurn) {
                 if (_this.game.player.doneMoving()) {
                     _this.computerTurn();
                 }
+            }
+            if (Date.now() - _this.turnStartTime >= TURN_TIME) {
+                _this.tick();
             }
         };
         this.computerTurn = function () {
@@ -3086,7 +3092,8 @@ var Level = (function () {
                 this.generateKeyRoom();
                 break;
         }
-        this.name = "" + RoomType[this.type];
+        this.name = ""; // + RoomType[this.type];
+        this.turnStartTime = Date.now();
     }
     Level.prototype.pointInside = function (x, y, rX, rY, rW, rH) {
         if (x < rX || x >= rX + rW)
