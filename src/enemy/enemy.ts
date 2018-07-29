@@ -15,7 +15,6 @@ export class Enemy extends Collidable {
   tileX: number;
   tileY: number;
   hasShadow: boolean;
-  hasDarkVersion: boolean;
   skipNextTurns: number;
 
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -27,7 +26,6 @@ export class Enemy extends Collidable {
     this.tileX = 0;
     this.tileY = 0;
     this.hasShadow = true;
-    this.hasDarkVersion = true;
     this.skipNextTurns = 0;
   }
 
@@ -73,25 +71,26 @@ export class Enemy extends Collidable {
     this.level.particles.push(new DeathParticle(this.x, this.y));
   };
 
+  isShaded = () => {
+    return this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF;
+  };
+
   draw = () => {
     if (!this.dead) {
-      let darkOffset =
-        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF &&
-        this.hasDarkVersion
-          ? 2
-          : 0;
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      if (this.hasShadow) Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+      if (this.hasShadow)
+        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
       Game.drawMob(
         this.tileX,
-        this.tileY + darkOffset,
+        this.tileY,
         1,
         2,
         this.x - this.drawX,
         this.y - 1.5 - this.drawY,
         1,
-        2
+        2,
+        this.isShaded()
       );
     }
   };

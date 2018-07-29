@@ -13,10 +13,15 @@ export class Game {
   levelgen: LevelGenerator;
   player: Player;
   static tileset: HTMLImageElement;
+  static objset: HTMLImageElement;
   static mobset: HTMLImageElement;
   static itemset: HTMLImageElement;
   static fxset: HTMLImageElement;
   static inventory: HTMLImageElement;
+  static tilesetShadow: HTMLImageElement;
+  static objsetShadow: HTMLImageElement;
+  static mobsetShadow: HTMLImageElement;
+  static itemsetShadow: HTMLImageElement;
 
   // [min, max] inclusive
   static rand = (min: number, max: number): number => {
@@ -39,6 +44,8 @@ export class Game {
 
       Game.tileset = new Image();
       Game.tileset.src = "res/tileset.png";
+      Game.objset = new Image();
+      Game.objset.src = "res/objset.png";
       Game.mobset = new Image();
       Game.mobset.src = "res/mobset.png";
       Game.itemset = new Image();
@@ -47,6 +54,14 @@ export class Game {
       Game.fxset.src = "res/fxset.png";
       Game.inventory = new Image();
       Game.inventory.src = "res/inv.png";
+      Game.tilesetShadow = new Image();
+      Game.tilesetShadow.src = "res/tilesetShadow.png";
+      Game.objsetShadow = new Image();
+      Game.objsetShadow.src = "res/objsetShadow.png";
+      Game.mobsetShadow = new Image();
+      Game.mobsetShadow.src = "res/mobsetShadow.png";
+      Game.itemsetShadow = new Image();
+      Game.itemsetShadow.src = "res/itemsetShadow.png";
 
       Sound.loadSounds();
       Sound.playMusic(); // loops forever
@@ -110,10 +125,39 @@ export class Game {
     dX: number,
     dY: number,
     dW: number,
-    dH: number
+    dH: number,
+    shaded = false
   ) => {
+    let set = Game.tileset;
+    if (shaded) set = Game.tilesetShadow;
     Game.ctx.drawImage(
-      Game.tileset,
+      set,
+      sX * GameConstants.TILESIZE,
+      sY * GameConstants.TILESIZE,
+      sW * GameConstants.TILESIZE,
+      sH * GameConstants.TILESIZE,
+      dX * GameConstants.TILESIZE,
+      dY * GameConstants.TILESIZE,
+      dW * GameConstants.TILESIZE,
+      dH * GameConstants.TILESIZE
+    );
+  };
+
+  static drawObj = (
+    sX: number,
+    sY: number,
+    sW: number,
+    sH: number,
+    dX: number,
+    dY: number,
+    dW: number,
+    dH: number,
+    shaded = false
+  ) => {
+    let set = Game.objset;
+    if (shaded) set = Game.objsetShadow;
+    Game.ctx.drawImage(
+      set,
       sX * GameConstants.TILESIZE,
       sY * GameConstants.TILESIZE,
       sW * GameConstants.TILESIZE,
@@ -133,10 +177,13 @@ export class Game {
     dX: number,
     dY: number,
     dW: number,
-    dH: number
+    dH: number,
+    shaded = false
   ) => {
+    let set = Game.mobset;
+    if (shaded) set = Game.mobsetShadow;
     Game.ctx.drawImage(
-      Game.mobset,
+      set,
       sX * GameConstants.TILESIZE,
       sY * GameConstants.TILESIZE,
       sW * GameConstants.TILESIZE,
@@ -156,10 +203,13 @@ export class Game {
     dX: number,
     dY: number,
     dW: number,
-    dH: number
+    dH: number,
+    shaded = false
   ) => {
+    let set = Game.itemset;
+    if (shaded) set = Game.itemsetShadow;
     Game.ctx.drawImage(
-      Game.itemset,
+      set,
       sX * GameConstants.TILESIZE,
       sY * GameConstants.TILESIZE,
       sW * GameConstants.TILESIZE,

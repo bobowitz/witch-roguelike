@@ -12,7 +12,7 @@ export class Chest extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
 
-    this.tileX = 17;
+    this.tileX = 4;
     this.tileY = 0;
     this.health = 1;
   }
@@ -38,17 +38,16 @@ export class Chest extends Enemy {
 
   draw = () => {
     if (!this.dead) {
-      let darkOffset =
-        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
-      Game.drawMob(
+      Game.drawObj(
         this.tileX,
-        this.tileY + darkOffset,
+        this.tileY,
         1,
         2,
         this.x - this.drawX,
         this.y - 1 - this.drawY,
         1,
-        2
+        2,
+        this.isShaded()
       );
     }
   };

@@ -728,49 +728,21 @@ export class Level {
     this.turn = TurnState.playerTurn; // now it's the player's turn
   };
 
-  nextLevelRendering = () => {
-    for (const door of this.doors) {
-      if (door instanceof Door) {
-        Game.ctx.translate(door.x - door.linkedDoor.x, door.y - door.linkedDoor.y);
-      } else {
-        Game.ctx.translate(door.x - door.linkedDoor.x, door.y - door.linkedDoor.y);
-      }
-
-      door.level.draw();
-
-      if (door instanceof Door) {
-        Game.ctx.translate(-door.x + door.linkedDoor.x, -door.y + door.linkedDoor.y);
-      } else {
-        Game.ctx.translate(-door.x + door.linkedDoor.x, -door.y + door.linkedDoor.y);
-      }
-    }
-  };
-
   draw = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
         if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].draw();
 
         // fill in shadows too
-        switch (this.visibilityArray[x][y]) {
-          case 0:
-            Game.ctx.globalAlpha = 1;
-            break;
-          case 1:
-            Game.ctx.globalAlpha = 0.6;
-            break;
-          case 2:
-            Game.ctx.globalAlpha = 0;
-            break;
+        if (this.visibilityArray[x][y] === 0) {
+          Game.ctx.fillStyle = "black";
+          Game.ctx.fillRect(
+            x * GameConstants.TILESIZE,
+            y * GameConstants.TILESIZE,
+            GameConstants.TILESIZE,
+            GameConstants.TILESIZE
+          );
         }
-        Game.ctx.fillStyle = "black";
-        Game.ctx.fillRect(
-          x * GameConstants.TILESIZE,
-          y * GameConstants.TILESIZE,
-          GameConstants.TILESIZE,
-          GameConstants.TILESIZE
-        );
-        Game.ctx.globalAlpha = 1;
       }
     }
   };

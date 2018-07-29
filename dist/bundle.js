@@ -115,6 +115,8 @@ var Game = (function () {
             Game.ctx.textBaseline = "top";
             Game.tileset = new Image();
             Game.tileset.src = "res/tileset.png";
+            Game.objset = new Image();
+            Game.objset.src = "res/objset.png";
             Game.mobset = new Image();
             Game.mobset.src = "res/mobset.png";
             Game.itemset = new Image();
@@ -123,6 +125,14 @@ var Game = (function () {
             Game.fxset.src = "res/fxset.png";
             Game.inventory = new Image();
             Game.inventory.src = "res/inv.png";
+            Game.tilesetShadow = new Image();
+            Game.tilesetShadow.src = "res/tilesetShadow.png";
+            Game.objsetShadow = new Image();
+            Game.objsetShadow.src = "res/objsetShadow.png";
+            Game.mobsetShadow = new Image();
+            Game.mobsetShadow.src = "res/mobsetShadow.png";
+            Game.itemsetShadow = new Image();
+            Game.itemsetShadow.src = "res/itemsetShadow.png";
             sound_1.Sound.loadSounds();
             sound_1.Sound.playMusic(); // loops forever
             _this.player = new player_1.Player(_this, 0, 0);
@@ -142,14 +152,33 @@ var Game = (function () {
     Game.randTable = function (table) {
         return table[Game.rand(0, table.length - 1)];
     };
-    Game.drawTile = function (sX, sY, sW, sH, dX, dY, dW, dH) {
-        Game.ctx.drawImage(Game.tileset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+    Game.drawTile = function (sX, sY, sW, sH, dX, dY, dW, dH, shaded) {
+        if (shaded === void 0) { shaded = false; }
+        var set = Game.tileset;
+        if (shaded)
+            set = Game.tilesetShadow;
+        Game.ctx.drawImage(set, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
-    Game.drawMob = function (sX, sY, sW, sH, dX, dY, dW, dH) {
-        Game.ctx.drawImage(Game.mobset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+    Game.drawObj = function (sX, sY, sW, sH, dX, dY, dW, dH, shaded) {
+        if (shaded === void 0) { shaded = false; }
+        var set = Game.objset;
+        if (shaded)
+            set = Game.objsetShadow;
+        Game.ctx.drawImage(set, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
-    Game.drawItem = function (sX, sY, sW, sH, dX, dY, dW, dH) {
-        Game.ctx.drawImage(Game.itemset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+    Game.drawMob = function (sX, sY, sW, sH, dX, dY, dW, dH, shaded) {
+        if (shaded === void 0) { shaded = false; }
+        var set = Game.mobset;
+        if (shaded)
+            set = Game.mobsetShadow;
+        Game.ctx.drawImage(set, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
+    };
+    Game.drawItem = function (sX, sY, sW, sH, dX, dY, dW, dH, shaded) {
+        if (shaded === void 0) { shaded = false; }
+        var set = Game.itemset;
+        if (shaded)
+            set = Game.itemsetShadow;
+        Game.ctx.drawImage(set, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
     };
     Game.drawFX = function (sX, sY, sW, sH, dX, dY, dW, dH) {
         Game.ctx.drawImage(Game.fxset, sX * gameConstants_1.GameConstants.TILESIZE, sY * gameConstants_1.GameConstants.TILESIZE, sW * gameConstants_1.GameConstants.TILESIZE, sH * gameConstants_1.GameConstants.TILESIZE, dX * gameConstants_1.GameConstants.TILESIZE, dY * gameConstants_1.GameConstants.TILESIZE, dW * gameConstants_1.GameConstants.TILESIZE, dH * gameConstants_1.GameConstants.TILESIZE);
@@ -313,17 +342,16 @@ var Enemy = (function (_super) {
             _this.dead = true;
             _this.level.particles.push(new deathParticle_1.DeathParticle(_this.x, _this.y));
         };
+        _this.isShaded = function () {
+            return _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF;
+        };
         _this.draw = function () {
             if (!_this.dead) {
-                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF &&
-                    _this.hasDarkVersion
-                    ? 2
-                    : 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
                 if (_this.hasShadow)
-                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
-                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
+                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
         _this.tick = function () { };
@@ -335,7 +363,6 @@ var Enemy = (function (_super) {
         _this.tileX = 0;
         _this.tileY = 0;
         _this.hasShadow = true;
-        _this.hasDarkVersion = true;
         _this.skipNextTurns = 0;
         return _this;
     }
@@ -352,13 +379,17 @@ exports.Enemy = Enemy;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
+var levelConstants_1 = __webpack_require__(1);
 var Item = (function () {
     function Item(x, y) {
         var _this = this;
+        this.isShaded = function () {
+            return _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF;
+        };
         this.draw = function () {
             game_1.Game.drawItem(0, 0, 1, 1, _this.x, _this.y, 1, 1);
-            _this.frame += Math.PI * 2 / 60;
-            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.frame) * 0.0625 - 1, _this.w, _this.h);
+            _this.frame += (Math.PI * 2) / 60;
+            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x, _this.y + Math.sin(_this.frame) * 0.0625 - 1, _this.w, _this.h, _this.isShaded());
         };
         this.drawIcon = function (x, y) {
             game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
@@ -401,8 +432,13 @@ exports.Particle = Particle;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var levelConstants_1 = __webpack_require__(1);
 var Tile = (function () {
     function Tile(level, x, y) {
+        var _this = this;
+        this.isShaded = function () {
+            return _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF;
+        };
         this.draw = function () { };
         this.drawUnderPlayer = function () { };
         this.drawAbovePlayer = function () { };
@@ -521,7 +557,7 @@ var Floor = (function (_super) {
     function Floor(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(_this.variation, _this.level.env + (_this.highlight ? 3 : 0), 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(_this.variation, _this.level.env + (_this.highlight ? 3 : 0), 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.w = 1;
         _this.h = 1;
@@ -642,9 +678,9 @@ var Door = (function (_super) {
         };
         _this.draw = function () {
             if (_this.opened)
-                game_1.Game.drawTile(6, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+                game_1.Game.drawTile(6, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
             else
-                game_1.Game.drawTile(3, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+                game_1.Game.drawTile(3, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.game = game;
         _this.linkedDoor = linkedDoor;
@@ -683,7 +719,7 @@ var BottomDoor = (function (_super) {
             _this.game.changeLevelThroughDoor(_this.linkedDoor);
         };
         _this.draw = function () {
-            game_1.Game.drawTile(1, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(1, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.game = game;
         _this.linkedDoor = linkedDoor;
@@ -718,7 +754,7 @@ var Trapdoor = (function (_super) {
     function Trapdoor(level, game, x, y) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(13, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(13, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.onCollide = function (player) {
             // TODO
@@ -851,7 +887,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(4);
 var game_1 = __webpack_require__(0);
-var levelConstants_1 = __webpack_require__(1);
 var Crate = (function (_super) {
     __extends(Crate, _super);
     function Crate(level, game, x, y) {
@@ -862,15 +897,14 @@ var Crate = (function (_super) {
         _this.draw = function () {
             // not inherited because it doesn't have the 0.5 offset
             if (!_this.dead) {
-                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
-                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+                game_1.Game.drawObj(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
         _this.level = level;
         _this.health = 1;
-        _this.tileX = 13;
+        _this.tileX = 0;
         _this.tileY = 0;
         _this.hasShadow = false;
         return _this;
@@ -904,7 +938,7 @@ var Bones = (function (_super) {
     function Bones() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(7, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(7, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         return _this;
     }
@@ -1010,7 +1044,7 @@ var UnlockedGoldenDoor = (function (_super) {
     function UnlockedGoldenDoor(level, game, x, y) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(6, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(6, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.onCollide = function (player) {
             // TODO
@@ -1045,7 +1079,6 @@ var key_1 = __webpack_require__(15);
 var heart_1 = __webpack_require__(37);
 var armor_1 = __webpack_require__(38);
 var enemy_1 = __webpack_require__(4);
-var levelConstants_1 = __webpack_require__(1);
 var Chest = (function (_super) {
     __extends(Chest, _super);
     function Chest(level, game, x, y) {
@@ -1068,11 +1101,10 @@ var Chest = (function (_super) {
         };
         _this.draw = function () {
             if (!_this.dead) {
-                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
-                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+                game_1.Game.drawObj(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
-        _this.tileX = 17;
+        _this.tileX = 4;
         _this.tileY = 0;
         _this.health = 1;
         return _this;
@@ -1101,7 +1133,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(4);
 var game_1 = __webpack_require__(0);
-var levelConstants_1 = __webpack_require__(1);
 var Barrel = (function (_super) {
     __extends(Barrel, _super);
     function Barrel(level, game, x, y) {
@@ -1112,15 +1143,14 @@ var Barrel = (function (_super) {
         _this.draw = function () {
             // not inherited because it doesn't have the 0.5 offset
             if (!_this.dead) {
-                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
-                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2);
+                game_1.Game.drawObj(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
         _this.level = level;
         _this.health = 1;
-        _this.tileX = 14;
+        _this.tileX = 1;
         _this.tileY = 0;
         _this.hasShadow = false;
         return _this;
@@ -1149,7 +1179,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var tickCollidable_1 = __webpack_require__(25);
-var levelConstants_1 = __webpack_require__(1);
 var SpikeTrap = (function (_super) {
     __extends(SpikeTrap, _super);
     function SpikeTrap(level, x, y) {
@@ -1162,9 +1191,10 @@ var SpikeTrap = (function (_super) {
                 player.hurt(1); // player moves before tick, so we check if the spikes are off
         };
         _this.draw = function () {
-            var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
-            game_1.Game.drawTile(1, 0, 1, 1, _this.x, _this.y, 1, 1);
-            game_1.Game.drawMob(18 + Math.floor(_this.frame), darkOffset, 1, 2, _this.x, _this.y - 1, 1, 2);
+            game_1.Game.drawTile(1, 0, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
+        };
+        _this.drawUnderPlayer = function () {
+            game_1.Game.drawObj(5 + Math.floor(_this.frame), 0, 1, 2, _this.x, _this.y - 1, 1, 2, _this.isShaded());
             if (_this.on && _this.frame < 3)
                 _this.frame += 0.4;
             if (!_this.on && _this.frame != 0) {
@@ -1576,7 +1606,7 @@ var SpawnFloor = (function (_super) {
     function SpawnFloor(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(_this.variation, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(_this.variation, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.w = 1;
         _this.h = 1;
@@ -2137,7 +2167,7 @@ var LockedDoor = (function (_super) {
             }
         };
         _this.draw = function () {
-            game_1.Game.drawTile(17, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(17, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         return _this;
     }
@@ -2173,7 +2203,7 @@ var Spike = (function (_super) {
             player.hurt(1);
         };
         _this.draw = function () {
-            game_1.Game.drawTile(11, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(11, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         return _this;
     }
@@ -2324,7 +2354,7 @@ var GoldenDoor = (function (_super) {
             }
         };
         _this.draw = function () {
-            game_1.Game.drawTile(18, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(18, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         return _this;
     }
@@ -2907,44 +2937,16 @@ var Level = (function () {
             _this.game.player.finishTick();
             _this.turn = TurnState.playerTurn; // now it's the player's turn
         };
-        this.nextLevelRendering = function () {
-            for (var _i = 0, _a = _this.doors; _i < _a.length; _i++) {
-                var door = _a[_i];
-                if (door instanceof door_1.Door) {
-                    game_1.Game.ctx.translate(door.x - door.linkedDoor.x, door.y - door.linkedDoor.y);
-                }
-                else {
-                    game_1.Game.ctx.translate(door.x - door.linkedDoor.x, door.y - door.linkedDoor.y);
-                }
-                door.level.draw();
-                if (door instanceof door_1.Door) {
-                    game_1.Game.ctx.translate(-door.x + door.linkedDoor.x, -door.y + door.linkedDoor.y);
-                }
-                else {
-                    game_1.Game.ctx.translate(-door.x + door.linkedDoor.x, -door.y + door.linkedDoor.y);
-                }
-            }
-        };
         this.draw = function () {
             for (var x = 0; x < _this.levelArray.length; x++) {
                 for (var y = 0; y < _this.levelArray[0].length; y++) {
                     if (_this.visibilityArray[x][y] > 0)
                         _this.levelArray[x][y].draw();
                     // fill in shadows too
-                    switch (_this.visibilityArray[x][y]) {
-                        case 0:
-                            game_1.Game.ctx.globalAlpha = 1;
-                            break;
-                        case 1:
-                            game_1.Game.ctx.globalAlpha = 0.6;
-                            break;
-                        case 2:
-                            game_1.Game.ctx.globalAlpha = 0;
-                            break;
+                    if (_this.visibilityArray[x][y] === 0) {
+                        game_1.Game.ctx.fillStyle = "black";
+                        game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
                     }
-                    game_1.Game.ctx.fillStyle = "black";
-                    game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                    game_1.Game.ctx.globalAlpha = 1;
                 }
             }
         };
@@ -3326,10 +3328,10 @@ var Wall = (function (_super) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
             if (_this.type === 0) {
-                game_1.Game.drawTile(2, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+                game_1.Game.drawTile(2, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
             }
             else if (_this.type === 1) {
-                game_1.Game.drawTile(5, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+                game_1.Game.drawTile(5, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
             }
         };
         _this.type = type;
@@ -3364,7 +3366,7 @@ var WallSide = (function (_super) {
     function WallSide() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(0, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(0, _this.level.env, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         return _this;
     }
@@ -3473,7 +3475,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(4);
-var levelConstants_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
 var bones_1 = __webpack_require__(18);
 var deathParticle_1 = __webpack_require__(19);
@@ -3563,22 +3564,18 @@ var WizardEnemy = (function (_super) {
         };
         _this.draw = function () {
             if (!_this.dead) {
-                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF &&
-                    _this.hasDarkVersion
-                    ? 2
-                    : 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
                 if (_this.hasShadow)
-                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
+                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
                 if (_this.frame >= 0) {
-                    game_1.Game.drawFX(Math.floor(_this.frame), 10 + darkOffset, 1, 2, _this.x, _this.y - 1.5, 1, 2);
+                    game_1.Game.drawMob(Math.floor(_this.frame) + 6, 2, 1, 2, _this.x, _this.y - 1.5, 1, 2, _this.isShaded());
                     _this.frame += 0.4;
                     if (_this.frame > 11)
                         _this.frame = -1;
                 }
                 else {
-                    game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                    game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
                 }
             }
         };
@@ -3752,7 +3749,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(4);
-var levelConstants_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
 var astarclass_1 = __webpack_require__(26);
 var SkullEnemy = (function (_super) {
@@ -3829,15 +3825,11 @@ var SkullEnemy = (function (_super) {
                         }
                     }
                 }
-                var darkOffset = _this.level.visibilityArray[_this.x][_this.y] <= levelConstants_1.LevelConstants.VISIBILITY_CUTOFF &&
-                    _this.hasDarkVersion
-                    ? 2
-                    : 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
                 if (_this.hasShadow)
-                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
-                game_1.Game.drawMob(_this.tileX, _this.tileY + darkOffset, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                    game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
+                game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
         _this.moves = new Array(); // empty move list
@@ -3879,8 +3871,8 @@ var FountainTile = (function (_super) {
     function FountainTile(level, x, y, subTileX, subTileY) {
         var _this = _super.call(this, level, x, y) || this;
         _this.draw = function () {
-            game_1.Game.drawTile(1, 0, 1, 1, _this.x, _this.y, _this.w, _this.h);
-            game_1.Game.drawTile(_this.subTileX, 2 + _this.subTileY, 1, 1, _this.x, _this.y, _this.w, _this.h);
+            game_1.Game.drawTile(1, 0, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
+            game_1.Game.drawTile(_this.subTileX, 2 + _this.subTileY, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.subTileX = subTileX;
         _this.subTileY = subTileY;
@@ -3917,17 +3909,17 @@ var CoffinTile = (function (_super) {
         var _this = _super.call(this, level, x, y) || this;
         _this.drawUnderPlayer = function () {
             if (_this.subTileY === 0) {
-                game_1.Game.drawTile(0, 5, 1, 1, _this.x - 1, _this.y - 1, 1, 1);
-                game_1.Game.drawTile(1, 5, 1, 1, _this.x, _this.y - 1, 1, 1);
-                game_1.Game.drawTile(2, 5, 1, 1, _this.x + 1, _this.y - 1, 1, 1);
-                game_1.Game.drawTile(0, 6, 1, 1, _this.x - 1, _this.y, 1, 1);
-                game_1.Game.drawTile(1, 6, 1, 1, _this.x, _this.y, 1, 1);
-                game_1.Game.drawTile(2, 6, 1, 1, _this.x + 1, _this.y, 1, 1);
+                game_1.Game.drawTile(0, 5, 1, 1, _this.x - 1, _this.y - 1, 1, 1, _this.isShaded());
+                game_1.Game.drawTile(1, 5, 1, 1, _this.x, _this.y - 1, 1, 1, _this.isShaded());
+                game_1.Game.drawTile(2, 5, 1, 1, _this.x + 1, _this.y - 1, 1, 1, _this.isShaded());
+                game_1.Game.drawTile(0, 6, 1, 1, _this.x - 1, _this.y, 1, 1, _this.isShaded());
+                game_1.Game.drawTile(1, 6, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
+                game_1.Game.drawTile(2, 6, 1, 1, _this.x + 1, _this.y, 1, 1, _this.isShaded());
             }
             else {
-                game_1.Game.drawTile(0, 7, 1, 1, _this.x - 1, _this.y, 1, 1);
-                game_1.Game.drawTile(1, 7, 1, 1, _this.x, _this.y, 1, 1);
-                game_1.Game.drawTile(2, 7, 1, 1, _this.x + 1, _this.y, 1, 1);
+                game_1.Game.drawTile(0, 7, 1, 1, _this.x - 1, _this.y, 1, 1, _this.isShaded());
+                game_1.Game.drawTile(1, 7, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
+                game_1.Game.drawTile(2, 7, 1, 1, _this.x + 1, _this.y, 1, 1, _this.isShaded());
             }
         };
         _this.subTileY = subTileY;

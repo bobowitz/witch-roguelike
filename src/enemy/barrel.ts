@@ -9,7 +9,7 @@ export class Barrel extends Enemy {
     super(level, game, x, y);
     this.level = level;
     this.health = 1;
-    this.tileX = 14;
+    this.tileX = 1;
     this.tileY = 0;
     this.hasShadow = false;
   }
@@ -21,19 +21,18 @@ export class Barrel extends Enemy {
   draw = () => {
     // not inherited because it doesn't have the 0.5 offset
     if (!this.dead) {
-      let darkOffset =
-        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      Game.drawMob(
+      Game.drawObj(
         this.tileX,
-        this.tileY + darkOffset,
+        this.tileY,
         1,
         2,
         this.x - this.drawX,
         this.y - 1 - this.drawY,
         1,
-        2
+        2,
+        this.isShaded()
       );
     }
   };

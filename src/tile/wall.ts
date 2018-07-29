@@ -12,9 +12,9 @@ export class Wall extends Collidable {
 
   draw = () => {
     if (this.type === 0) {
-      Game.drawTile(2, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+      Game.drawTile(2, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
     } else if (this.type === 1) {
-      Game.drawTile(5, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+      Game.drawTile(5, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
     }
   };
 }

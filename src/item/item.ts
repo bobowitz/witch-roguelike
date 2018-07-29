@@ -1,5 +1,6 @@
 import { Game } from "../game";
 import { GameConstants } from "../gameConstants";
+import { LevelConstants } from "../levelConstants";
 
 export class Item {
   x: number;
@@ -10,6 +11,7 @@ export class Item {
   tileY: number;
   frame: number;
   dead: boolean; // for inventory, just a removal flag
+  level: any;
 
   constructor(x: number, y: number) {
     this.x = x;
@@ -22,9 +24,13 @@ export class Item {
     this.dead = false;
   }
 
+  isShaded = () => {
+    return this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF;
+  };
+
   draw = () => {
     Game.drawItem(0, 0, 1, 1, this.x, this.y, 1, 1);
-    this.frame += Math.PI * 2 / 60;
+    this.frame += (Math.PI * 2) / 60;
     Game.drawItem(
       this.tileX,
       this.tileY,
@@ -33,7 +39,8 @@ export class Item {
       this.x,
       this.y + Math.sin(this.frame) * 0.0625 - 1,
       this.w,
-      this.h
+      this.h,
+      this.isShaded()
     );
   };
   drawIcon = (x: number, y: number) => {

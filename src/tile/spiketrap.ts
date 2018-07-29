@@ -24,10 +24,11 @@ export class SpikeTrap extends TickCollidable {
   };
 
   draw = () => {
-    let darkOffset =
-      this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF ? 2 : 0;
-    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1);
-    Game.drawMob(18 + Math.floor(this.frame), darkOffset, 1, 2, this.x, this.y - 1, 1, 2);
+    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+  };
+
+  drawUnderPlayer = () => {
+    Game.drawObj(5 + Math.floor(this.frame), 0, 1, 2, this.x, this.y - 1, 1, 2, this.isShaded());
     if (this.on && this.frame < 3) this.frame += 0.4;
     if (!this.on && this.frame != 0) {
       if (this.frame < 3 && this.frame + 0.4 >= 3) this.frame = 0;

@@ -27,7 +27,8 @@ export class Floor extends Tile {
       this.x,
       this.y,
       this.w,
-      this.h
+      this.h,
+      this.isShaded()
     );
   };
 }

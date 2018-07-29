@@ -3,6 +3,6 @@ import { Floor } from "./floor";
 
 export class Bones extends Floor {
   draw = () => {
-    Game.drawTile(7, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(7, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
   };
 }

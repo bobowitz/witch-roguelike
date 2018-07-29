@@ -13,7 +13,17 @@ export class FountainTile extends Collidable {
   }
 
   draw = () => {
-    Game.drawTile(1, 0, 1, 1, this.x, this.y, this.w, this.h);
-    Game.drawTile(this.subTileX, 2 + this.subTileY, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(1, 0, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(
+      this.subTileX,
+      2 + this.subTileY,
+      1,
+      1,
+      this.x,
+      this.y,
+      this.w,
+      this.h,
+      this.isShaded()
+    );
   };
 }

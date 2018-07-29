@@ -13,16 +13,16 @@ export class CoffinTile extends Collidable {
 
   drawUnderPlayer = () => {
     if (this.subTileY === 0) {
-      Game.drawTile(0, 5, 1, 1, this.x - 1, this.y - 1, 1, 1);
-      Game.drawTile(1, 5, 1, 1, this.x, this.y - 1, 1, 1);
-      Game.drawTile(2, 5, 1, 1, this.x + 1, this.y - 1, 1, 1);
-      Game.drawTile(0, 6, 1, 1, this.x - 1, this.y, 1, 1);
-      Game.drawTile(1, 6, 1, 1, this.x, this.y, 1, 1);
-      Game.drawTile(2, 6, 1, 1, this.x + 1, this.y, 1, 1);
+      Game.drawTile(0, 5, 1, 1, this.x - 1, this.y - 1, 1, 1, this.isShaded());
+      Game.drawTile(1, 5, 1, 1, this.x, this.y - 1, 1, 1, this.isShaded());
+      Game.drawTile(2, 5, 1, 1, this.x + 1, this.y - 1, 1, 1, this.isShaded());
+      Game.drawTile(0, 6, 1, 1, this.x - 1, this.y, 1, 1, this.isShaded());
+      Game.drawTile(1, 6, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+      Game.drawTile(2, 6, 1, 1, this.x + 1, this.y, 1, 1, this.isShaded());
     } else {
-      Game.drawTile(0, 7, 1, 1, this.x - 1, this.y, 1, 1);
-      Game.drawTile(1, 7, 1, 1, this.x, this.y, 1, 1);
-      Game.drawTile(2, 7, 1, 1, this.x + 1, this.y, 1, 1);
+      Game.drawTile(0, 7, 1, 1, this.x - 1, this.y, 1, 1, this.isShaded());
+      Game.drawTile(1, 7, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+      Game.drawTile(2, 7, 1, 1, this.x + 1, this.y, 1, 1, this.isShaded());
     }
   };
 }

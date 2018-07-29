@@ -17,6 +17,16 @@ export class SpawnFloor extends Tile {
   }
 
   draw = () => {
-    Game.drawTile(this.variation, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+    Game.drawTile(
+      this.variation,
+      this.level.env,
+      1,
+      1,
+      this.x,
+      this.y,
+      this.w,
+      this.h,
+      this.isShaded()
+    );
   };
 }

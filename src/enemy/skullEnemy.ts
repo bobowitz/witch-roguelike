@@ -107,23 +107,20 @@ export class SkullEnemy extends Enemy {
         }
       }
 
-      let darkOffset =
-        this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF &&
-        this.hasDarkVersion
-          ? 2
-          : 0;
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      if (this.hasShadow) Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
+      if (this.hasShadow)
+        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
       Game.drawMob(
         this.tileX,
-        this.tileY + darkOffset,
+        this.tileY,
         1,
         2,
         this.x - this.drawX,
         this.y - 1.5 - this.drawY,
         1,
-        2
+        2,
+        this.isShaded()
       );
     }
   };

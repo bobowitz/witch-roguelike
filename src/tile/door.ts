@@ -22,7 +22,8 @@ export class Door extends Collidable {
   };
 
   draw = () => {
-    if (this.opened) Game.drawTile(6, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
-    else Game.drawTile(3, this.level.env, 1, 1, this.x, this.y, this.w, this.h);
+    if (this.opened)
+      Game.drawTile(6, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    else Game.drawTile(3, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
   };
 }
