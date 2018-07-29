@@ -1676,6 +1676,7 @@ var sound_1 = __webpack_require__(8);
 var spike_1 = __webpack_require__(32);
 var textParticle_1 = __webpack_require__(16);
 var dashParticle_1 = __webpack_require__(33);
+var armor_1 = __webpack_require__(38);
 var levelConstants_1 = __webpack_require__(1);
 var pickup_1 = __webpack_require__(9);
 var crate_1 = __webpack_require__(17);
@@ -1767,7 +1768,7 @@ var Player = (function () {
                 else {
                     break;
                 }
-                _this.game.level.particles.push(new dashParticle_1.DashParticle(_this.x, _this.y, particleFrameOffset));
+                _this.game.level.particles.push(new dashParticle_1.DashParticle(_this.x, _this.y, _this.armor != null && _this.armor.health > 0, particleFrameOffset));
                 particleFrameOffset -= 2;
                 var breakFlag = false;
                 for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
@@ -1794,7 +1795,7 @@ var Player = (function () {
             _this.drawY = _this.y - startY;
             if (_this.x !== startX || _this.y !== startY) {
                 _this.game.level.tick();
-                _this.game.level.particles.push(new dashParticle_1.DashParticle(_this.x, _this.y, particleFrameOffset));
+                _this.game.level.particles.push(new dashParticle_1.DashParticle(_this.x, _this.y, _this.armor != null && _this.armor.health > 0, particleFrameOffset));
             }
         };
         this.tryMove = function (x, y) {
@@ -2056,7 +2057,7 @@ var Player = (function () {
         this.equipped = Array();
         this.inventory = new inventory_1.Inventory(game);
         this.missProb = 0.1;
-        this.armor = null;
+        this.armor = new armor_1.Armor(this.game, 0, 0);
         this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
     }
     return Player;
@@ -2282,16 +2283,20 @@ var game_1 = __webpack_require__(0);
 var particle_1 = __webpack_require__(6);
 var DashParticle = (function (_super) {
     __extends(DashParticle, _super);
-    function DashParticle(x, y, frameOffset) {
+    function DashParticle(x, y, armored, frameOffset) {
         var _this = _super.call(this) || this;
         _this.drawBehind = function () {
-            game_1.Game.drawFX(Math.round(_this.frame), 0, 1, 2, _this.x, _this.y, 1, 2);
+            var armoredOffset = 0;
+            if (_this.armored)
+                armoredOffset = 8;
+            game_1.Game.drawFX(armoredOffset + Math.round(_this.frame), 0, 1, 2, _this.x, _this.y, 1, 2);
             _this.frame += 0.4;
             if (_this.frame > 7)
                 _this.dead = true;
         };
         _this.x = x;
         _this.y = y - 1;
+        _this.armored = armored;
         _this.dead = false;
         _this.frame = frameOffset;
         return _this;

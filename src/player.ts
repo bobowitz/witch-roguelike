@@ -86,7 +86,7 @@ export class Player {
 
     this.missProb = 0.1;
 
-    this.armor = null;
+    this.armor = new Armor(this.game, 0, 0);
 
     this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
   }
@@ -154,7 +154,14 @@ export class Player {
       } else {
         break;
       }
-      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
+      this.game.level.particles.push(
+        new DashParticle(
+          this.x,
+          this.y,
+          this.armor != null && this.armor.health > 0,
+          particleFrameOffset
+        )
+      );
       particleFrameOffset -= 2;
       let breakFlag = false;
       for (let e of this.game.level.enemies) {
@@ -181,7 +188,14 @@ export class Player {
     this.drawY = this.y - startY;
     if (this.x !== startX || this.y !== startY) {
       this.game.level.tick();
-      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
+      this.game.level.particles.push(
+        new DashParticle(
+          this.x,
+          this.y,
+          this.armor != null && this.armor.health > 0,
+          particleFrameOffset
+        )
+      );
     }
   };
 
