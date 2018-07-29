@@ -28,12 +28,18 @@ import { Particle } from "./particle/particle";
 import { Projectile } from "./projectile/projectile";
 import { SpikeTrap } from "./tile/spiketrap";
 import { TickCollidable } from "./tile/tickCollidable";
+import { FountainTile } from "./tile/fountainTile";
+import { CoffinTile } from "./tile/coffinTile";
 
 export enum RoomType {
   DUNGEON,
+  TREASURE,
+  FOUNTAIN,
+  COFFIN,
+  GRASS,
+  PUZZLE,
   KEYROOM,
-  CHESSROOM,
-  PUZZLEROOM,
+  CHESSBOARD,
 }
 
 export enum TurnState {
@@ -159,7 +165,10 @@ export class Level {
     // put some random wall blocks in the room
     let numBlocks = Game.randTable([0, 1, 1, 2, 2, 2, 2, 3, 3]);
     for (let i = 0; i < numBlocks; i++) {
-      let blockW = Math.min(Game.randTable([2, 2, 2, 5, 7, 9]), this.width - 2);
+      let blockW = Math.min(
+        Game.randTable([2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 9]),
+        this.width - 2
+      );
       let blockH = Math.min(blockW + Game.rand(-1, 1), this.height - 3);
 
       let x = Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 1);
@@ -251,32 +260,9 @@ export class Level {
     }
   }
 
-  private addTrapdoors(): number {
-    // add trapdoors
-    let numTrapdoors = Game.rand(1, 10);
-    if (numTrapdoors === 1) {
-      numTrapdoors = Game.randTable([1, 1, 1, 1, 1, 1, 2]);
-    } else numTrapdoors = 0;
-    for (let i = 0; i < numTrapdoors; i++) {
-      let x = 0;
-      let y = 0;
-      while (!(this.getTile(x, y) instanceof Floor)) {
-        x = Game.rand(this.roomX, this.roomX + this.width - 1);
-        y = Game.rand(this.roomY + 2, this.roomY + this.height - 2);
-      }
-      this.levelArray[x][y] = new Trapdoor(this, this.game, x, y);
-    }
-
-    return numTrapdoors;
-  }
-
-  private addChests(): number {
+  private addChests(numChests: number): number {
     // add chests
     let tiles = this.getEmptyTiles();
-    let numChests = Game.rand(1, 8);
-    if (numChests === 1) {
-      numChests = Game.randTable([0, 1, 1, 2, 3, 4, 5, 6]);
-    } else numChests = 0;
     for (let i = 0; i < numChests; i++) {
       let t, x, y;
       if (tiles.length == 0) return;
@@ -285,17 +271,11 @@ export class Level {
       y = t.y;
       this.enemies.push(new Chest(this, this.game, x, y));
     }
-
-    return numChests;
   }
 
-  private addSpikes(): number {
+  private addSpikes(numSpikes: number) {
     // add spikes
     let tiles = this.getEmptyTiles();
-    let numSpikes = Game.rand(1, 10);
-    if (numSpikes === 1) {
-      numSpikes = Game.randTable([1, 1, 1, 1, 2, 3]);
-    } else numSpikes = 0;
     for (let i = 0; i < numSpikes; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -304,13 +284,10 @@ export class Level {
 
       this.levelArray[x][y] = new SpikeTrap(this, x, y);
     }
-
-    return numSpikes;
   }
 
-  private addEnemies(): number {
+  private addEnemies(numEnemies: number) {
     let tiles = this.getEmptyTiles();
-    let numEnemies = Math.floor(tiles.length / 16);
     for (let i = 0; i < numEnemies; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -328,17 +305,11 @@ export class Level {
           break;
       }
     }
-
-    return numEnemies;
   }
 
-  private addObstacles(): number {
+  private addObstacles(numObstacles: number) {
     // add crates/barrels
     let tiles = this.getEmptyTiles();
-    let numObstacles = Game.rand(1, 2);
-    if (numObstacles === 1 || this.width * this.height > 8 * 8) {
-      numObstacles = Game.randTable([1, 1, 1, 2, 2, 3, 3]);
-    } else numObstacles = 0;
     for (let i = 0; i < numObstacles; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -353,12 +324,80 @@ export class Level {
           break;
       }
     }
-
-    return numObstacles;
   }
 
   static randEnv = () => {
     return Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
+  };
+
+  generateDungeon = () => {
+    this.addWallBlocks();
+    this.addFingers();
+    this.fixWalls();
+
+    this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
+    let numEmptyTiles = this.getEmptyTiles().length;
+    this.addEnemies(
+      Math.floor(numEmptyTiles * Game.randTable([0, 0.1, 0.15, 0.2, 0.25, 0.2, 0.3, 0.5]))
+    );
+    this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+  };
+
+  generateKeyRoom = () => {
+    this.fixWalls();
+
+    this.items.push(
+      new GoldenKey(
+        Math.floor(this.roomX + this.width / 2),
+        Math.floor(this.roomY + this.height / 2)
+      )
+    );
+  };
+
+  generateFountain = () => {
+    this.fixWalls();
+
+    let centerX = Math.floor(this.roomX + this.width / 2);
+    let centerY = Math.floor(this.roomY + this.height / 2);
+    for (let x = centerX - 1; x <= centerX + 1; x++) {
+      for (let y = centerY - 1; y <= centerY + 1; y++) {
+        this.levelArray[x][y] = new FountainTile(this, x, y, x - (centerX - 1), y - (centerY - 1));
+      }
+    }
+  };
+
+  placeCoffin = (x: number, y: number) => {
+    this.levelArray[x][y] = new CoffinTile(this, x, y, 0);
+    this.levelArray[x][y + 1] = new CoffinTile(this, x, y + 1, 1);
+  };
+
+  generateCoffin = () => {
+    this.fixWalls();
+
+    this.placeCoffin(
+      Math.floor(this.roomX + this.width / 2 - 2),
+      Math.floor(this.roomY + this.height / 2)
+    );
+    this.placeCoffin(
+      Math.floor(this.roomX + this.width / 2),
+      Math.floor(this.roomY + this.height / 2)
+    );
+    this.placeCoffin(
+      Math.floor(this.roomX + this.width / 2) + 2,
+      Math.floor(this.roomY + this.height / 2)
+    );
+  };
+  generatePuzzle = () => {
+    this.fixWalls();
+  };
+  generateTreasure = () => {
+    this.addWallBlocks();
+    this.fixWalls();
+
+    this.addChests(Game.randTable([2, 2, 3, 3, 3, 3, 4, 4, 5]));
+  };
+  generateChessboard = () => {
+    this.fixWalls();
   };
 
   constructor(
@@ -409,74 +448,31 @@ export class Level {
     this.roomY = Math.floor(LevelConstants.SCREEN_H / 2 - this.height / 2);
 
     this.buildEmptyRoom();
-    if (this.type == RoomType.KEYROOM) {
-      // if it's a golden key room
-      this.items.push(
-        new GoldenKey(
-          Math.floor(this.roomX + this.width / 2),
-          Math.floor(this.roomY + this.height / 2)
-        )
-      );
-    } else {
-      // otherwise, generate a normal room
-      this.addWallBlocks();
-      this.addFingers();
+    switch (this.type) {
+      case RoomType.DUNGEON:
+        this.generateDungeon();
+        break;
+      case RoomType.FOUNTAIN:
+        this.generateFountain();
+        break;
+      case RoomType.COFFIN:
+        this.generateCoffin();
+        break;
+      case RoomType.PUZZLE:
+        this.generatePuzzle();
+        break;
+      case RoomType.TREASURE:
+        this.generateTreasure();
+        break;
+      case RoomType.CHESSBOARD:
+        this.generateChessboard();
+        break;
+      case RoomType.KEYROOM:
+        this.generateKeyRoom();
+        break;
     }
-
-    this.fixWalls();
-
-    let numTrapdoors = 0,
-      numChests = 0,
-      numSpikes = 0,
-      numEnemies = 0,
-      numObstacles = 0;
-    /* add trapdoors back in after we figure out how they're gonna work */
-    numTrapdoors = 0; // this.addTrapdoors();
-    numChests = this.addChests();
-    numSpikes = this.addSpikes();
-    numEnemies = this.addEnemies();
-    numObstacles = this.addObstacles();
-    this.classify(numTrapdoors, numChests, numEnemies, type);
+    this.name = "" + RoomType[this.type];
   }
-
-  // name this level
-  classify = (numTrapdoors: number, numChests: number, numEnemies: number, type: RoomType) => {
-    this.name = "";
-
-    if (type === RoomType.KEYROOM) this.name = "Key Room";
-    else if (numChests >= 2) this.name = "Treasure";
-    else if (numTrapdoors > 0) this.name = "Trick Room";
-    else if (Game.rand(1, 10) === 1) {
-      if (this.env === 0) {
-        let names = ["Dungeon", "Prison", "Sewer"];
-        this.name = names[Game.rand(0, names.length - 1)];
-      }
-      if (this.env === 1) {
-        let names = ["Forest", "Grass", "Hills"];
-        this.name = names[Game.rand(0, names.length - 1)];
-      }
-      if (this.env === 2) {
-        let names = ["House", "Mansion", "Inn"];
-        this.name = names[Game.rand(0, names.length - 1)];
-      }
-      if (this.env === 3) {
-        let names = ["Snow Palace", "Ice Palace", "Freeze", "Ice Kingdom", "Glacier", "Mountain"];
-        this.name = names[Game.rand(0, names.length - 1)];
-      }
-    }
-
-    let adjectiveList = [
-      "Abandoned",
-      "Deserted",
-      "Haunted",
-      "Cursed",
-      "Ancient",
-      "Lonely",
-      "Spooky",
-    ];
-    if (this.name !== "")
-      this.name = adjectiveList[Game.rand(0, adjectiveList.length - 1)] + " " + this.name;
-  };
 
   addDoor = (location: number, link: any) => {
     let d;
@@ -780,6 +776,12 @@ export class Level {
   };
 
   drawEntitiesBehindPlayer = () => {
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].drawUnderPlayer();
+      }
+    }
+
     this.enemies.sort((a, b) => a.y - b.y);
     this.items.sort((a, b) => a.y - b.y);
 
@@ -800,6 +802,12 @@ export class Level {
     }
   };
   drawEntitiesInFrontOfPlayer = () => {
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].drawAbovePlayer();
+      }
+    }
+
     for (const e of this.enemies) {
       if (e.y > this.game.player.y && this.visibilityArray[e.x][e.y] > 0) e.draw();
     }

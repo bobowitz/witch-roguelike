@@ -96,6 +96,7 @@ export class LevelGenerator {
             r.y = 0;
             let newLevelDoorDir = r.generateAroundPoint(points[ind], ind, this.rooms[i]);
             if (this.noCollisions(r)) {
+              // TODO: trapdoors
               let level = new Level(this.game, r.x, r.y, r.w, r.h, RoomType.DUNGEON, 0, 0);
               this.game.levels.push(level);
               let newDoor = level.addDoor(newLevelDoorDir, null);
@@ -118,9 +119,25 @@ export class LevelGenerator {
     let r = new Room();
     r.x = 128;
     r.y = 128;
-    r.w = 7;
-    r.h = 7;
-    let level = new Level(this.game, r.x, r.y, r.w, r.h, RoomType.DUNGEON, 0, 0);
+    r.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+    r.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+    let type = RoomType.DUNGEON;
+    switch (Game.rand(1, 6)) {
+      case 1:
+        type = RoomType.FOUNTAIN;
+        break;
+      case 2:
+        type = RoomType.COFFIN;
+        break;
+      case 3:
+        type = RoomType.TREASURE;
+        break;
+      case 6:
+        type = RoomType.PUZZLE;
+        break;
+    }
+    type = RoomType.COFFIN;
+    let level = new Level(this.game, r.x, r.y, r.w, r.h, type, 0, 0);
     this.game.levels.push(level);
     this.rooms.push(r);
 
