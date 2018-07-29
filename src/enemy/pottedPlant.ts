@@ -4,15 +4,14 @@ import { Game } from "../game";
 import { Heart } from "../item/heart";
 import { LevelConstants } from "../levelConstants";
 
-export class Crate extends Enemy {
+export class PottedPlant extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
     this.level = level;
     this.health = 1;
-    this.tileX = 0;
+    this.tileX = 3;
     this.tileY = 0;
     this.hasShadow = false;
-    this.pushable = true;
     this.chainPushable = false;
   }
 

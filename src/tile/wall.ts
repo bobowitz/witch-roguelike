@@ -1,6 +1,7 @@
 import { Game } from "../game";
 import { Collidable } from "./collidable";
 import { Level } from "../level";
+import { SkinType } from "./tile";
 
 export class Wall extends Collidable {
   type: number;
@@ -12,9 +13,9 @@ export class Wall extends Collidable {
 
   draw = () => {
     if (this.type === 0) {
-      Game.drawTile(2, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+      Game.drawTile(2, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
     } else if (this.type === 1) {
-      Game.drawTile(5, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+      Game.drawTile(5, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
     }
   };
 }

@@ -4,11 +4,13 @@ import { Game } from "../game";
 import { TickCollidable } from "./tickCollidable";
 import { Level } from "../level";
 import { LevelConstants } from "../levelConstants";
+import { SkinType } from "./tile";
 
 export class SpikeTrap extends TickCollidable {
   on: boolean;
   tickCount: number;
   frame: number;
+  skin: SkinType;
 
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
@@ -28,7 +30,7 @@ export class SpikeTrap extends TickCollidable {
   };
 
   draw = () => {
-    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 
   t = 0;

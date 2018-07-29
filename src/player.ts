@@ -202,7 +202,7 @@ export class Player {
   tryMove = (x: number, y: number) => {
     for (let e of this.game.level.enemies) {
       if (e.x === x && e.y === y) {
-        if (e instanceof Crate || e instanceof Barrel) {
+        if (e.pushable) {
           // pushing a crate or barrel
           let oldEnemyX = e.x;
           let oldEnemyY = e.y;
@@ -217,7 +217,7 @@ export class Player {
             foundEnd = true;
             for (const f of this.game.level.enemies) {
               if (f.x === nextX && f.y === nextY) {
-                if (f instanceof Crate || f instanceof Barrel || f instanceof Chest) {
+                if (!f.chainPushable) {
                   enemyEnd = true;
                   foundEnd = true;
                   break;

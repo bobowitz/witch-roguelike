@@ -19,6 +19,6 @@ export class GoldenDoor extends Collidable {
   };
 
   draw = () => {
-    Game.drawTile(18, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(18, 0, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
   };
 }

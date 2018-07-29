@@ -6,7 +6,7 @@ import { Collidable } from "./tile/collidable";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { WallSide } from "./tile/wallSide";
-import { Tile } from "./tile/tile";
+import { Tile, SkinType } from "./tile/tile";
 import { Trapdoor } from "./tile/trapdoor";
 import { KnightEnemy } from "./enemy/knightEnemy";
 import { Enemy } from "./enemy/enemy";
@@ -30,6 +30,7 @@ import { SpikeTrap } from "./tile/spiketrap";
 import { TickCollidable } from "./tile/tickCollidable";
 import { FountainTile } from "./tile/fountainTile";
 import { CoffinTile } from "./tile/coffinTile";
+import { PottedPlant } from "./enemy/pottedPlant";
 
 export enum RoomType {
   DUNGEON,
@@ -66,11 +67,11 @@ export class Level {
   width: number;
   height: number;
   type: RoomType;
-  env: number; // which environment is this level?
   difficulty: number;
   name: string;
   turn: TurnState;
   static turnStartTime: number; // in milliseconds
+  skin: SkinType;
 
   private pointInside(
     x: number,
@@ -327,15 +328,27 @@ export class Level {
     }
   }
 
-  static randEnv = () => {
-    return Game.rand(0, LevelConstants.ENVIRONMENTS - 1);
-  };
+  private addPlants(numPlants: number) {
+    let tiles = this.getEmptyTiles();
+    for (let i = 0; i < numPlants; i++) {
+      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      if (tiles.length == 0) return;
+      let x = t.x;
+      let y = t.y;
+
+      this.enemies.push(new PottedPlant(this, this.game, x, y));
+    }
+  }
 
   generateDungeon = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
     this.addWallBlocks();
     this.addFingers();
     this.fixWalls();
 
+    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
     this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
@@ -343,8 +356,10 @@ export class Level {
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
   };
-
   generateKeyRoom = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
     this.fixWalls();
 
     this.items.push(
@@ -354,8 +369,10 @@ export class Level {
       )
     );
   };
-
   generateFountain = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
     this.fixWalls();
 
     let centerX = Math.floor(this.roomX + this.width / 2);
@@ -365,14 +382,17 @@ export class Level {
         this.levelArray[x][y] = new FountainTile(this, x, y, x - (centerX - 1), y - (centerY - 1));
       }
     }
-  };
 
+    this.addPlants(Game.randTable([0, 0, 1, 2]));
+  };
   placeCoffin = (x: number, y: number) => {
     this.levelArray[x][y] = new CoffinTile(this, x, y, 0);
     this.levelArray[x][y + 1] = new CoffinTile(this, x, y + 1, 1);
   };
-
   generateCoffin = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
     this.fixWalls();
 
     this.placeCoffin(
@@ -389,16 +409,50 @@ export class Level {
     );
   };
   generatePuzzle = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
     this.fixWalls();
+
+    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
   };
   generateTreasure = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
     this.addWallBlocks();
     this.fixWalls();
 
     this.addChests(Game.randTable([2, 4, 4, 5, 5, 6, 7, 8]));
+    this.addPlants(Game.randTable([0, 1, 2, 4, 5, 6]));
   };
   generateChessboard = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
     this.fixWalls();
+  };
+  generateGrass = () => {
+    this.skin = SkinType.GRASS;
+
+    this.buildEmptyRoom();
+    this.addWallBlocks();
+    this.addFingers();
+    this.fixWalls();
+
+    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
+    let numEmptyTiles = this.getEmptyTiles().length;
+    this.addEnemies(
+      Math.floor(numEmptyTiles * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])) // 0.25, 0.2, 0.3, 0.5
+    );
+    this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        this.levelArray[x][y].skin = SkinType.GRASS;
+      }
+    }
   };
 
   constructor(
@@ -408,7 +462,6 @@ export class Level {
     w: number,
     h: number,
     type: RoomType,
-    env: number,
     difficulty: number
   ) {
     this.difficulty = difficulty;
@@ -417,7 +470,6 @@ export class Level {
     this.y = y;
 
     this.type = type;
-    this.env = env;
 
     this.turn = TurnState.playerTurn;
 
@@ -448,7 +500,6 @@ export class Level {
     this.roomX = Math.floor(LevelConstants.SCREEN_W / 2 - this.width / 2);
     this.roomY = Math.floor(LevelConstants.SCREEN_H / 2 - this.height / 2);
 
-    this.buildEmptyRoom();
     switch (this.type) {
       case RoomType.DUNGEON:
         this.generateDungeon();
@@ -459,17 +510,20 @@ export class Level {
       case RoomType.COFFIN:
         this.generateCoffin();
         break;
-      case RoomType.PUZZLE:
+      case RoomType.PUZZLE: // TODO
         this.generatePuzzle();
         break;
       case RoomType.TREASURE:
         this.generateTreasure();
         break;
-      case RoomType.CHESSBOARD:
+      case RoomType.CHESSBOARD: // TODO
         this.generateChessboard();
         break;
       case RoomType.KEYROOM:
         this.generateKeyRoom();
+        break;
+      case RoomType.GRASS:
+        this.generateGrass();
         break;
     }
     this.name = ""; // + RoomType[this.type];

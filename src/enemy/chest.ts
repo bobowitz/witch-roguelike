@@ -15,6 +15,7 @@ export class Chest extends Enemy {
     this.tileX = 4;
     this.tileY = 0;
     this.health = 1;
+    this.chainPushable = false;
   }
 
   kill = () => {

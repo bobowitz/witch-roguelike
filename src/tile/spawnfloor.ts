@@ -1,5 +1,5 @@
 import { Game } from "../game";
-import { Tile } from "./tile";
+import { Tile, SkinType } from "./tile";
 import { Level } from "../level";
 
 export class SpawnFloor extends Tile {
@@ -7,6 +7,7 @@ export class SpawnFloor extends Tile {
   w: number;
   h: number;
   variation: number;
+  skin: SkinType;
 
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
@@ -17,16 +18,6 @@ export class SpawnFloor extends Tile {
   }
 
   draw = () => {
-    Game.drawTile(
-      this.variation,
-      this.level.env,
-      1,
-      1,
-      this.x,
-      this.y,
-      this.w,
-      this.h,
-      this.isShaded()
-    );
+    Game.drawTile(this.variation, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
   };
 }

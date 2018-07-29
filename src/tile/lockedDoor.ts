@@ -4,9 +4,11 @@ import { Level } from "../level";
 import { Game } from "../game";
 import { Door } from "./door";
 import { Key } from "../item/key";
+import { SkinType } from "./tile";
 
 export class LockedDoor extends Collidable {
   unlockedDoor: Door;
+  skin: SkinType;
 
   unlock = (player: Player) => {
     let k = player.inventory.hasItem(Key);
@@ -19,6 +21,6 @@ export class LockedDoor extends Collidable {
   };
 
   draw = () => {
-    Game.drawTile(17, this.level.env, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(17, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
   };
 }

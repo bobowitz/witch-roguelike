@@ -24,6 +24,8 @@ export class Enemy extends Collidable {
   tileY: number;
   hasShadow: boolean;
   skipNextTurns: number;
+  pushable: boolean; // can the player push this enemy? (true for crates/barrels, false for regular mobs)
+  chainPushable: boolean; // can the player pushing another enemy push this enemy? (false for crates/barrels, true for regular mobs)
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
@@ -36,6 +38,8 @@ export class Enemy extends Collidable {
     this.hasShadow = true;
     this.skipNextTurns = 0;
     this.direction = EnemyDirection.DOWN;
+    this.pushable = false;
+    this.chainPushable = true;
   }
 
   tryMove = (x: number, y: number) => {
@@ -70,7 +74,10 @@ export class Enemy extends Collidable {
   };
 
   kill = () => {
-    this.level.levelArray[this.x][this.y] = new Bones(this.level, this.x, this.y);
+    let b = new Bones(this.level, this.x, this.y);
+    b.skin = this.level.levelArray[this.x][this.y].skin;
+    this.level.levelArray[this.x][this.y] = b;
+
     this.dead = true;
     this.level.particles.push(new DeathParticle(this.x, this.y));
   };

@@ -12,6 +12,8 @@ export class Barrel extends Enemy {
     this.tileX = 1;
     this.tileY = 0;
     this.hasShadow = false;
+    this.pushable = true;
+    this.chainPushable = false;
   }
 
   kill = () => {
