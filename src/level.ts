@@ -596,7 +596,7 @@ export class Level {
 
   enterLevel = () => {
     this.updateLevelTextColor();
-    this.game.player.moveNoSmooth(
+    this.game.player.moveSnap(
       this.roomX + Math.floor(this.width / 2),
       this.roomY + this.height - 1
     );

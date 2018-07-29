@@ -2062,6 +2062,12 @@ var Player = (function () {
             _this.game.level.updateLighting();
         };
         this.moveNoSmooth = function (x, y) {
+            // doesn't touch smoothing
+            _this.x = x;
+            _this.y = y;
+        };
+        this.moveSnap = function (x, y) {
+            // no smoothing
             _this.x = x;
             _this.y = y;
             _this.drawX = 0;
@@ -2944,7 +2950,7 @@ var Level = (function () {
         };
         this.enterLevel = function () {
             _this.updateLevelTextColor();
-            _this.game.player.moveNoSmooth(_this.roomX + Math.floor(_this.width / 2), _this.roomY + _this.height - 1);
+            _this.game.player.moveSnap(_this.roomX + Math.floor(_this.width / 2), _this.roomY + _this.height - 1);
             _this.updateLighting();
         };
         this.enterLevelThroughDoor = function (door) {

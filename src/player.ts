@@ -364,6 +364,13 @@ export class Player {
   };
 
   moveNoSmooth = (x: number, y: number) => {
+    // doesn't touch smoothing
+    this.x = x;
+    this.y = y;
+  };
+
+  moveSnap = (x: number, y: number) => {
+    // no smoothing
     this.x = x;
     this.y = y;
     this.drawX = 0;
