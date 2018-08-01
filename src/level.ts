@@ -72,6 +72,7 @@ export class Level {
   turn: TurnState;
   static turnStartTime: number; // in milliseconds
   skin: SkinType;
+  entered: boolean; // has the player entered this level
 
   private pointInside(
     x: number,
@@ -464,13 +465,15 @@ export class Level {
     type: RoomType,
     difficulty: number
   ) {
-    this.difficulty = difficulty;
-
+    this.game = game;
     this.x = x;
     this.y = y;
-
+    this.width = w;
+    this.height = h;
     this.type = type;
+    this.difficulty = difficulty;
 
+    this.entered = false;
     this.turn = TurnState.playerTurn;
 
     this.items = Array<Item>();
@@ -478,12 +481,6 @@ export class Level {
     this.particles = Array<Particle>();
     this.doors = Array<Door>();
     this.enemies = Array<Enemy>();
-
-    // if previousDoor is null, no bottom door
-    this.game = game;
-
-    this.width = w;
-    this.height = h;
 
     this.levelArray = [];
     for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
@@ -602,6 +599,7 @@ export class Level {
     );
 
     this.updateLighting();
+    this.entered = true;
   };
 
   enterLevelThroughDoor = (door: any) => {
@@ -614,6 +612,7 @@ export class Level {
     }
 
     this.updateLighting();
+    this.entered = true;
   };
 
   getEmptyTiles = (): Tile[] => {
@@ -654,7 +653,7 @@ export class Level {
     for (let x = 0; x < this.levelArray.length; x++) {
       oldVisibilityArray[x] = [];
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        oldVisibilityArray[x][y] = this.visibilityArray[x][y] !== 0;
+        oldVisibilityArray[x][y] = this.visibilityArray[x][y] >= LevelConstants.MIN_VISIBILITY;
         this.visibilityArray[x][y] = 0;
       }
     }
@@ -666,8 +665,10 @@ export class Level {
 
     for (let x = 0; x < this.visibilityArray.length; x++) {
       for (let y = 0; y < this.visibilityArray[0].length; y++) {
-        this.visibilityArray[x][y] = Math.floor(this.visibilityArray[x][y]);
-        if (this.visibilityArray[x][y] === 0 && oldVisibilityArray[x][y]) {
+        if (
+          this.visibilityArray[x][y] < LevelConstants.MIN_VISIBILITY &&
+          oldVisibilityArray[x][y]
+        ) {
           this.visibilityArray[x][y] = LevelConstants.MIN_VISIBILITY; // once a tile has been viewed, it won't go below MIN_VISIBILITY
         }
       }
@@ -683,6 +684,13 @@ export class Level {
     let i = 0;
     let hitWall = false; // flag for if we already hit a wall. we'll keep scanning and see if there's more walls. if so, light them up!
     for (; i < radius; i++) {
+      if (
+        Math.floor(px) < 0 ||
+        Math.floor(px) >= this.levelArray.length ||
+        Math.floor(py) < 0 ||
+        Math.floor(py) >= this.levelArray[0].length
+      )
+        return; // we're outside the level
       let tile = this.levelArray[Math.floor(px)][Math.floor(py)];
       if (tile instanceof Wall && tile.type === 1) {
         return returnVal;
@@ -809,15 +817,12 @@ export class Level {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
         if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].draw();
 
-        // fill in shadows too
-        if (this.visibilityArray[x][y] === 0) {
-          Game.ctx.fillStyle = "black";
-          Game.ctx.fillRect(
-            x * GameConstants.TILESIZE,
-            y * GameConstants.TILESIZE,
-            GameConstants.TILESIZE,
-            GameConstants.TILESIZE
-          );
+        if (
+          this.visibilityArray[x][y] > 0 &&
+          this.visibilityArray[x][y] < LevelConstants.MIN_VISIBILITY
+        ) {
+          let frame = Math.round(6 * (this.visibilityArray[x][y] / LevelConstants.MIN_VISIBILITY));
+          Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
         }
       }
     }

@@ -1,7 +1,6 @@
 import { Game } from "../game";
 import { Collidable } from "./collidable";
 import { Level } from "../level";
-import { SkinType } from "./tile";
 
 export class Wall extends Collidable {
   type: number;

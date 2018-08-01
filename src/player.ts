@@ -26,6 +26,7 @@ import { WizardFireball } from "./projectile/wizardFireball";
 import { Barrel } from "./enemy/barrel";
 import { Wall } from "./tile/wall";
 import { SpikeTrap } from "./tile/spiketrap";
+import { Map } from "./map";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -55,6 +56,7 @@ export class Player {
   missProb: number;
   sightRadius: number;
   guiHeartFrame: number;
+  map: Map;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -88,7 +90,9 @@ export class Player {
 
     this.armor = null;
 
-    this.sightRadius = 4; // maybe can be manipulated by items? e.g. better torch
+    this.sightRadius = 7; // maybe can be manipulated by items? e.g. better torch
+
+    this.map = new Map(this.game);
   }
 
   iListener = () => {
@@ -458,5 +462,11 @@ export class Player {
       );
     }
     this.inventory.draw();
+    if (Input.isDown(Input.N)) {
+      this.map.draw(true);
+    }
+    if (Input.isDown(Input.M)) {
+      this.map.draw();
+    }
   };
 }

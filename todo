@@ -2,7 +2,7 @@
 BUGS
 ****
 
-no bugs in the bug tracker
+sometimes rooms can have inaccessible portions due to sideways fingers
 
 ***********
 NEEDS JUICE
@@ -12,11 +12,15 @@ getting hit
 getting hit with armor on
 hitting mobs
 opening chests
-opening doors
 
 ****
 TODO
 ****
+
+level progression
+items, inventory, gems, shops
+puzzle rooms
+tutorial level + intro
 
 room transitions
 room types - PUZZLE ROOMS
@@ -28,17 +32,13 @@ draw enemies' moves after player's
 add a proper inventory, so you can equip equippables and use usables
 add a bunch more items, and make the monsters drop them
 add stairs
-add fountains
-add xp and leveling up
+add fountain functionality
 add a bunch more monsters
-
-do mockups for current environments
 
 ***************
 LONG TERM GOALS
 ***************
 
 inventory screen with more detailed pictures for items
-long rooms
-dungeon sub dungeon catacombs (rand-gen, infinite)
-draw adjacent levels in shadow
+dungeon sub dungeon catacombs/mines (rand-gen, infinite)
+draw adjacent levels in shadow?

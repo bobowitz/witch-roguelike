@@ -18,6 +18,8 @@ export const Input = {
   UP: 38,
   RIGHT: 39,
   DOWN: 40,
+  M: 77,
+  N: 78,
 
   isDown: function(keyCode: number) {
     return this._pressed[keyCode];

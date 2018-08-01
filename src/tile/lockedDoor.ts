@@ -4,11 +4,9 @@ import { Level } from "../level";
 import { Game } from "../game";
 import { Door } from "./door";
 import { Key } from "../item/key";
-import { SkinType } from "./tile";
 
 export class LockedDoor extends Collidable {
   unlockedDoor: Door;
-  skin: SkinType;
 
   unlock = (player: Player) => {
     let k = player.inventory.hasItem(Key);

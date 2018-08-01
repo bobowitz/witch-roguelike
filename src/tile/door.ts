@@ -3,13 +3,12 @@ import { Player } from "../player";
 import { Game } from "../game";
 import { Level } from "../level";
 import { BottomDoor } from "./bottomDoor";
-import { SkinType } from "./tile";
+import { GameConstants } from "../gameConstants";
 
 export class Door extends Collidable {
   linkedDoor: BottomDoor;
   game: Game;
   opened: boolean;
-  skin: SkinType;
 
   constructor(level: Level, game: Game, x: number, y: number, linkedDoor: BottomDoor) {
     super(level, x, y);
@@ -27,5 +26,10 @@ export class Door extends Collidable {
     if (this.opened)
       Game.drawTile(6, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
     else Game.drawTile(3, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+  };
+
+  drawAbovePlayer = () => {
+    if (!this.opened)
+      Game.drawTile(13, this.skin, 1, 1, this.x, this.y - 1, this.w, this.h, this.isShaded());
   };
 }

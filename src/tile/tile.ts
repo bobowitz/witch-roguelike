@@ -20,7 +20,7 @@ export class Tile {
   }
 
   isShaded = () => {
-    return this.level.visibilityArray[this.x][this.y] <= LevelConstants.VISIBILITY_CUTOFF;
+    return this.level.visibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
   };
 
   draw = () => {};

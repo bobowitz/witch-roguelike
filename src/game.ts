@@ -134,6 +134,7 @@ export class Game {
   };
 
   draw = () => {
+    Game.ctx.globalAlpha = 1;
     Game.ctx.fillStyle = "black";
     Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
@@ -198,8 +199,6 @@ export class Game {
         }
       }
       Game.ctx.translate(-levelOffsetX, -levelOffsetY);
-
-      this.player.drawTopLayer();
 
       Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
       this.level.draw();

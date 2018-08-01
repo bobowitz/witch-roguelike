@@ -18,14 +18,4 @@ export class BottomDoor extends Collidable {
   onCollide = (player: Player) => {
     this.game.changeLevelThroughDoor(this.linkedDoor);
   };
-
-  draw = () => {
-    Game.ctx.fillStyle = "black";
-    Game.ctx.fillRect(
-      this.x * GameConstants.TILESIZE,
-      this.y * GameConstants.TILESIZE,
-      GameConstants.TILESIZE,
-      GameConstants.TILESIZE
-    );
-  };
 }

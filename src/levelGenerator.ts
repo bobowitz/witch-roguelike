@@ -2,8 +2,20 @@ import { Game } from "./game";
 import { Level, RoomType } from "./level";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
+import { LevelConstants } from "./levelConstants";
 
-let ROOM_SIZE = [5, 5, 5, 7, 7, 7, 9, 9, 11, 13];
+let ROOM_SIZE = [5, 5, 7, 7, 9, 11, 11, 11, 13, 13];
+
+class N {
+  // Node
+  type: RoomType;
+  children: N[];
+
+  constructor(type: RoomType, children: N[]) {
+    this.type = type;
+    this.children = children;
+  }
+}
 
 class Room {
   x: number;
@@ -24,15 +36,15 @@ class Room {
 
   collides = r => {
     if (this.x > r.x + r.w || this.x + this.w < r.x) return false;
-    if (this.y > r.y + r.h || this.y + this.h < r.y) return false;
+    if (this.y >= r.y + r.h || this.y + this.h <= r.y) return false;
     return true;
   };
 
   getPoints = () => {
     return [
-      { x: this.x, y: this.y - 1 },
-      { x: Math.floor(this.x + this.w / 2), y: this.y - 1 },
-      { x: this.x + this.w - 1, y: this.y - 1 },
+      { x: this.x, y: this.y },
+      { x: Math.floor(this.x + this.w / 2), y: this.y },
+      { x: this.x + this.w - 1, y: this.y },
       { x: this.x, y: this.y + this.h },
       { x: Math.floor(this.x + this.w / 2), y: this.y + this.h },
       { x: this.x + this.w - 1, y: this.y + this.h },
@@ -43,7 +55,7 @@ class Room {
     return this.doors;
   };
 
-  generateAroundPoint = (p, dir, r) => {
+  generateAroundPoint = (p, dir) => {
     this.x = 0;
     this.y = 0;
     this.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
@@ -61,14 +73,9 @@ class Room {
 
     return ind;
   };
-
-  draw = (ctx: CanvasRenderingContext2D) => {
-    Game.ctx.fillRect(this.x, this.y, this.w, this.h);
-  };
 }
 
 export class LevelGenerator {
-  MAX_ROOMS = 15;
   rooms = [];
   game: Game;
 
@@ -84,10 +91,10 @@ export class LevelGenerator {
   pickType = r => {
     let type = RoomType.DUNGEON;
 
-    switch (Game.rand(1, 12)) {
+    switch (Game.rand(1, 9)) {
       case 1:
         type = RoomType.FOUNTAIN;
-        if (r.h <= 5 || (r.w > 7 && r.h > 7)) type = this.pickType(r);
+        if (r.h <= 5 || (r.w > 9 && r.h > 9)) type = this.pickType(r);
         break;
       case 2:
         type = RoomType.COFFIN;
@@ -104,56 +111,89 @@ export class LevelGenerator {
     return type;
   };
 
-  addRooms = () => {
-    for (let i = 0; i < this.rooms.length; i++) {
-      if (!this.rooms[i].doneAdding) {
-        let order = [1, 4, 0, 2, 3, 5];
+  shuffle = (a: any[]) => {
+    var j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      x = a[i];
+      a[i] = a[j];
+      a[j] = x;
+    }
+    return a;
+  };
 
-        let points = this.rooms[i].getPoints();
+  addRooms = (thisNode: N, parent: Room, parentLevel: Level) => {
+    let order = this.shuffle([0, 1, 2, 3, 4, 5]);
 
-        for (let j = 0; j < order.length; j++) {
-          let ind = order[j];
-          for (let k = 0; k < 5; k++) {
-            let r = new Room();
-            r.x = 0;
-            r.y = 0;
-            let newLevelDoorDir = r.generateAroundPoint(points[ind], ind, this.rooms[i]);
-            if (this.noCollisions(r)) {
-              // TODO: trapdoors
-              let type = this.pickType(r);
-              let level = new Level(this.game, r.x, r.y, r.w, r.h, type, 0);
-              this.game.levels.push(level);
-              let newDoor = level.addDoor(newLevelDoorDir, null);
-              this.rooms[i].doors[ind] = this.game.levels[i].addDoor(ind, newDoor);
-              newDoor.linkedDoor = this.rooms[i].doors[ind];
-              r.doors[newLevelDoorDir] = newDoor;
-              this.rooms.push(r);
-              if (this.rooms.length >= this.MAX_ROOMS) return;
-              break;
-            }
-          }
+    //console.log(thisNode, parent);
+
+    let points;
+    if (parent) points = parent.getPoints();
+    for (let i = 0; i < order.length; i++) {
+      let ind = order[i];
+      for (let j = 0; j < 20; j++) {
+        let r = new Room();
+        r.x = 0;
+        r.y = 0;
+        let newLevelDoorDir = Game.rand(1, 6);
+        if (parent) newLevelDoorDir = r.generateAroundPoint(points[ind], ind);
+        else {
+          r.x = 128;
+          r.y = 128;
+          r.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         }
-        this.rooms[i].doneAdding = true;
+        if (this.noCollisions(r)) {
+          let level = new Level(this.game, r.x, r.y, r.w, r.h, thisNode.type, 0);
+          this.game.levels.push(level);
+          if (parentLevel) {
+            let newDoor = level.addDoor(newLevelDoorDir, null);
+            parentLevel.doors[ind] = parentLevel.addDoor(ind, newDoor);
+            newDoor.linkedDoor = parentLevel.doors[ind];
+            r.doors[newLevelDoorDir] = newDoor;
+          }
+          this.rooms.push(r);
+          for (const child of thisNode.children) {
+            if (!this.addRooms(child, r, level)) return false;
+          }
+          return true;
+        }
       }
     }
+    return false;
   };
 
   constructor(game: Game) {
+    // prettier-ignore
+    let node = new N(RoomType.DUNGEON, [
+      new N(RoomType.DUNGEON, [
+        new N(RoomType.COFFIN, [])
+      ]),
+      new N(RoomType.DUNGEON, [
+        new N(RoomType.DUNGEON, [
+          new N(RoomType.DUNGEON, [
+            new N(RoomType.FOUNTAIN, [
+              new N(RoomType.DUNGEON, [
+                new N(RoomType.DUNGEON, [
+                  new N(RoomType.KEYROOM, [])
+                ]),
+              ]),
+            ]),
+          ]),
+          new N(RoomType.GRASS, [
+            new N(RoomType.GRASS, [])
+          ]),
+        ]),
+      ]),
+    ]);
+
     this.game = game;
-    let r = new Room();
-    r.x = 128;
-    r.y = 128;
-    r.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-    r.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-    let type = this.pickType(r);
-    let level = new Level(this.game, r.x, r.y, r.w, r.h, type, 0);
-    this.game.levels.push(level);
-    this.rooms.push(r);
 
-    while (this.rooms.length < this.MAX_ROOMS) {
-      this.addRooms();
-    }
-
-    this.rooms.forEach(r => r.draw());
+    let success = false;
+    do {
+      this.rooms.splice(0);
+      this.game.levels.splice(0);
+      success = this.addRooms(node, null, null);
+    } while (!success);
   }
 }

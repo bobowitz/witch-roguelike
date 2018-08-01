@@ -13,8 +13,9 @@ export class Floor extends Tile {
     this.w = 1;
     this.h = 1;
     this.variation = 1;
-    if (Game.rand(1, 20) === 1 || (this.skin == SkinType.GRASS && Game.rand(1, 2) === 1))
-      this.variation = Game.randTable([8, 9, 10, 12]);
+    if (this.skin == SkinType.DUNGEON)
+      this.variation = Game.randTable([1, 1, 1, 1, 1, 1, 8, 8, 8, 9, 10, 10, 10, 10, 10, 12]);
+    if (this.skin == SkinType.GRASS) this.variation = Game.randTable([1, 1, 1, 1, 8, 9, 10, 12]);
   }
 
   draw = () => {
