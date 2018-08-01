@@ -654,6 +654,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var collidable_1 = __webpack_require__(1);
 var game_1 = __webpack_require__(0);
+var tile_1 = __webpack_require__(5);
 var Door = (function (_super) {
     __extends(Door, _super);
     function Door(level, game, x, y, linkedDoor) {
@@ -669,7 +670,7 @@ var Door = (function (_super) {
                 game_1.Game.drawTile(3, _this.skin, 1, 1, _this.x, _this.y, _this.w, _this.h, _this.isShaded());
         };
         _this.drawAbovePlayer = function () {
-            if (!_this.opened)
+            if (!_this.opened && _this.skin === tile_1.SkinType.DUNGEON)
                 game_1.Game.drawTile(13, _this.skin, 1, 1, _this.x, _this.y - 1, _this.w, _this.h, _this.isShaded());
         };
         _this.game = game;

@@ -4,6 +4,7 @@ import { Game } from "../game";
 import { Level } from "../level";
 import { BottomDoor } from "./bottomDoor";
 import { GameConstants } from "../gameConstants";
+import { SkinType } from "./tile";
 
 export class Door extends Collidable {
   linkedDoor: BottomDoor;
@@ -29,7 +30,7 @@ export class Door extends Collidable {
   };
 
   drawAbovePlayer = () => {
-    if (!this.opened)
+    if (!this.opened && this.skin === SkinType.DUNGEON)
       Game.drawTile(13, this.skin, 1, 1, this.x, this.y - 1, this.w, this.h, this.isShaded());
   };
 }
