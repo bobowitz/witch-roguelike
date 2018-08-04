@@ -9,6 +9,7 @@ import { Bones } from "../tile/bones";
 import { GameConstants } from "../gameConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
+import { HitWarning } from "../projectile/hitWarning";
 
 export class SkullEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -87,6 +88,11 @@ export class SkullEnemy extends Enemy {
           else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
           else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
           else if (this.y < oldY) this.direction = EnemyDirection.UP;
+
+          this.level.projectiles.push(new HitWarning(this.x - 1, this.y));
+          this.level.projectiles.push(new HitWarning(this.x + 1, this.y));
+          this.level.projectiles.push(new HitWarning(this.x, this.y - 1));
+          this.level.projectiles.push(new HitWarning(this.x, this.y + 1));
         }
       }
     }

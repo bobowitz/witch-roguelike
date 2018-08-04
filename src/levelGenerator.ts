@@ -165,7 +165,7 @@ export class LevelGenerator {
 
   constructor(game: Game) {
     // prettier-ignore
-    let node = new N(RoomType.DUNGEON, [
+    let node = new N(RoomType.PUZZLE, [
       new N(RoomType.DUNGEON, [
         new N(RoomType.COFFIN, [])
       ]),
@@ -178,10 +178,13 @@ export class LevelGenerator {
                   new N(RoomType.KEYROOM, [])
                 ]),
               ]),
+              new N(RoomType.TREASURE, []),
             ]),
           ]),
           new N(RoomType.GRASS, [
-            new N(RoomType.GRASS, [])
+            new N(RoomType.GRASS, [
+              new N(RoomType.TREASURE, [])
+            ])
           ]),
         ]),
       ]),

@@ -8,6 +8,7 @@ import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
 import { DeathParticle } from "../particle/deathParticle";
 import { GameConstants } from "../gameConstants";
+import { HitWarning } from "../projectile/hitWarning";
 
 export class KnightEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -36,9 +37,9 @@ export class KnightEnemy extends Enemy {
       }
       this.ticks++;
       this.tileX = 5;
-      if (this.ticks % 2 === 0) {
-        this.tileX = 4;
-        if (this.seenPlayer || this.level.visibilityArray[this.x][this.y] > 0) {
+      if (this.seenPlayer || this.level.visibilityArray[this.x][this.y] > 0) {
+        if (this.ticks % 2 === 0) {
+          this.tileX = 4;
           // visible to player, chase them
 
           // now that we've seen the player, we can keep chasing them even if we lose line of sight
@@ -73,6 +74,11 @@ export class KnightEnemy extends Enemy {
           else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
           else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
           else if (this.y < oldY) this.direction = EnemyDirection.UP;
+        } else {
+          this.level.projectiles.push(new HitWarning(this.x - 1, this.y));
+          this.level.projectiles.push(new HitWarning(this.x + 1, this.y));
+          this.level.projectiles.push(new HitWarning(this.x, this.y - 1));
+          this.level.projectiles.push(new HitWarning(this.x, this.y + 1));
         }
       }
     }
