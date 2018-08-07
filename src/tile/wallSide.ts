@@ -1,8 +1,15 @@
 import { Game } from "../game";
-import { Collidable } from "./collidable";
+import { Tile } from "./tile";
 
-export class WallSide extends Collidable {
+export class WallSide extends Tile {
+  isSolid = (): boolean => {
+    return true;
+  };
+  isOpaque = (): boolean => {
+    return true;
+  };
+
   draw = () => {
-    Game.drawTile(0, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(0, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 }

@@ -20,13 +20,14 @@ import { Pickup } from "./item/pickup";
 import { Crate } from "./enemy/crate";
 import { Stats } from "./stats";
 import { GoldenDoor } from "./tile/goldenDoor";
-import { UnlockedGoldenDoor } from "./tile/unlockedGoldenDoor";
 import { Chest } from "./enemy/chest";
 import { WizardFireball } from "./projectile/wizardFireball";
 import { Barrel } from "./enemy/barrel";
 import { Wall } from "./tile/wall";
 import { SpikeTrap } from "./tile/spiketrap";
 import { Map } from "./map";
+import { InsideLevelDoor } from "./tile/insideLevelDoor";
+import { Button } from "./tile/button";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -70,8 +71,6 @@ export class Player {
     Input.iUpListener = this.iUpListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
-    //Input.mListener = this.map.open; MAP DISABLED
-    //Input.mUpListener = this.map.close;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
@@ -145,19 +144,15 @@ export class Player {
     while (x !== startX + 2 * dx || y !== startY + 2 * dy) {
       x += dx;
       y += dy;
-      let other = this.game.level.getCollidable(x, y);
-      if (other === null) {
-      } else if (other instanceof Spike || other instanceof SpikeTrap) {
+      let other = this.game.level.levelArray[x][y];
+      if (other.isSolid()) break;
+      if (other instanceof Door || other instanceof BottomDoor) {
+        this.move(x, y);
         other.onCollide(this);
-      } else if (other instanceof Door || other instanceof BottomDoor) {
-        if (x - this.x === 0) {
-          this.move(x, y);
-          other.onCollide(this);
-          return;
-        }
-      } else {
-        break;
+        return;
       }
+      other.onCollide(this);
+
       this.game.level.particles.push(
         new DashParticle(
           this.x,
@@ -171,15 +166,12 @@ export class Player {
       for (let e of this.game.level.enemies) {
         if (e.x === x && e.y === y) {
           let dmg = this.hit();
-          e.hurt(this, dmg);
+          e.hurt(dmg);
           this.game.level.particles.push(
             new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
           );
           if (e instanceof Chest) {
             breakFlag = true;
-            if (this.game.level.getCollidable(this.x, this.y) instanceof SpikeTrap) {
-              (this.game.level.getCollidable(this.x, this.y) as SpikeTrap).onCollide(this);
-            }
             this.game.level.tick();
             break;
           }
@@ -240,7 +232,7 @@ export class Player {
           // here, (nextX, nextY) is the position immediately after the end of the train
           if (
             pushedEnemies.length === 0 &&
-            (this.game.level.getCollidable(nextX, nextY) !== null || enemyEnd)
+            (this.game.level.levelArray[nextX][nextY].isSolid() || enemyEnd)
           ) {
             return;
           } else {
@@ -251,7 +243,7 @@ export class Player {
               f.drawY = dy;
               f.skipNextTurns = 1; // skip next turn, so they don't move while we're pushing them
             }
-            if (this.game.level.getCollidable(nextX, nextY) !== null || enemyEnd)
+            if (this.game.level.levelArray[nextX][nextY].isSolid() || enemyEnd)
               pushedEnemies[pushedEnemies.length - 1].killNoBones();
             e.x += dx;
             e.y += dy;
@@ -267,41 +259,17 @@ export class Player {
         }
       }
     }
-    let other = this.game.level.getCollidable(x, y);
-    if (other === null) {
+    let other = this.game.level.levelArray[x][y];
+    if (!other.isSolid()) {
       this.move(x, y);
-      this.game.level.tick();
+      other.onCollide(this);
+      if (!(other instanceof Door || other instanceof BottomDoor || other instanceof Trapdoor))
+        this.game.level.tick();
     } else {
-      if (other instanceof Door) {
-        if (x - this.x === 0) {
-          this.move(x, y);
-          other.onCollide(this);
-        }
-      } else if (other instanceof UnlockedGoldenDoor) {
-        if (x - this.x === 0) {
-          this.move(x, y);
-          other.onCollide(this);
-        }
-      } else if (other instanceof LockedDoor) {
-        if (x - this.x === 0) {
-          this.drawX = (this.x - x) * 0.5;
-          this.drawY = (this.y - y) * 0.5;
-          other.unlock(this);
-          this.game.level.tick();
-        }
-      } else if (other instanceof GoldenDoor) {
-        if (x - this.x === 0) {
-          this.drawX = (this.x - x) * 0.5;
-          this.drawY = (this.y - y) * 0.5;
-          other.unlock(this);
-          this.game.level.tick();
-        }
-      } else if (other instanceof BottomDoor || other instanceof Trapdoor) {
-        this.move(x, y);
-        other.onCollide(this);
-      } else if (other instanceof Spike || other instanceof SpikeTrap) {
-        this.move(x, y);
-        other.onCollide(this);
+      if (other instanceof LockedDoor) {
+        this.drawX = (this.x - x) * 0.5;
+        this.drawY = (this.y - y) * 0.5;
+        other.unlock(this);
         this.game.level.tick();
       }
     }
@@ -382,8 +350,6 @@ export class Player {
   };
 
   update = () => {};
-
-  startTick = () => {};
 
   finishTick = () => {
     this.flashing = false;

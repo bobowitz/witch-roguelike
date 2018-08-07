@@ -1,11 +1,11 @@
-import { Collidable } from "./collidable";
 import { Game } from "../game";
 import { Level } from "../level";
 import { Door } from "./door";
 import { Player } from "../player";
 import { GameConstants } from "../gameConstants";
+import { Tile } from "./tile";
 
-export class BottomDoor extends Collidable {
+export class BottomDoor extends Tile {
   linkedDoor: Door;
   game: Game;
 

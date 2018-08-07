@@ -5,25 +5,26 @@ import { BottomDoor } from "./bottomDoor";
 import { GameConstants } from "../gameConstants";
 import { SkinType, Tile } from "./tile";
 
-export class Door extends Tile {
-  linkedDoor: BottomDoor;
+export class InsideLevelDoor extends Tile {
   game: Game;
   opened: boolean;
 
-  constructor(level: Level, game: Game, x: number, y: number, linkedDoor: BottomDoor) {
+  constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
     this.game = game;
-    this.linkedDoor = linkedDoor;
     this.opened = false;
   }
 
-  onCollide = (player: Player) => {
-    this.opened = true;
-    this.game.changeLevelThroughDoor(this.linkedDoor);
+  isSolid = (): boolean => {
+    return !this.opened;
+  };
+  isOpaque = (): boolean => {
+    return !this.opened;
   };
 
   draw = () => {
-    if (this.opened) Game.drawTile(6, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    if (this.opened) Game.drawTile(15, 1, 1, 1, this.x, this.y, 1, 1, this.isShaded());
     else Game.drawTile(3, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 

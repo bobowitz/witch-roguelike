@@ -1,8 +1,8 @@
-import { Collidable } from "./collidable";
 import { Level } from "../level";
 import { Game } from "../game";
+import { Tile } from "./tile";
 
-export class FountainTile extends Collidable {
+export class FountainTile extends Tile {
   subTileX: number; // each fountain is 3x3, this is the sub-tile coordinate
   subTileY: number;
 
@@ -12,18 +12,12 @@ export class FountainTile extends Collidable {
     this.subTileY = subTileY;
   }
 
+  isSolid = (): boolean => {
+    return true;
+  };
+
   draw = () => {
-    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
-    Game.drawTile(
-      this.subTileX,
-      2 + this.subTileY,
-      1,
-      1,
-      this.x,
-      this.y,
-      this.w,
-      this.h,
-      this.isShaded()
-    );
+    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(this.subTileX, 2 + this.subTileY, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 }

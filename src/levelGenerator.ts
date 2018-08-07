@@ -55,11 +55,16 @@ class Room {
     return this.doors;
   };
 
-  generateAroundPoint = (p, dir) => {
+  generateAroundPoint = (p, dir, w?, h?) => {
     this.x = 0;
     this.y = 0;
-    this.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-    this.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+    if (w) {
+      this.w = w;
+      this.h = h;
+    } else {
+      this.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+      this.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+    }
 
     let ind = 1;
     if (dir === 0 || dir === 1 || dir === 2) {
@@ -136,12 +141,30 @@ export class LevelGenerator {
         r.x = 0;
         r.y = 0;
         let newLevelDoorDir = Game.rand(1, 6);
-        if (parent) newLevelDoorDir = r.generateAroundPoint(points[ind], ind);
-        else {
+        if (parent) {
+          switch (thisNode.type) {
+            case RoomType.PUZZLE:
+            case RoomType.COFFIN:
+            case RoomType.FOUNTAIN:
+              newLevelDoorDir = r.generateAroundPoint(points[ind], ind, 11, 11);
+              break;
+            case RoomType.SPIKECORRIDOR:
+              newLevelDoorDir = r.generateAroundPoint(
+                points[ind],
+                ind,
+                Game.randTable([3, 5]),
+                Game.randTable([9, 10, 11])
+              );
+              break;
+            default:
+              newLevelDoorDir = r.generateAroundPoint(points[ind], ind);
+              break;
+          }
+        } else {
           r.x = 128;
           r.y = 128;
-          r.w = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-          r.h = ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.w = 11; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.h = 11; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         }
         if (this.noCollisions(r)) {
           let level = new Level(this.game, r.x, r.y, r.w, r.h, thisNode.type, 0);
@@ -165,16 +188,21 @@ export class LevelGenerator {
 
   constructor(game: Game) {
     // prettier-ignore
-    let node = new N(RoomType.PUZZLE, [
+    let node = new N(RoomType.DUNGEON, [
       new N(RoomType.DUNGEON, [
         new N(RoomType.COFFIN, [])
+      ]),
+      new N(RoomType.PUZZLE, [
+        new N(RoomType.SPIKECORRIDOR, [
+          new N(RoomType.TREASURE, [])
+        ])
       ]),
       new N(RoomType.DUNGEON, [
         new N(RoomType.DUNGEON, [
           new N(RoomType.DUNGEON, [
             new N(RoomType.FOUNTAIN, [
               new N(RoomType.DUNGEON, [
-                new N(RoomType.DUNGEON, [
+                new N(RoomType.SPIKECORRIDOR, [
                   new N(RoomType.KEYROOM, [])
                 ]),
               ]),

@@ -35,11 +35,10 @@ export class SkullEnemy extends Enemy {
     return 1;
   };
 
-  hurt = (player: Player, damage: number) => {
+  hurt = (damage: number) => {
     this.ticksSinceFirstHit = 0;
-    this.health -= damage;
+  this.health -= damage;
     if (this.health <= 0) {
-      player.stats.getXP(this.dropXP());
       this.kill();
     }
   };

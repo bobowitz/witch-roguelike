@@ -1,18 +1,21 @@
-import { Collidable } from "./collidable";
 import { Player } from "../player";
 import { Game } from "../game";
-import { TickCollidable } from "./tickCollidable";
 import { Level } from "../level";
 import { LevelConstants } from "../levelConstants";
+import { Tile } from "./tile";
+import { Enemy } from "../enemy/enemy";
+import { Crate } from "../enemy/crate";
+import { Barrel } from "../enemy/barrel";
 
-export class SpikeTrap extends TickCollidable {
+export class SpikeTrap extends Tile {
   on: boolean;
   tickCount: number;
   frame: number;
 
-  constructor(level: Level, x: number, y: number) {
+  constructor(level: Level, x: number, y: number, tickCount?: number) {
     super(level, x, y);
-    this.tickCount = 0;
+    if (tickCount) this.tickCount = tickCount;
+    else this.tickCount = 0;
     this.on = false;
     this.frame = 0;
   }
@@ -23,8 +26,20 @@ export class SpikeTrap extends TickCollidable {
     if (this.tickCount === 0) this.on = true;
     else if (this.tickCount === 1) this.on = false;
 
-    if (this.on && this.level.game.player.x === this.x && this.level.game.player.y === this.y)
-      this.level.game.player.hurt(1);
+    if (this.on) {
+      if (this.level.game.player.x === this.x && this.level.game.player.y === this.y)
+        this.level.game.player.hurt(1);
+
+      for (const e of this.level.enemies) {
+        if (e.x === this.x && e.y === this.y) {
+          e.hurt(1);
+        }
+      }
+    }
+  };
+
+  onCollideEnemy = (enemy: Enemy) => {
+    if (this.on && !(enemy instanceof Crate || enemy instanceof Barrel)) enemy.hurt(1);
   };
 
   draw = () => {

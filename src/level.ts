@@ -2,7 +2,6 @@ import { Wall } from "./tile/wall";
 import { LevelConstants } from "./levelConstants";
 import { Floor } from "./tile/floor";
 import { Game, LevelState } from "./game";
-import { Collidable } from "./tile/collidable";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { WallSide } from "./tile/wallSide";
@@ -27,10 +26,12 @@ import { Armor } from "./item/armor";
 import { Particle } from "./particle/particle";
 import { Projectile } from "./projectile/projectile";
 import { SpikeTrap } from "./tile/spiketrap";
-import { TickCollidable } from "./tile/tickCollidable";
 import { FountainTile } from "./tile/fountainTile";
 import { CoffinTile } from "./tile/coffinTile";
 import { PottedPlant } from "./enemy/pottedPlant";
+import { InsideLevelDoor } from "./tile/insideLevelDoor";
+import { Button } from "./tile/button";
+import { HitWarning } from "./projectile/hitWarning";
 
 export enum RoomType {
   DUNGEON,
@@ -41,6 +42,9 @@ export enum RoomType {
   PUZZLE,
   KEYROOM,
   CHESSBOARD,
+  MAZE,
+  CORRIDOR,
+  SPIKECORRIDOR,
 }
 
 export enum TurnState {
@@ -413,9 +417,55 @@ export class Level {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
-    this.fixWalls();
+
+    let d;
+
+    for (let x = this.roomX; x < this.roomX + this.width; x++) {
+      let y = this.roomY + Math.floor(this.height / 2);
+      if (x === this.roomX + Math.floor(this.width / 2)) {
+        d = new InsideLevelDoor(this, this.game, x, y + 1);
+        this.levelArray[x][y + 1] = d;
+      } else {
+        this.levelArray[x][y] = new Wall(this, x, y, 0);
+      }
+    }
+
+    let x = Game.rand(this.roomX, this.roomX + this.width - 1);
+    let y = Game.rand(this.roomY + Math.floor(this.height / 2) + 3, this.roomY + this.height - 2);
+
+    this.levelArray[x][y] = new Button(this, x, y, d);
+
+    let crateTiles = this.getEmptyTiles().filter(
+      t =>
+        t.x >= this.roomX + 1 &&
+        t.x <= this.roomX + this.width - 2 &&
+        t.y >= this.roomY + Math.floor(this.height / 2) + 3 &&
+        t.y <= this.roomY + this.height - 2
+    );
+    let numCrates = Game.randTable([1, 2, 2, 3, 4]);
+
+    for (let i = 0; i < numCrates; i++) {
+      let t = crateTiles.splice(Game.rand(0, crateTiles.length - 1), 1)[0];
+
+      this.enemies.push(new Crate(this, this.game, t.x, t.y));
+    }
 
     this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
+
+    this.fixWalls();
+  };
+  generateSpikeCorridor = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
+
+    for (let x = this.roomX; x < this.roomX + this.width; x++) {
+      for (let y = this.roomY + 1; y < this.roomY + this.height - 1; y++) {
+        this.levelArray[x][y] = new SpikeTrap(this, x, y, Game.rand(0, 3));
+      }
+    }
+
+    this.fixWalls();
   };
   generateTreasure = () => {
     this.skin = SkinType.DUNGEON;
@@ -509,6 +559,9 @@ export class Level {
         break;
       case RoomType.PUZZLE: // TODO
         this.generatePuzzle();
+        break;
+      case RoomType.SPIKECORRIDOR:
+        this.generateSpikeCorridor();
         break;
       case RoomType.TREASURE:
         this.generateTreasure();
@@ -619,7 +672,7 @@ export class Level {
     let returnVal: Tile[] = [];
     for (let x = this.roomX; x < this.roomX + this.width; x++) {
       for (let y = this.roomY + 2; y < this.roomY + this.height - 1; y++) {
-        if (this.getCollidable(x, y) === null) {
+        if (!this.levelArray[x][y].isSolid()) {
           returnVal.push(this.levelArray[x][y]);
         }
       }
@@ -628,15 +681,6 @@ export class Level {
       returnVal = returnVal.filter(t => t.x !== e.x || t.y !== e.y);
     }
     return returnVal;
-  };
-
-  getCollidable = (x: number, y: number) => {
-    for (const col of this.levelArray) {
-      for (const tile of col) {
-        if (tile instanceof Collidable && tile.x === x && tile.y === y) return tile;
-      }
-    }
-    return null;
   };
 
   getTile = (x: number, y: number) => {
@@ -701,7 +745,7 @@ export class Level {
         return returnVal;
       }
 
-      if (tile instanceof Wall || tile instanceof WallSide) {
+      if (tile.isOpaque()) {
         if (!hitWall) returnVal = i;
         hitWall = true;
       }
@@ -712,8 +756,8 @@ export class Level {
         2
       );
 
-      // crates and chests can block visibility too!
-      for (const e of this.enemies) {
+      // crates and chests can block visibility too! (not anymore)
+      /*for (const e of this.enemies) {
         if (
           (e instanceof Crate || e instanceof Chest) &&
           e.x === Math.floor(px) &&
@@ -722,7 +766,7 @@ export class Level {
           if (!hitWall) returnVal = i;
           hitWall = true;
         }
-      }
+      }*/
 
       px += dx;
       py += dy;
@@ -758,18 +802,15 @@ export class Level {
   tick = () => {
     if (this.turn === TurnState.computerTurn) this.computerTurn(); // player skipped computer's turn, catch up
 
-    for (let x = 0; x < this.levelArray.length; x++) {
-      for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.levelArray[x][y] instanceof TickCollidable) {
-          (this.levelArray[x][y] as TickCollidable).tick();
-        }
-      }
-    }
-
-    this.game.player.startTick();
     if (this.game.player.armor) this.game.player.armor.tick();
     this.enemies = this.enemies.filter(e => !e.dead);
     this.updateLighting();
+
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        this.levelArray[x][y].tick();
+      }
+    }
 
     this.turn = TurnState.computerTurn;
 
@@ -798,7 +839,7 @@ export class Level {
     }
 
     for (const p of this.projectiles) {
-      if (this.getCollidable(p.x, p.y) !== null) p.dead = true;
+      if (this.levelArray[p.x][p.y].isSolid()) p.dead = true;
       if (p.x === this.game.player.x && p.y === this.game.player.y) {
         p.hitPlayer(this.game.player);
       }
@@ -808,11 +849,20 @@ export class Level {
         }
       }
     }
+
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        this.levelArray[x][y].tickEnd();
+      }
+    }
+
     this.game.player.finishTick();
     this.turn = TurnState.playerTurn; // now it's the player's turn
   };
 
   draw = () => {
+    HitWarning.updateFrame();
+
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
         if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].draw();

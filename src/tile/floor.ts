@@ -4,14 +4,10 @@ import { Level } from "../level";
 
 export class Floor extends Tile {
   // all are in grid units
-  w: number;
-  h: number;
   variation: number;
 
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
-    this.w = 1;
-    this.h = 1;
     this.variation = 1;
     if (this.skin == SkinType.DUNGEON)
       this.variation = Game.randTable([1, 1, 1, 1, 1, 1, 8, 8, 8, 9, 10, 10, 10, 10, 10, 12]);
@@ -19,6 +15,6 @@ export class Floor extends Tile {
   }
 
   draw = () => {
-    Game.drawTile(this.variation, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(this.variation, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 }

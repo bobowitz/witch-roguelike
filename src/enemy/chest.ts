@@ -1,4 +1,3 @@
-import { Collidable } from "../tile/collidable";
 import { Item } from "../item/item";
 import { Game } from "../game";
 import { Key } from "../item/key";

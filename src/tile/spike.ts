@@ -1,13 +1,13 @@
-import { Collidable } from "./collidable";
 import { Player } from "../player";
 import { Game } from "../game";
+import { Tile } from "./tile";
 
-export class Spike extends Collidable {
+export class Spike extends Tile {
   onCollide = (player: Player) => {
     player.hurt(1);
   };
 
   draw = () => {
-    Game.drawTile(11, 0, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(11, 0, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 }

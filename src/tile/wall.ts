@@ -1,8 +1,8 @@
 import { Game } from "../game";
-import { Collidable } from "./collidable";
 import { Level } from "../level";
+import { Tile } from "./tile";
 
-export class Wall extends Collidable {
+export class Wall extends Tile {
   type: number;
 
   constructor(level: Level, x: number, y: number, type: number) {
@@ -10,11 +10,18 @@ export class Wall extends Collidable {
     this.type = type;
   }
 
+  isSolid = (): boolean => {
+    return true;
+  };
+  isOpaque = (): boolean => {
+    return true;
+  };
+
   draw = () => {
     if (this.type === 0) {
-      Game.drawTile(2, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+      Game.drawTile(2, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
     } else if (this.type === 1) {
-      Game.drawTile(5, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+      Game.drawTile(5, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
     }
   };
 }

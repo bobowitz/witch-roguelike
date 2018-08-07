@@ -54,27 +54,27 @@ export class WizardEnemy extends Enemy {
       switch (this.state) {
         case WizardState.attack:
           this.tileX = 7;
-          if (this.level.getCollidable(this.x - 1, this.y) === null) {
+          if (!this.level.levelArray[this.x - 1][this.y].isSolid()) {
             this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
-            if (this.level.getCollidable(this.x - 2, this.y) === null) {
+            if (!this.level.levelArray[this.x - 2][this.y].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x - 2, this.y));
             }
           }
-          if (this.level.getCollidable(this.x + 1, this.y) === null) {
+          if (!this.level.levelArray[this.x + 1][this.y].isSolid()) {
             this.level.projectiles.push(new WizardFireball(this, this.x + 1, this.y));
-            if (this.level.getCollidable(this.x + 2, this.y) === null) {
+            if (!this.level.levelArray[this.x + 2][this.y].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x + 2, this.y));
             }
           }
-          if (this.level.getCollidable(this.x, this.y - 1) === null) {
+          if (!this.level.levelArray[this.x][this.y - 1].isSolid()) {
             this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 1));
-            if (this.level.getCollidable(this.x, this.y - 2) === null) {
+            if (!this.level.levelArray[this.x][this.y - 2].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 2));
             }
           }
-          if (this.level.getCollidable(this.x, this.y + 1) === null) {
+          if (!this.level.levelArray[this.x][this.y + 1].isSolid()) {
             this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 1));
-            if (this.level.getCollidable(this.x, this.y + 2) === null) {
+            if (!this.level.levelArray[this.x][this.y + 2].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 2));
             }
           }

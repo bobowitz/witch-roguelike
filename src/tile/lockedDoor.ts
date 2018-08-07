@@ -1,11 +1,11 @@
-import { Collidable } from "./collidable";
 import { Player } from "../player";
 import { Level } from "../level";
 import { Game } from "../game";
 import { Door } from "./door";
 import { Key } from "../item/key";
+import { Tile } from "./tile";
 
-export class LockedDoor extends Collidable {
+export class LockedDoor extends Tile {
   unlockedDoor: Door;
 
   unlock = (player: Player) => {
@@ -18,7 +18,14 @@ export class LockedDoor extends Collidable {
     }
   };
 
+  isSolid = (): boolean => {
+    return true;
+  };
+  isOpaque = (): boolean => {
+    return true;
+  };
+
   draw = () => {
-    Game.drawTile(17, this.skin, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(17, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
   };
 }

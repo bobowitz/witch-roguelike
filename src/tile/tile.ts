@@ -1,5 +1,7 @@
 import { Level } from "../level";
 import { LevelConstants } from "../levelConstants";
+import { Player } from "../player";
+import { Enemy } from "../enemy/enemy";
 
 export enum SkinType {
   DUNGEON = 0,
@@ -22,6 +24,17 @@ export class Tile {
   isShaded = () => {
     return this.level.visibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
   };
+
+  isSolid = (): boolean => {
+    return false;
+  };
+  isOpaque = (): boolean => {
+    return false;
+  };
+  onCollide = (player: Player) => {};
+  onCollideEnemy = (enemy: Enemy) => {};
+  tick = () => {};
+  tickEnd = () => {};
 
   draw = () => {};
   drawUnderPlayer = () => {};

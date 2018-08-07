@@ -1,10 +1,10 @@
-import { Collidable } from "../tile/collidable";
 import { Game } from "../game";
 import { Level } from "../level";
 import { Bones } from "../tile/bones";
 import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
+import { Floor } from "../tile/floor";
 
 export enum EnemyDirection {
   DOWN = 0,
@@ -13,7 +13,10 @@ export enum EnemyDirection {
   LEFT = 3,
 }
 
-export class Enemy extends Collidable {
+export class Enemy {
+  level: Level;
+  x: number;
+  y: number;
   direction: EnemyDirection;
   drawX: number;
   drawY: number;
@@ -24,11 +27,14 @@ export class Enemy extends Collidable {
   tileY: number;
   hasShadow: boolean;
   skipNextTurns: number;
+  //TODO: change these to functions? for enemies that switch states
   pushable: boolean; // can the player push this enemy? (true for crates/barrels, false for regular mobs)
   chainPushable: boolean; // can the player pushing another enemy push this enemy? (false for crates/barrels, true for regular mobs)
 
   constructor(level: Level, game: Game, x: number, y: number) {
-    super(level, x, y);
+    this.level = level;
+    this.x = x;
+    this.y = y;
     this.game = game;
     this.drawX = 0;
     this.drawY = 0;
@@ -51,7 +57,8 @@ export class Enemy extends Collidable {
     if (this.game.player.x === x && this.game.player.y === y) {
       return;
     }
-    if (this.game.level.getCollidable(x, y) === null) {
+    if (!this.level.levelArray[x][y].isSolid()) {
+      this.level.levelArray[x][y].onCollideEnemy(this);
       this.x = x;
       this.y = y;
     }
@@ -61,22 +68,19 @@ export class Enemy extends Collidable {
     return 0;
   };
 
-  dropXP = () => {
-    return 0;
-  };
-
-  hurt = (player: Player, damage: number) => {
+  hurt = (damage: number) => {
     this.health -= damage;
     if (this.health <= 0) {
-      player.stats.getXP(this.dropXP());
       this.kill();
     }
   };
 
   kill = () => {
-    let b = new Bones(this.level, this.x, this.y);
-    b.skin = this.level.levelArray[this.x][this.y].skin;
-    this.level.levelArray[this.x][this.y] = b;
+    if (this.level.levelArray[this.x][this.y] instanceof Floor) {
+      let b = new Bones(this.level, this.x, this.y);
+      b.skin = this.level.levelArray[this.x][this.y].skin;
+      this.level.levelArray[this.x][this.y] = b;
+    }
 
     this.dead = true;
     this.level.particles.push(new DeathParticle(this.x, this.y));
