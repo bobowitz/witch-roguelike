@@ -313,7 +313,7 @@ var levelConstants_1 = __webpack_require__(3);
 var GameConstants = (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.1.4";
+    GameConstants.VERSION = "v0.1.5";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
