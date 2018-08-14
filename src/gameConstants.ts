@@ -1,7 +1,7 @@
 import { LevelConstants } from "./levelConstants";
 
 export class GameConstants {
-  static readonly VERSION = "v0.1.5";
+  static readonly VERSION = "v0.1.6";
 
   static readonly FPS = 60;
 
@@ -11,6 +11,7 @@ export class GameConstants {
   static readonly WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;
   static readonly HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
 
+  static readonly SCRIPT_FONT_SIZE = 13;
   static readonly FONT_SIZE = 10; // 20
 
   static readonly RED = "#ac3232";

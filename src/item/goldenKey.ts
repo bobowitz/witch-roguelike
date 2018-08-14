@@ -1,12 +1,16 @@
 import { Item } from "./item";
+import { Equippable } from "./equippable";
+import { Level } from "../level";
 
-export class GoldenKey extends Item {
-  constructor(x: number, y: number) {
-    super(x, y);
+export class GoldenKey extends Equippable {
+  constructor(level: Level, x: number, y: number) {
+    super(level, x, y);
 
     this.tileX = 6;
     this.tileY = 0;
   }
 
-  // don't need to override stuff since base case behavior
+  getDescription = (): string => {
+    return "GOLD KEY\nA heavy gold key." + (this.equipped ? "\nEQUIPPED" : "");
+  };
 }

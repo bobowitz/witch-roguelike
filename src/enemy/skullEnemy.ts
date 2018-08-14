@@ -10,6 +10,7 @@ import { GameConstants } from "../gameConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
 import { HitWarning } from "../projectile/hitWarning";
+import { Gem } from "../item/gem";
 
 export class SkullEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -37,7 +38,7 @@ export class SkullEnemy extends Enemy {
 
   hurt = (damage: number) => {
     this.ticksSinceFirstHit = 0;
-  this.health -= damage;
+    this.health -= damage;
     if (this.health <= 0) {
       this.kill();
     }
@@ -130,5 +131,9 @@ export class SkullEnemy extends Enemy {
         this.isShaded()
       );
     }
+  };
+
+  dropLoot = () => {
+    this.game.level.items.push(new Gem(this.level, this.x, this.y));
   };
 }

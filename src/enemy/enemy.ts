@@ -75,6 +75,8 @@ export class Enemy {
     }
   };
 
+  dropLoot = () => {};
+
   kill = () => {
     if (this.level.levelArray[this.x][this.y] instanceof Floor) {
       let b = new Bones(this.level, this.x, this.y);
@@ -84,6 +86,8 @@ export class Enemy {
 
     this.dead = true;
     this.level.particles.push(new DeathParticle(this.x, this.y));
+
+    this.dropLoot();
   };
 
   killNoBones = () => {

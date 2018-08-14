@@ -64,7 +64,7 @@ export class Game {
       Game.fxset = new Image();
       Game.fxset.src = "res/fxset.png";
       Game.inventory = new Image();
-      Game.inventory.src = "res/inv.png";
+      Game.inventory.src = "res/inventory.png";
       Game.tilesetShadow = new Image();
       Game.tilesetShadow.src = "res/tilesetShadow.png";
       Game.objsetShadow = new Image();

@@ -1,12 +1,12 @@
 import { Item } from "./item";
 import { Player } from "../player";
 import { Game } from "../game";
-import { Pickup } from "./pickup";
 import { Sound } from "../sound";
+import { Level } from "../level";
 
-export class Heart extends Pickup {
-  constructor(x: number, y: number) {
-    super(x, y);
+export class Heart extends Item {
+  constructor(level: Level, x: number, y: number) {
+    super(level, x, y);
 
     this.tileX = 8;
     this.tileY = 0;
@@ -15,5 +15,6 @@ export class Heart extends Pickup {
   onPickup = (player: Player) => {
     player.health += 1;
     Sound.heal();
+    this.level.items = this.level.items.filter(x => x !== this); // removes itself from the level
   };
 }

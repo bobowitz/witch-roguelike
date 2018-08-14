@@ -6,6 +6,7 @@ import { Heart } from "../item/heart";
 import { Armor } from "../item/armor";
 import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
+import { Gem } from "../item/gem";
 
 export class Chest extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -21,17 +22,20 @@ export class Chest extends Enemy {
     this.dead = true;
     // DROP TABLES!
 
-    let drop = Game.randTable([1, 2, 3, 3, 3]);
+    let drop = Game.randTable([1, 2, 2, 2, 3, 4, 4, 4, 4, 4]);
 
     switch (drop) {
       case 1:
-        this.game.level.items.push(new Heart(this.x, this.y));
+        this.game.level.items.push(new Gem(this.level, this.x, this.y));
         break;
       case 2:
-        this.game.level.items.push(new Key(this.x, this.y));
+        this.game.level.items.push(new Heart(this.level, this.x, this.y));
         break;
       case 3:
-        this.game.level.items.push(new Armor(this.game, this.x, this.y));
+        this.game.level.items.push(new Key(this.level, this.x, this.y));
+        break;
+      case 4:
+        this.game.level.items.push(new Armor(this.level, this.x, this.y));
         break;
     }
   };

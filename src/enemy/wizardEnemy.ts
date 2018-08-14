@@ -10,6 +10,7 @@ import { DeathParticle } from "../particle/deathParticle";
 import { WizardTeleportParticle } from "../particle/wizardTeleportParticle";
 import { GameConstants } from "../gameConstants";
 import { WizardFireball } from "../projectile/wizardFireball";
+import { Gem } from "../item/gem";
 
 enum WizardState {
   idle,
@@ -151,5 +152,11 @@ export class WizardEnemy extends Enemy {
 
     this.dead = true;
     this.level.particles.push(new DeathParticle(this.x, this.y));
+
+    this.dropLoot();
+  };
+
+  dropLoot = () => {
+    this.game.level.items.push(new Gem(this.level, this.x, this.y));
   };
 }

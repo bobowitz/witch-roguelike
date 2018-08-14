@@ -369,6 +369,7 @@ export class Level {
 
     this.items.push(
       new GoldenKey(
+        this,
         Math.floor(this.roomX + this.width / 2),
         Math.floor(this.roomY + this.height / 2)
       )
@@ -802,7 +803,6 @@ export class Level {
   tick = () => {
     if (this.turn === TurnState.computerTurn) this.computerTurn(); // player skipped computer's turn, catch up
 
-    if (this.game.player.armor) this.game.player.armor.tick();
     this.enemies = this.enemies.filter(e => !e.dead);
     this.updateLighting();
 
@@ -836,6 +836,9 @@ export class Level {
     }
     for (const e of this.enemies) {
       e.tick();
+    }
+    for (const i of this.items) {
+      i.tick();
     }
 
     for (const p of this.projectiles) {
@@ -923,7 +926,8 @@ export class Level {
     let timeFraction =
       (LevelConstants.TURN_TIME - (Date.now() - Level.turnStartTime)) / LevelConstants.TURN_TIME;
     let cX =
-      (this.game.player.health + (this.game.player.armor ? 1 : 0) + 0.4) * GameConstants.TILESIZE;
+      (this.game.player.health + (this.game.player.inventory.getArmor() ? 1 : 0) + 0.4) *
+      GameConstants.TILESIZE;
     let cY = GameConstants.HEIGHT - GameConstants.TILESIZE / 2;
     let dX = GameConstants.TILESIZE * 0.45 * -Math.sin(timeFraction * Math.PI * 2);
     let dY = GameConstants.TILESIZE * 0.45 * -Math.cos(timeFraction * Math.PI * 2);

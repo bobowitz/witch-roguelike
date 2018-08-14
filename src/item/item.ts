@@ -1,6 +1,8 @@
 import { Game } from "../game";
 import { GameConstants } from "../gameConstants";
 import { LevelConstants } from "../levelConstants";
+import { Player } from "../player";
+import { Level } from "../level";
 
 export class Item {
   x: number;
@@ -11,9 +13,12 @@ export class Item {
   tileY: number;
   frame: number;
   dead: boolean; // for inventory, just a removal flag
-  level: any;
+  level: Level;
+  stackable: boolean;
+  stackCount: number;
 
-  constructor(x: number, y: number) {
+  constructor(level: Level, x: number, y: number) {
+    this.level = level;
     this.x = x;
     this.y = y;
     this.w = 1;
@@ -22,7 +27,21 @@ export class Item {
     this.tileY = 0;
     this.frame = 0;
     this.dead = false;
+    this.stackable = false;
+    this.stackCount = 1;
   }
+
+  tick = () => {};
+  tickInInventory = () => {}; // different tick behavior for when we have the item in our inventory
+
+  getDescription = (): string => {
+    return "";
+  };
+
+  onPickup = (player: Player) => {
+    player.inventory.addItem(this);
+    this.level.items = this.level.items.filter(x => x !== this); // removes itself from the level
+  };
 
   draw = () => {
     Game.drawItem(0, 0, 1, 1, this.x, this.y, 1, 1);

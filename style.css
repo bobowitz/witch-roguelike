@@ -19,6 +19,11 @@ canvas {
   src: url("./res/upheavtt.ttf");
 }
 
+@font-face {
+  font-family: Script;
+  src: url("./res/CWEBL.TTF");
+}
+
 .center-text {
   text-align: center;
 }

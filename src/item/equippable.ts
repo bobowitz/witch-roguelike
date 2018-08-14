@@ -1,11 +1,12 @@
 import { Item } from "./item";
 import { Game } from "../game";
+import { Level } from "../level";
 
 export class Equippable extends Item {
   equipped: boolean;
 
-  constructor(x: number, y: number) {
-    super(x, y);
+  constructor(level: Level, x: number, y: number) {
+    super(level, x, y);
     this.equipped = false;
   }
 

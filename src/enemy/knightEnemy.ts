@@ -9,6 +9,7 @@ import { Bones } from "../tile/bones";
 import { DeathParticle } from "../particle/deathParticle";
 import { GameConstants } from "../gameConstants";
 import { HitWarning } from "../projectile/hitWarning";
+import { Gem } from "../item/gem";
 
 export class KnightEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -103,5 +104,9 @@ export class KnightEnemy extends Enemy {
         this.isShaded()
       );
     }
+  };
+
+  dropLoot = () => {
+    this.game.level.items.push(new Gem(this.level, this.x, this.y));
   };
 }

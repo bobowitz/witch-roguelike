@@ -56,8 +56,9 @@ export class SpikeTrap extends Tile {
       if (this.t % 4 === 1) rumbleOffsetX = 0.0325;
       if (this.t % 4 === 3) rumbleOffsetX = -0.0325;
     }
+    let frames = [0, 1, 2, 3, 3, 4, 2, 0];
     Game.drawObj(
-      5 + Math.floor(this.frame),
+      5 + frames[Math.floor(this.frame)],
       0,
       1,
       2,
@@ -67,13 +68,10 @@ export class SpikeTrap extends Tile {
       2,
       this.isShaded()
     );
-    if (this.on && this.frame < 3) this.frame += 0.4;
-    if (!this.on && this.frame != 0) {
-      if (this.frame < 3 && this.frame + 0.4 >= 3) this.frame = 0;
-      else {
-        this.frame += 0.3;
-        if (this.frame >= 5) this.frame = 2;
-      }
+    if (this.on && this.frame < frames.length - 1) {
+      if (frames[Math.floor(this.frame)] < 3) this.frame += 0.4;
+      else this.frame += 0.2;
     }
+    if (!this.on) this.frame = 0;
   };
 }

@@ -4,30 +4,15 @@ import { Game, LevelState } from "./game";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { Trapdoor } from "./tile/trapdoor";
-import { Floor } from "./tile/floor";
 import { Inventory } from "./inventory";
 import { LockedDoor } from "./tile/lockedDoor";
 import { Sound } from "./sound";
-import { Heart } from "./item/heart";
-import { Spike } from "./tile/spike";
 import { TextParticle } from "./particle/textParticle";
 import { DashParticle } from "./particle/dashParticle";
-import { Armor } from "./item/armor";
-import { Item } from "./item/item";
-import { Equippable } from "./item/equippable";
 import { LevelConstants } from "./levelConstants";
-import { Pickup } from "./item/pickup";
-import { Crate } from "./enemy/crate";
 import { Stats } from "./stats";
-import { GoldenDoor } from "./tile/goldenDoor";
 import { Chest } from "./enemy/chest";
-import { WizardFireball } from "./projectile/wizardFireball";
-import { Barrel } from "./enemy/barrel";
-import { Wall } from "./tile/wall";
-import { SpikeTrap } from "./tile/spiketrap";
 import { Map } from "./map";
-import { InsideLevelDoor } from "./tile/insideLevelDoor";
-import { Button } from "./tile/button";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -52,8 +37,6 @@ export class Player {
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
-  equipped: Array<Equippable>;
-  armor: Armor;
   missProb: number;
   sightRadius: number;
   guiHeartFrame: number;
@@ -82,12 +65,9 @@ export class Player {
     this.lastTickHealth = this.health;
     this.guiHeartFrame = 0;
 
-    this.equipped = Array<Equippable>();
     this.inventory = new Inventory(game);
 
     this.missProb = 0.1;
-
-    this.armor = null;
 
     this.sightRadius = 7; // maybe can be manipulated by items? e.g. better torch
 
@@ -96,7 +76,6 @@ export class Player {
 
   iListener = () => {
     this.inventory.open();
-    //this.game.level.enemies.push(new Crate(this.game.level, this.game, this.x, this.y));
   };
   iUpListener = () => {
     this.inventory.close();
@@ -153,14 +132,7 @@ export class Player {
       }
       other.onCollide(this);
 
-      this.game.level.particles.push(
-        new DashParticle(
-          this.x,
-          this.y,
-          this.armor != null && this.armor.health > 0,
-          particleFrameOffset
-        )
-      );
+      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
       particleFrameOffset -= 2;
       let breakFlag = false;
       for (let e of this.game.level.enemies) {
@@ -184,14 +156,7 @@ export class Player {
     this.drawY = this.y - startY;
     if (this.x !== startX || this.y !== startY) {
       this.game.level.tick();
-      this.game.level.particles.push(
-        new DashParticle(
-          this.x,
-          this.y,
-          this.armor != null && this.armor.health > 0,
-          particleFrameOffset
-        )
-      );
+      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
     }
   };
 
@@ -276,8 +241,8 @@ export class Player {
   };
 
   hurt = (damage: number) => {
-    if (this.armor && this.armor.health > 0) {
-      this.armor.hurt(damage);
+    if (this.inventory.getArmor() && this.inventory.getArmor().health > 0) {
+      this.inventory.getArmor().hurt(damage);
     } else {
       this.flashing = true;
       this.health -= damage;
@@ -294,13 +259,7 @@ export class Player {
 
     for (let i of this.game.level.items) {
       if (i.x === x && i.y === y) {
-        if (i instanceof Pickup) {
-          i.onPickup(this);
-        } else {
-          this.inventory.addItem(i);
-        }
-
-        this.game.level.items = this.game.level.items.filter(x => x !== i); // remove item from item list
+        i.onPickup(this);
       }
     }
 
@@ -322,13 +281,7 @@ export class Player {
 
     for (let i of this.game.level.items) {
       if (i.x === x && i.y === y) {
-        if (i instanceof Pickup) {
-          i.onPickup(this);
-        } else {
-          this.inventory.addItem(i);
-        }
-
-        this.game.level.items = this.game.level.items.filter(x => x !== i); // remove item from item list
+        i.onPickup(this);
       }
     }
 
@@ -352,6 +305,8 @@ export class Player {
   update = () => {};
 
   finishTick = () => {
+    this.inventory.tick();
+
     this.flashing = false;
 
     let totalHealthDiff = this.health - this.lastTickHealth;
@@ -370,7 +325,7 @@ export class Player {
 
   drawPlayerSprite = () => {
     Game.drawMob(1, this.direction * 2, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
-    if (this.armor && this.armor.health > 0) {
+    if (this.inventory.getArmor() && this.inventory.getArmor().health > 0) {
       Game.drawMob(
         1,
         8 + this.direction * 2,
@@ -410,8 +365,7 @@ export class Player {
         let frame = this.guiHeartFrame > 0 ? 1 : 0;
         Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
       }
-      if (this.armor) this.armor.drawGUI(this.health);
-      // this.stats.drawGUI(); TODO
+      if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(this.health);
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
