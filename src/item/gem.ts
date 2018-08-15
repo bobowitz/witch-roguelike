@@ -6,6 +6,7 @@ import { TextParticle } from "../particle/textParticle";
 import { GameConstants } from "../gameConstants";
 
 export class Gem extends Item {
+  readonly TICKS = 1;
   firstTickCounter: number;
   scaleFactor: number;
 
@@ -21,7 +22,7 @@ export class Gem extends Item {
   }
 
   tick = () => {
-    if (this.firstTickCounter < 2) this.firstTickCounter++;
+    if (this.firstTickCounter < this.TICKS) this.firstTickCounter++;
   };
 
   getDescription = (): string => {
@@ -29,7 +30,7 @@ export class Gem extends Item {
   };
 
   onPickup = (player: Player) => {
-    if (this.firstTickCounter < 2) return;
+    if (this.firstTickCounter < this.TICKS) return;
 
     player.inventory.addItem(this);
     this.level.particles.push(
@@ -39,7 +40,7 @@ export class Gem extends Item {
   };
 
   draw = () => {
-    if (this.firstTickCounter < 2) return;
+    if (this.firstTickCounter < this.TICKS) return;
 
     if (this.scaleFactor < 1) this.scaleFactor += 0.04;
     else this.scaleFactor = 1;

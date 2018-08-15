@@ -11,6 +11,6 @@ export class GoldenKey extends Equippable {
   }
 
   getDescription = (): string => {
-    return "GOLD KEY\nA heavy gold key." + (this.equipped ? "\nEQUIPPED" : "");
+    return "GOLD KEY\nA heavy gold key.";
   };
 }

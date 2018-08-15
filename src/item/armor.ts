@@ -27,10 +27,9 @@ export class Armor extends Equippable {
 
   getDescription = (): string => {
     return (
-      "ENCHANTED ARMOR\nA magic suit of armor.\nAbsorbs one hit and \nregenerates after " +
+      "ENCHANTED ARMOR\nA magic suit of armor. Absorbs one hit and regenerates after " +
       this.RECHARGE_TURNS +
-      " turns." +
-      (this.equipped ? "\nEQUIPPED" : "")
+      " turns."
     );
   };
 

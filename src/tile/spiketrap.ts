@@ -23,8 +23,7 @@ export class SpikeTrap extends Tile {
   tick = () => {
     this.tickCount++;
     if (this.tickCount >= 4) this.tickCount = 0;
-    if (this.tickCount === 0) this.on = true;
-    else if (this.tickCount === 1) this.on = false;
+    this.on = this.tickCount === 0;
 
     if (this.on) {
       if (this.level.game.player.x === this.x && this.level.game.player.y === this.y)
@@ -50,24 +49,17 @@ export class SpikeTrap extends Tile {
 
   drawUnderPlayer = () => {
     let rumbleOffsetX = 0;
-    let rumbleOffsetY = 0;
     this.t++;
     if (!this.on && this.tickCount === 3) {
       if (this.t % 4 === 1) rumbleOffsetX = 0.0325;
       if (this.t % 4 === 3) rumbleOffsetX = -0.0325;
     }
     let frames = [0, 1, 2, 3, 3, 4, 2, 0];
-    Game.drawObj(
-      5 + frames[Math.floor(this.frame)],
-      0,
-      1,
-      2,
-      this.x + rumbleOffsetX,
-      this.y - 1 + rumbleOffsetY,
-      1,
-      2,
-      this.isShaded()
-    );
+    let f = 6 + frames[Math.floor(this.frame)];
+    if (this.tickCount === 1 || (this.tickCount === 0 && frames[Math.floor(this.frame)] === 0)) {
+      f = 5;
+    }
+    Game.drawObj(f, 0, 1, 2, this.x + rumbleOffsetX, this.y - 1, 1, 2, this.isShaded());
     if (this.on && this.frame < frames.length - 1) {
       if (frames[Math.floor(this.frame)] < 3) this.frame += 0.4;
       else this.frame += 0.2;

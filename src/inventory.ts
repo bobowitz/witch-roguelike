@@ -87,6 +87,29 @@ export class Inventory {
     }
   };
 
+  textWrap = (text: string, x: number, y: number, maxWidth: number): number => {
+    // returns y value for next line
+    let words = text.split(" ");
+    let line = "";
+
+    while (words.length > 0) {
+      if (Game.ctx.measureText(line + words[0]).width > maxWidth) {
+        Game.ctx.fillText(line, x, y);
+        line = "";
+        y += 10;
+      } else {
+        if (line !== "") line += " ";
+        line += words[0];
+        words.splice(0, 1);
+      }
+    }
+    if (line !== " ") {
+      Game.ctx.fillText(line, x, y);
+      y += 10;
+    }
+    return y;
+  };
+
   draw = () => {
     if (this.isOpen) {
       Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
@@ -123,11 +146,15 @@ export class Inventory {
         Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
         Game.ctx.fillStyle = "white";
         let lines = this.items[i].getDescription().split("\n");
+        if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
+          lines.push("EQUIPPED");
+        }
         if (this.items[i].stackable && this.items[i].stackCount > 1) {
           lines.push("x" + this.items[i].stackCount);
         }
+        let nextY = 147;
         for (let j = 0; j < lines.length; j++) {
-          Game.ctx.fillText(lines[j], 55, 147 + j * 10);
+          nextY = this.textWrap(lines[j], 55, nextY, 162);
         }
         Game.ctx.font = GameConstants.FONT_SIZE + "px PixelFont";
       }

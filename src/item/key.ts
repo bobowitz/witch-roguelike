@@ -11,6 +11,6 @@ export class Key extends Equippable {
   }
 
   getDescription = (): string => {
-    return "KEY\nAn iron key." + (this.equipped ? "\nEQUIPPED" : "");
+    return "KEY\nAn iron key.";
   };
 }
