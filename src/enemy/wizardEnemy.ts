@@ -146,9 +146,11 @@ export class WizardEnemy extends Enemy {
   };
 
   kill = () => {
-    let b = new Bones(this.level, this.x, this.y);
-    b.skin = this.level.levelArray[this.x][this.y].skin;
-    this.level.levelArray[this.x][this.y] = b;
+    if (this.level.levelArray[this.x][this.y] instanceof Floor) {
+      let b = new Bones(this.level, this.x, this.y);
+      b.skin = this.level.levelArray[this.x][this.y].skin;
+      this.level.levelArray[this.x][this.y] = b;
+    }
 
     this.dead = true;
     this.level.particles.push(new DeathParticle(this.x, this.y));

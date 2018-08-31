@@ -11,6 +11,7 @@ import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
 import { HitWarning } from "../projectile/hitWarning";
 import { Gem } from "../item/gem";
+import { SpikeTrap } from "../tile/spiketrap";
 
 export class SkullEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -60,17 +61,28 @@ export class SkullEnemy extends Enemy {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;
-          let enemyPositions = new Array<astar.Position>();
+          let disablePositions = new Array<astar.Position>();
           for (const e of this.level.enemies) {
             if (e !== this) {
-              enemyPositions.push({ x: e.x, y: e.y });
+              disablePositions.push({ x: e.x, y: e.y } as astar.Position);
+            }
+          }
+          for (let xx = this.x - 1; xx <= this.x + 1; xx++) {
+            for (let yy = this.y - 1; yy <= this.y + 1; yy++) {
+              if (
+                this.level.levelArray[xx][yy] instanceof SpikeTrap &&
+                (this.level.levelArray[xx][yy] as SpikeTrap).on
+              ) {
+                // don't walk on active spiketraps
+                disablePositions.push({ x: xx, y: yy } as astar.Position);
+              }
             }
           }
           this.moves = astar.AStar.search(
             this.level.levelArray,
             this,
             this.game.player,
-            enemyPositions
+            disablePositions
           );
           if (this.moves.length > 0) {
             if (

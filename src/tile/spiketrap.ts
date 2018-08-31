@@ -28,7 +28,11 @@ export class SpikeTrap extends Tile {
     if (this.on) {
       if (this.level.game.player.x === this.x && this.level.game.player.y === this.y)
         this.level.game.player.hurt(1);
+    }
+  };
 
+  tickEnd = () => {
+    if (this.on) {
       for (const e of this.level.enemies) {
         if (e.x === this.x && e.y === this.y) {
           e.hurt(1);

@@ -1,3 +1,6 @@
+import { SpikeTrap } from "./tile/spiketrap";
+import { Wall } from "./tile/wall";
+
 export namespace astar {
   //================== start graph js
   /* 
@@ -18,6 +21,10 @@ export namespace astar {
     WALL,
     OPEN,
   }
+
+  let getTileCost = tile => {
+    return tile.isSolid() ? 99999999 : 1;
+  };
 
   export class Graph {
     nodes: GraphNode[][];
@@ -218,7 +225,7 @@ export namespace astar {
       for (var x = 0, xl = grid.length; x < xl; x++) {
         this.grid[x] = [];
         for (var y = 0, yl = grid[x].length; y < yl; y++) {
-          var cost = !grid[x][y].isSolid() ? 1 : 99999999;
+          var cost = getTileCost(grid[x][y]);
           this.grid[x][y] = {
             org: grid[x][y],
             f: 0,

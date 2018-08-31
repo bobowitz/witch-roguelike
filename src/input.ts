@@ -16,6 +16,9 @@ export const Input = {
   mouseX: 0,
   mouseY: 0,
 
+  lastPressTime: 0,
+  lastPressKeyCode: 0,
+
   SPACE: 32,
   LEFT: 37,
   UP: 38,
@@ -34,6 +37,9 @@ export const Input = {
   },
 
   onKeydown: (event: KeyboardEvent) => {
+    if (event.repeat) return; // ignore repeat keypresses
+    Input.lastPressTime = Date.now();
+    Input.lastPressKeyCode = event.keyCode;
     Input._pressed[event.keyCode] = true;
     switch (event.keyCode) {
       case Input.A:
@@ -63,6 +69,10 @@ export const Input = {
 
   onKeyup: function(event: KeyboardEvent) {
     delete this._pressed[event.keyCode];
+    if (event.keyCode === this.lastPressKeyCode) {
+      this.lastPressTime = 0;
+      this.lastPressKeyCode = 0;
+    }
     if (event.keyCode === 77) Input.mUpListener();
     if (event.keyCode === 73) Input.iUpListener();
   },

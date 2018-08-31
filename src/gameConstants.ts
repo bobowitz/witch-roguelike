@@ -1,12 +1,14 @@
 import { LevelConstants } from "./levelConstants";
 
 export class GameConstants {
-  static readonly VERSION = "v0.1.6";
+  static readonly VERSION = "v0.1.8";
 
   static readonly FPS = 60;
 
   static readonly TILESIZE = 16;
   static readonly SCALE = 2;
+
+  static readonly KEY_REPEAT_TIME = 300; // milliseconds
 
   static readonly WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;
   static readonly HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;

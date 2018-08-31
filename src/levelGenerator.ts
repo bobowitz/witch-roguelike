@@ -9,10 +9,12 @@ let ROOM_SIZE = [5, 5, 7, 7, 9, 11, 11, 11, 13, 13];
 class N {
   // Node
   type: RoomType;
+  difficulty: number;
   children: N[];
 
-  constructor(type: RoomType, children: N[]) {
+  constructor(type: RoomType, difficulty: number, children: N[]) {
     this.type = type;
+    this.difficulty = difficulty;
     this.children = children;
   }
 }
@@ -167,7 +169,7 @@ export class LevelGenerator {
           r.h = 11; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         }
         if (this.noCollisions(r)) {
-          let level = new Level(this.game, r.x, r.y, r.w, r.h, thisNode.type, 0);
+          let level = new Level(this.game, r.x, r.y, r.w, r.h, thisNode.type, thisNode.difficulty);
           this.game.levels.push(level);
           if (parentLevel) {
             let newDoor = level.addDoor(newLevelDoorDir, null);
@@ -188,30 +190,30 @@ export class LevelGenerator {
 
   constructor(game: Game) {
     // prettier-ignore
-    let node = new N(RoomType.DUNGEON, [
-      new N(RoomType.DUNGEON, [
-        new N(RoomType.COFFIN, [])
+    let node = new N(RoomType.DUNGEON, 0, [
+      new N(RoomType.DUNGEON, 1, [
+        new N(RoomType.COFFIN, 1, [])
       ]),
-      new N(RoomType.PUZZLE, [
-        new N(RoomType.SPIKECORRIDOR, [
-          new N(RoomType.TREASURE, [])
+      new N(RoomType.PUZZLE, 0, [
+        new N(RoomType.SPIKECORRIDOR, 2, [
+          new N(RoomType.TREASURE, 1, [])
         ])
       ]),
-      new N(RoomType.DUNGEON, [
-        new N(RoomType.DUNGEON, [
-          new N(RoomType.DUNGEON, [
-            new N(RoomType.FOUNTAIN, [
-              new N(RoomType.DUNGEON, [
-                new N(RoomType.SPIKECORRIDOR, [
-                  new N(RoomType.KEYROOM, [])
+      new N(RoomType.DUNGEON, 1, [
+        new N(RoomType.DUNGEON, 2, [
+          new N(RoomType.DUNGEON, 3, [
+            new N(RoomType.FOUNTAIN, 1, [
+              new N(RoomType.DUNGEON, 3, [
+                new N(RoomType.SPIKECORRIDOR, 1, [
+                  new N(RoomType.KEYROOM, 1, [])
                 ]),
               ]),
-              new N(RoomType.TREASURE, []),
+              new N(RoomType.TREASURE, 1, []),
             ]),
           ]),
-          new N(RoomType.GRASS, [
-            new N(RoomType.GRASS, [
-              new N(RoomType.TREASURE, [])
+          new N(RoomType.GRASS, 2, [
+            new N(RoomType.GRASS, 2, [
+              new N(RoomType.TREASURE, 0, [])
             ])
           ]),
         ]),

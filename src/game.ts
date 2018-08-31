@@ -6,6 +6,7 @@ import { Sound } from "./sound";
 import { LevelConstants } from "./levelConstants";
 import { LevelGenerator } from "./levelGenerator";
 import { BottomDoor } from "./tile/bottomDoor";
+import { Input } from "./input";
 
 export enum LevelState {
   IN_LEVEL,
@@ -118,6 +119,13 @@ export class Game {
   };
 
   update = () => {
+    if (
+      Input.lastPressTime !== 0 &&
+      Date.now() - Input.lastPressTime > GameConstants.KEY_REPEAT_TIME
+    ) {
+      Input.onKeydown({ repeat: false, keyCode: Input.lastPressKeyCode } as KeyboardEvent);
+    }
+
     if (this.levelState === LevelState.TRANSITIONING) {
       Level.turnStartTime = Date.now(); // don't tick until finished transitioning
       if (Date.now() - this.transitionStartTime >= LevelConstants.LEVEL_TRANSITION_TIME) {

@@ -300,16 +300,18 @@ export class Level {
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
-      switch (Game.rand(1, 3)) {
-        case 1:
-          this.enemies.push(new KnightEnemy(this, this.game, x, y));
-          break;
-        case 2:
-          this.enemies.push(new SkullEnemy(this, this.game, x, y));
-          break;
-        case 3:
-          this.enemies.push(new WizardEnemy(this, this.game, x, y));
-          break;
+      if (this.difficulty !== 0) {
+        switch (Game.rand(1, this.difficulty)) {
+          case 1:
+            this.enemies.push(new KnightEnemy(this, this.game, x, y));
+            break;
+          case 2:
+            this.enemies.push(new SkullEnemy(this, this.game, x, y));
+            break;
+          case 3:
+            this.enemies.push(new WizardEnemy(this, this.game, x, y));
+            break;
+        }
       }
     }
   }
@@ -357,7 +359,11 @@ export class Level {
     this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
-      Math.floor(numEmptyTiles * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])) // 0.25, 0.2, 0.3, 0.5
+      Math.floor(
+        numEmptyTiles *
+          (this.difficulty * 0.5 + 0.5) *
+          Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
+      ) // 0.25, 0.2, 0.3, 0.5
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
   };
@@ -450,10 +456,8 @@ export class Level {
 
       this.enemies.push(new Crate(this, this.game, t.x, t.y));
     }
-
-    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
-
     this.fixWalls();
+    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
   };
   generateSpikeCorridor = () => {
     this.skin = SkinType.DUNGEON;
@@ -465,6 +469,8 @@ export class Level {
         this.levelArray[x][y] = new SpikeTrap(this, x, y, Game.rand(0, 3));
       }
     }
+
+    this.addEnemies(5);
 
     this.fixWalls();
   };
@@ -496,7 +502,9 @@ export class Level {
     this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
-      Math.floor(numEmptyTiles * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])) // 0.25, 0.2, 0.3, 0.5
+      numEmptyTiles *
+        (this.difficulty * 0.5 + 0.5) *
+        Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
 
@@ -558,7 +566,7 @@ export class Level {
       case RoomType.COFFIN:
         this.generateCoffin();
         break;
-      case RoomType.PUZZLE: // TODO
+      case RoomType.PUZZLE:
         this.generatePuzzle();
         break;
       case RoomType.SPIKECORRIDOR:
@@ -698,8 +706,9 @@ export class Level {
     for (let x = 0; x < this.levelArray.length; x++) {
       oldVisibilityArray[x] = [];
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        oldVisibilityArray[x][y] = this.visibilityArray[x][y] >= LevelConstants.MIN_VISIBILITY;
-        this.visibilityArray[x][y] = 0;
+        oldVisibilityArray[x][y] = this.visibilityArray[x][y];
+        if (this.visibilityArray[x][y] > LevelConstants.MIN_VISIBILITY)
+          this.visibilityArray[x][y] = 0;
       }
     }
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
@@ -710,11 +719,11 @@ export class Level {
 
     for (let x = 0; x < this.visibilityArray.length; x++) {
       for (let y = 0; y < this.visibilityArray[0].length; y++) {
-        if (
-          this.visibilityArray[x][y] < LevelConstants.MIN_VISIBILITY &&
-          oldVisibilityArray[x][y]
-        ) {
-          this.visibilityArray[x][y] = LevelConstants.MIN_VISIBILITY; // once a tile has been viewed, it won't go below MIN_VISIBILITY
+        if (this.visibilityArray[x][y] < oldVisibilityArray[x][y]) {
+          this.visibilityArray[x][y] = Math.min(
+            oldVisibilityArray[x][y],
+            LevelConstants.MIN_VISIBILITY
+          ); // once a tile has been viewed, it won't go below MIN_VISIBILITY
         }
       }
     }
@@ -750,24 +759,7 @@ export class Level {
         if (!hitWall) returnVal = i;
         hitWall = true;
       }
-
-      this.visibilityArray[Math.floor(px)][Math.floor(py)] += LevelConstants.VISIBILITY_STEP;
-      this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(
-        this.visibilityArray[Math.floor(px)][Math.floor(py)],
-        2
-      );
-
-      // crates and chests can block visibility too! (not anymore)
-      /*for (const e of this.enemies) {
-        if (
-          (e instanceof Crate || e instanceof Chest) &&
-          e.x === Math.floor(px) &&
-          e.y === Math.floor(py)
-        ) {
-          if (!hitWall) returnVal = i;
-          hitWall = true;
-        }
-      }*/
+      this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(2 - (2 / radius) * i, 2);
 
       px += dx;
       py += dy;
