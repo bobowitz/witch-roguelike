@@ -21,6 +21,9 @@ export class Barrel extends Enemy {
 
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#9badb7");
   };
+  killNoBones = () => {
+    this.kill();
+  };
 
   draw = () => {
     // not inherited because it doesn't have the 0.5 offset

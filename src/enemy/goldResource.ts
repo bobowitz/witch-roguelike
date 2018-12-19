@@ -9,12 +9,13 @@ import { LevelConstants } from "../levelConstants";
 import { Gem } from "../item/gem";
 import { Resource } from "./resource";
 import { GenericParticle } from "../particle/genericParticle";
+import { Gold } from "../item/gold";
 
-export class Coal extends Resource {
+export class GoldResource extends Resource {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
 
-    this.tileX = 12;
+    this.tileX = 13;
     this.tileY = 0;
     this.health = 1;
   }
@@ -22,9 +23,12 @@ export class Coal extends Resource {
   kill = () => {
     this.dead = true;
 
-    this.game.level.items.push(new Gem(this.level, this.x, this.y));
+    this.game.level.items.push(new Gold(this.level, this.x, this.y));
 
-    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#000000");
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#fbf236");
+  };
+  killNoBones = () => {
+    this.kill();
   };
 
   draw = () => {

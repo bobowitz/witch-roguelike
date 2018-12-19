@@ -34,6 +34,9 @@ import { Button } from "./tile/button";
 import { HitWarning } from "./projectile/hitWarning";
 import { UpLadder } from "./tile/upLadder";
 import { DownLadder } from "./tile/downLadder";
+import { CoalResource } from "./enemy/coalResource";
+import { GoldResource } from "./enemy/goldResource";
+import { Emerald } from "./enemy/emerald";
 
 export enum RoomType {
   DUNGEON,
@@ -364,6 +367,28 @@ export class Level {
     }
   }
 
+  private addResources(numResources: number) {
+    let tiles = this.getEmptyTiles();
+    for (let i = 0; i < numResources; i++) {
+      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      if (tiles.length == 0) return;
+      let x = t.x;
+      let y = t.y;
+
+      switch (Game.rand(1, 3)) {
+        case 1:
+          this.enemies.push(new CoalResource(this, this.game, x, y));
+          break;
+        case 2:
+          this.enemies.push(new GoldResource(this, this.game, x, y));
+          break;
+        case 3:
+          this.enemies.push(new Emerald(this, this.game, x, y));
+          break;
+      }
+    }
+  }
+
   generateDungeon = () => {
     this.skin = SkinType.DUNGEON;
 
@@ -381,6 +406,9 @@ export class Level {
       ) // 0.25, 0.2, 0.3, 0.5
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+    this.addResources(
+      Game.randTable([0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 4, 5, 6, 7, 8])
+    );
   };
   generateKeyRoom = () => {
     this.skin = SkinType.DUNGEON;
@@ -496,7 +524,7 @@ export class Level {
     this.addWallBlocks();
     this.fixWalls();
 
-    this.addChests(Game.randTable([2, 4, 4, 5, 5, 6, 7, 8]));
+    this.addChests(Game.randTable([3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 6]));
     this.addPlants(Game.randTable([0, 1, 2, 4, 5, 6]));
   };
   generateChessboard = () => {
@@ -592,6 +620,7 @@ export class Level {
 
     this.upLadder = null;
 
+    this.name = "";
     switch (this.type) {
       case RoomType.DUNGEON:
         this.generateDungeon();
@@ -622,12 +651,13 @@ export class Level {
         break;
       case RoomType.UPLADDER:
         this.generateUpLadder();
+        this.name = "FLOOR " + -this.depth;
         break;
       case RoomType.DOWNLADDER:
         this.generateDownLadder();
+        this.name = "FLOOR " + -this.depth;
         break;
     }
-    this.name = ""; // + RoomType[this.type];
   }
 
   addDoor = (location: number, link: any) => {
@@ -730,7 +760,7 @@ export class Level {
     let returnVal: Tile[] = [];
     for (let x = this.roomX; x < this.roomX + this.width; x++) {
       for (let y = this.roomY + 2; y < this.roomY + this.height - 1; y++) {
-        if (!this.levelArray[x][y].isSolid()) {
+        if (!this.levelArray[x][y].isSolid() && !(this.levelArray[x][y] instanceof SpikeTrap)) {
           returnVal.push(this.levelArray[x][y]);
         }
       }
@@ -771,7 +801,7 @@ export class Level {
       }
     }
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
-      this.castShadowsAtAngle(i, this.game.player.sightRadius);
+      this.castShadowsAtAngle(i, this.game.player.sightRadius - this.depth);
     }
     if (LevelConstants.SMOOTH_LIGHTING)
       this.visibilityArray = this.blur3x3(this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
@@ -981,6 +1011,13 @@ export class Level {
         }
       }
     }
+
+    // draw over dithered shading
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        this.levelArray[x][y].drawAboveShading();
+      }
+    }
   };
 
   // for stuff rendered on top of the player
@@ -988,11 +1025,14 @@ export class Level {
     // gui stuff
 
     // room name
+    let old = Game.ctx.font;
+    Game.ctx.font = GameConstants.BIG_FONT_SIZE + "px PixelFont";
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
     Game.ctx.fillText(
       this.name,
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
       (this.roomY - 1) * GameConstants.TILESIZE - (GameConstants.FONT_SIZE - 1)
     );
+    Game.ctx.font = old;
   };
 }

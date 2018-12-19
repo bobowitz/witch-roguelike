@@ -7,39 +7,24 @@ import { Armor } from "../item/armor";
 import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
 import { Gem } from "../item/gem";
+import { Resource } from "./resource";
 import { GenericParticle } from "../particle/genericParticle";
 
-export class Chest extends Enemy {
+export class Emerald extends Resource {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
 
-    this.tileX = 4;
+    this.tileX = 14;
     this.tileY = 0;
     this.health = 1;
   }
 
   kill = () => {
     this.dead = true;
-    // DROP TABLES!
+
+    this.game.level.items.push(new Gem(this.level, this.x, this.y));
 
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#fbf236");
-
-    let drop = Game.randTable([1, 1, 2]);
-
-    switch (drop) {
-      case 1:
-        this.game.level.items.push(new Gem(this.level, this.x, this.y));
-        break;
-      case 2:
-        this.game.level.items.push(new Heart(this.level, this.x, this.y));
-        break;
-      case 3:
-        this.game.level.items.push(new Key(this.level, this.x, this.y));
-        break;
-      case 4:
-        this.game.level.items.push(new Armor(this.level, this.x, this.y));
-        break;
-    }
   };
   killNoBones = () => {
     this.kill();

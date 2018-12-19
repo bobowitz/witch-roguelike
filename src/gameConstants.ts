@@ -14,7 +14,8 @@ export class GameConstants {
   static HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
 
   static readonly SCRIPT_FONT_SIZE = 13;
-  static readonly FONT_SIZE = 10; // 20
+  static readonly FONT_SIZE = 10;
+  static readonly BIG_FONT_SIZE = 20;
 
   static readonly RED = "#ac3232";
   static readonly GREEN = "#6abe30";

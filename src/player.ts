@@ -69,7 +69,7 @@ export class Player {
 
     this.missProb = 0.1;
 
-    this.sightRadius = 3; // maybe can be manipulated by items? e.g. better torch
+    this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
 
     this.map = new Map(this.game);
   }

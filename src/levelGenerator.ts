@@ -199,7 +199,12 @@ export class LevelGenerator {
     let d = depth;
     // prettier-ignore
     let node = new N(d == 0 ? RoomType.DUNGEON : RoomType.UPLADDER, d, [
-      new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])])]);
+      new N((Math.random() < 0.2) ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+        new N(RoomType.DOWNLADDER, d, []),
+        new N((Math.random() < 0.2) ? RoomType.TREASURE : RoomType.DUNGEON, d, [])
+      ]),
+      new N((Math.random() < 0.2) ? RoomType.TREASURE : RoomType.DUNGEON, d, [])
+    ]);
     /*  new N(RoomType.DUNGEON, d, [
         new N(RoomType.COFFIN, d, [])
       ]),

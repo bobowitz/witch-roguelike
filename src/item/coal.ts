@@ -5,7 +5,7 @@ import { Level } from "../level";
 import { TextParticle } from "../particle/textParticle";
 import { GameConstants } from "../gameConstants";
 
-export class Gem extends Item {
+export class Coal extends Item {
   readonly TICKS = 1;
   firstTickCounter: number;
   scaleFactor: number;
@@ -13,7 +13,7 @@ export class Gem extends Item {
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
 
-    this.tileX = 14;
+    this.tileX = 17;
     this.tileY = 0;
 
     this.stackable = true;
@@ -26,7 +26,7 @@ export class Gem extends Item {
   };
 
   getDescription = (): string => {
-    return "GEM\nA shiny emerald.";
+    return "COAL\nA lump of coal.";
   };
 
   onPickup = (player: Player) => {

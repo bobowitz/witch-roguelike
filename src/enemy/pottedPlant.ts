@@ -13,12 +13,16 @@ export class PottedPlant extends Enemy {
     this.tileX = 3;
     this.tileY = 0;
     this.hasShadow = false;
+    this.chainPushable = false;
   }
 
   kill = () => {
     this.dead = true;
 
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ce736a");
+  };
+  killNoBones = () => {
+    this.kill();
   };
 
   draw = () => {

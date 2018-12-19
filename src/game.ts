@@ -166,7 +166,7 @@ export class Game {
     let scale = Math.min(maxWidthScale, maxHeightScale);
     Game.ctx.canvas.setAttribute(
       "style",
-      `width: ${window.innerWidth}px; height: ${window.innerHeight}px;
+      `width: ${GameConstants.WIDTH * scale}px; height: ${GameConstants.HEIGHT * scale}px;
     display: block;
     margin: 0 auto;
   
@@ -264,7 +264,6 @@ export class Game {
       this.player.draw();
       Game.ctx.translate(-playerOffsetX, -playerOffsetY);
 
-      this.level.drawTopLayer();
       this.player.drawTopLayer();
     } else if (this.levelState === LevelState.TRANSITIONING_LADDER) {
       let deadFrames = 6;
@@ -278,7 +277,6 @@ export class Game {
         this.prevLevel.drawEntitiesBehindPlayer();
         this.player.draw();
         this.prevLevel.drawEntitiesInFrontOfPlayer();
-        this.prevLevel.drawTopLayer();
 
         for (
           let x = this.prevLevel.roomX - 1;
@@ -309,7 +307,6 @@ export class Game {
           }
         }
       }
-      this.level.drawTopLayer();
       this.player.drawTopLayer();
     } else {
       this.level.draw();

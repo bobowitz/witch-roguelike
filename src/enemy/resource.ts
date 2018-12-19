@@ -15,10 +15,14 @@ export class Resource extends Enemy {
     this.tileX = 12;
     this.tileY = 0;
     this.health = 1;
+    this.chainPushable = false;
   }
 
   kill = () => {
     this.dead = true;
+  };
+  killNoBones = () => {
+    this.kill();
   };
 
   draw = () => {

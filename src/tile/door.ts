@@ -31,4 +31,8 @@ export class Door extends Tile {
     if (!this.opened) Game.drawTile(13, 0, 1, 1, this.x, this.y - 1, 1, 1, this.isShaded());
     else Game.drawTile(14, 0, 1, 1, this.x, this.y - 1, 1, 1, this.isShaded());
   };
+
+  drawAboveShading = () => {
+    Game.drawFX(2, 2, 1, 1, this.x, this.y - 1.25 + 0.125 * Math.sin(0.006 * Date.now()), 1, 1);
+  };
 }

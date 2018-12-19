@@ -39,4 +39,5 @@ export class Tile {
   draw = () => {};
   drawUnderPlayer = () => {};
   drawAbovePlayer = () => {};
+  drawAboveShading = () => {};
 }
