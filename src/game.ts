@@ -88,6 +88,7 @@ export class Game {
       this.levelState = LevelState.IN_LEVEL;
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
+      this.onResize();
       window.addEventListener("resize", this.onResize);
     });
   }
@@ -165,7 +166,7 @@ export class Game {
     let scale = Math.min(maxWidthScale, maxHeightScale);
     Game.ctx.canvas.setAttribute(
       "style",
-      `width: ${GameConstants.HEIGHT * scale}px; height: ${GameConstants.HEIGHT * scale}px;
+      `width: ${window.innerWidth - 50}px; height: ${window.innerHeight - 100}px;
     display: block;
     margin: 0 auto;
   
