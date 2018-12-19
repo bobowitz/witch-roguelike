@@ -3,6 +3,7 @@ import { Level } from "../level";
 import { Game } from "../game";
 import { Heart } from "../item/heart";
 import { LevelConstants } from "../levelConstants";
+import { GenericParticle } from "../particle/genericParticle";
 
 export class PottedPlant extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -12,11 +13,12 @@ export class PottedPlant extends Enemy {
     this.tileX = 3;
     this.tileY = 0;
     this.hasShadow = false;
-    this.chainPushable = false;
   }
 
   kill = () => {
     this.dead = true;
+
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ce736a");
   };
 
   draw = () => {

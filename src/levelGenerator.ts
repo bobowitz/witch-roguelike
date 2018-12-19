@@ -147,6 +147,10 @@ export class LevelGenerator {
         let newLevelDoorDir = Game.rand(1, 6);
         if (parent) {
           switch (thisNode.type) {
+            case RoomType.UPLADDER:
+            case RoomType.DOWNLADDER:
+              newLevelDoorDir = r.generateAroundPoint(points[ind], ind, 5, 5);
+              break;
             case RoomType.PUZZLE:
             case RoomType.COFFIN:
             case RoomType.FOUNTAIN:

@@ -3,6 +3,7 @@ import { Level } from "../level";
 import { Game } from "../game";
 import { Heart } from "../item/heart";
 import { LevelConstants } from "../levelConstants";
+import { GenericParticle } from "../particle/genericParticle";
 
 export class Crate extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -13,11 +14,12 @@ export class Crate extends Enemy {
     this.tileY = 0;
     this.hasShadow = false;
     this.pushable = true;
-    this.chainPushable = false;
   }
 
   kill = () => {
     this.dead = true;
+
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#d9a066");
   };
 
   draw = () => {

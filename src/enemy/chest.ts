@@ -7,6 +7,7 @@ import { Armor } from "../item/armor";
 import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
 import { Gem } from "../item/gem";
+import { GenericParticle } from "../particle/genericParticle";
 
 export class Chest extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -15,12 +16,13 @@ export class Chest extends Enemy {
     this.tileX = 4;
     this.tileY = 0;
     this.health = 1;
-    this.chainPushable = false;
   }
 
   kill = () => {
     this.dead = true;
     // DROP TABLES!
+
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#fbf236");
 
     let drop = Game.randTable([1, 2, 2, 2, 3, 4, 4, 4, 4, 4]);
 

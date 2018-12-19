@@ -5,6 +5,7 @@ import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
 import { Floor } from "../tile/floor";
+import { GenericParticle } from "../particle/genericParticle";
 
 export enum EnemyDirection {
   DOWN = 0,
@@ -28,8 +29,10 @@ export class Enemy {
   hasShadow: boolean;
   skipNextTurns: number;
   //TODO: change these to functions? for enemies that switch states
+  destroyable: boolean; // can the player destroy this enemy?
   pushable: boolean; // can the player push this enemy? (true for crates/barrels, false for regular mobs)
-  chainPushable: boolean; // can the player pushing another enemy push this enemy? (false for crates/barrels, true for regular mobs)
+  chainPushable: boolean; // can the player pushing another enemy push this enemy? (default true)
+  deathParticleColor: string;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     this.level = level;
@@ -44,8 +47,10 @@ export class Enemy {
     this.hasShadow = true;
     this.skipNextTurns = 0;
     this.direction = EnemyDirection.DOWN;
+    this.destroyable = true;
     this.pushable = false;
     this.chainPushable = true;
+    this.deathParticleColor = "#ff00ff";
   }
 
   tryMove = (x: number, y: number) => {
@@ -85,6 +90,7 @@ export class Enemy {
     }
 
     this.dead = true;
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, this.deathParticleColor);
     this.level.particles.push(new DeathParticle(this.x, this.y));
 
     this.dropLoot();
@@ -92,6 +98,7 @@ export class Enemy {
 
   killNoBones = () => {
     this.dead = true;
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, this.deathParticleColor);
     this.level.particles.push(new DeathParticle(this.x, this.y));
   };
 

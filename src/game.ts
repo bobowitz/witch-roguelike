@@ -286,6 +286,7 @@ export class Game {
         }
       }
       this.level.drawTopLayer();
+      this.player.drawTopLayer();
     } else {
       this.level.draw();
       this.level.drawEntitiesBehindPlayer();
@@ -318,7 +319,7 @@ export class Game {
     shaded = false
   ) => {
     let set = Game.tileset;
-    if (shaded) set = Game.tilesetShadow;
+    //if (shaded) set = Game.tilesetShadow;
     Game.ctx.drawImage(
       set,
       Math.round(sX * GameConstants.TILESIZE),
@@ -344,7 +345,7 @@ export class Game {
     shaded = false
   ) => {
     let set = Game.objset;
-    if (shaded) set = Game.objsetShadow;
+    //if (shaded) set = Game.objsetShadow;
     Game.ctx.drawImage(
       set,
       Math.round(sX * GameConstants.TILESIZE),
@@ -370,7 +371,7 @@ export class Game {
     shaded = false
   ) => {
     let set = Game.mobset;
-    if (shaded) set = Game.mobsetShadow;
+    //if (shaded) set = Game.mobsetShadow;
     Game.ctx.drawImage(
       set,
       Math.round(sX * GameConstants.TILESIZE),

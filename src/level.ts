@@ -903,14 +903,6 @@ export class Level {
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
         if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].draw();
-
-        if (
-          this.visibilityArray[x][y] > 0 &&
-          this.visibilityArray[x][y] < LevelConstants.MIN_VISIBILITY
-        ) {
-          let frame = Math.round(6 * (this.visibilityArray[x][y] / LevelConstants.MIN_VISIBILITY));
-          Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
-        }
       }
     }
   };
@@ -954,10 +946,7 @@ export class Level {
     for (const i of this.items) {
       if (i.y > this.game.player.y && this.visibilityArray[i.x][i.y] > 0) i.draw();
     }
-  };
 
-  // for stuff rendered on top of the player
-  drawTopLayer = () => {
     for (const e of this.enemies) {
       e.drawTopLayer(); // health bars
     }
@@ -967,6 +956,22 @@ export class Level {
       p.draw();
     }
 
+    // D I T H E R E D     S H A D I N G
+    for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
+      for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
+        if (
+          this.visibilityArray[x][y] > 0 &&
+          this.visibilityArray[x][y] < LevelConstants.MIN_VISIBILITY
+        ) {
+          let frame = Math.round(6 * (this.visibilityArray[x][y] / LevelConstants.MIN_VISIBILITY));
+          Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
+        }
+      }
+    }
+  };
+
+  // for stuff rendered on top of the player
+  drawTopLayer = () => {
     // gui stuff
 
     // room name

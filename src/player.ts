@@ -176,7 +176,7 @@ export class Player {
           let nextX = x + dx;
           let nextY = y + dy;
           let foundEnd = false; // end of the train of whatever we're pushing
-          let enemyEnd = false; // end of the train is a solid enemy (crate/chest/barrel)
+          let enemyEnd = false; // end of the train is a solid enemy (none currently exist)
           let pushedEnemies = [];
           while (true) {
             foundEnd = true;
@@ -203,8 +203,13 @@ export class Player {
             pushedEnemies.length === 0 &&
             (this.game.level.levelArray[nextX][nextY].isSolid() || enemyEnd)
           ) {
-            return;
+            if (e.destroyable) {
+              e.kill();
+              this.game.level.tick();
+              return;
+            }
           } else {
+            // here pushedEnemies may still be []
             for (const f of pushedEnemies) {
               f.x += dx;
               f.y += dy;
@@ -223,8 +228,13 @@ export class Player {
             return;
           }
         } else {
-          // if we're trying to hit an enemy, do nothing
-          return;
+          // if we're trying to hit an enemy, check if it's destroyable
+          if (e.destroyable) {
+            // and kill it
+            e.kill();
+            this.game.level.tick();
+            return;
+          }
         }
       }
     }

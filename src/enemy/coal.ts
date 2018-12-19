@@ -1,32 +1,34 @@
-import { Enemy } from "./enemy";
-import { Level } from "../level";
+import { Item } from "../item/item";
 import { Game } from "../game";
+import { Key } from "../item/key";
+import { Level } from "../level";
 import { Heart } from "../item/heart";
+import { Armor } from "../item/armor";
+import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
+import { Gem } from "../item/gem";
+import { Resource } from "./resource";
 import { GenericParticle } from "../particle/genericParticle";
 
-export class Barrel extends Enemy {
+export class Coal extends Resource {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
-    this.level = level;
-    this.health = 1;
-    this.tileX = 1;
+
+    this.tileX = 12;
     this.tileY = 0;
-    this.hasShadow = false;
-    this.pushable = true;
+    this.health = 1;
   }
 
   kill = () => {
     this.dead = true;
 
-    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#9badb7");
+    this.game.level.items.push(new Gem(this.level, this.x, this.y));
+
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#000000");
   };
 
   draw = () => {
-    // not inherited because it doesn't have the 0.5 offset
     if (!this.dead) {
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
       Game.drawObj(
         this.tileX,
         this.tileY,
