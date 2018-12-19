@@ -143,7 +143,7 @@ var Game = (function () {
             var maxWidthScale = Math.floor(window.innerWidth / gameConstants_1.GameConstants.WIDTH);
             var maxHeightScale = Math.floor(window.innerHeight / gameConstants_1.GameConstants.HEIGHT);
             var scale = Math.min(maxWidthScale, maxHeightScale);
-            Game.ctx.canvas.setAttribute("style", "width: " + (window.innerWidth - 50) + "px; height: " + (window.innerHeight - 100) + "px;\n    display: block;\n    margin: 0 auto;\n  \n    image-rendering: optimizeSpeed; /* Older versions of FF          */\n    image-rendering: -moz-crisp-edges; /* FF 6.0+                       */\n    image-rendering: -webkit-optimize-contrast; /* Safari                        */\n    image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */\n    image-rendering: pixelated; /* Awesome future-browsers       */\n  \n    -ms-interpolation-mode: nearest-neighbor;");
+            Game.ctx.canvas.setAttribute("style", "width: " + window.innerWidth + "px; height: " + window.innerHeight + "px;\n    display: block;\n    margin: 0 auto;\n  \n    image-rendering: optimizeSpeed; /* Older versions of FF          */\n    image-rendering: -moz-crisp-edges; /* FF 6.0+                       */\n    image-rendering: -webkit-optimize-contrast; /* Safari                        */\n    image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */\n    image-rendering: pixelated; /* Awesome future-browsers       */\n  \n    -ms-interpolation-mode: nearest-neighbor;");
             //Game.ctx.canvas.width = window.innerWidth;
             //Game.ctx.canvas.height = window.innerHeight;
         };

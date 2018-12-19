@@ -166,7 +166,7 @@ export class Game {
     let scale = Math.min(maxWidthScale, maxHeightScale);
     Game.ctx.canvas.setAttribute(
       "style",
-      `width: ${window.innerWidth - 50}px; height: ${window.innerHeight - 100}px;
+      `width: ${window.innerWidth}px; height: ${window.innerHeight}px;
     display: block;
     margin: 0 auto;
   
