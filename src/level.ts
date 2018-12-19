@@ -32,6 +32,8 @@ import { PottedPlant } from "./enemy/pottedPlant";
 import { InsideLevelDoor } from "./tile/insideLevelDoor";
 import { Button } from "./tile/button";
 import { HitWarning } from "./projectile/hitWarning";
+import { UpLadder } from "./tile/upLadder";
+import { DownLadder } from "./tile/downLadder";
 
 export enum RoomType {
   DUNGEON,
@@ -45,6 +47,8 @@ export enum RoomType {
   MAZE,
   CORRIDOR,
   SPIKECORRIDOR,
+  UPLADDER,
+  DOWNLADDER,
 }
 
 export enum TurnState {
@@ -71,12 +75,12 @@ export class Level {
   width: number;
   height: number;
   type: RoomType;
-  difficulty: number;
+  depth: number;
   name: string;
   turn: TurnState;
-  static turnStartTime: number; // in milliseconds
   skin: SkinType;
   entered: boolean; // has the player entered this level
+  upLadder: UpLadder;
 
   private pointInside(
     x: number,
@@ -300,8 +304,8 @@ export class Level {
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
-      if (this.difficulty !== 0) {
-        switch (Game.rand(1, this.difficulty)) {
+      if (this.depth !== 0) {
+        switch (Game.rand(1, this.depth)) {
           case 1:
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
             break;
@@ -360,9 +364,7 @@ export class Level {
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
       Math.floor(
-        numEmptyTiles *
-          (this.difficulty * 0.5 + 0.5) *
-          Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
+        numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
       ) // 0.25, 0.2, 0.3, 0.5
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
@@ -502,9 +504,7 @@ export class Level {
     this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
-      numEmptyTiles *
-        (this.difficulty * 0.5 + 0.5) *
-        Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
+      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
     );
     this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
 
@@ -513,6 +513,27 @@ export class Level {
         this.levelArray[x][y].skin = SkinType.GRASS;
       }
     }
+  };
+  generateUpLadder = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
+    this.fixWalls();
+
+    let cX = Math.floor(this.roomX + this.width / 2);
+    let cY = Math.floor(this.roomY + this.height / 2);
+    this.upLadder = new UpLadder(this, this.game, cX, cY);
+    this.levelArray[cX][cY] = this.upLadder;
+  };
+  generateDownLadder = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
+    this.fixWalls();
+
+    let cX = Math.floor(this.roomX + this.width / 2);
+    let cY = Math.floor(this.roomY + this.height / 2);
+    this.levelArray[cX][cY] = new DownLadder(this, this.game, cX, cY);
   };
 
   constructor(
@@ -530,7 +551,7 @@ export class Level {
     this.width = w;
     this.height = h;
     this.type = type;
-    this.difficulty = difficulty;
+    this.depth = difficulty;
 
     this.entered = false;
     this.turn = TurnState.playerTurn;
@@ -555,6 +576,8 @@ export class Level {
 
     this.roomX = Math.floor(LevelConstants.SCREEN_W / 2 - this.width / 2);
     this.roomY = Math.floor(LevelConstants.SCREEN_H / 2 - this.height / 2);
+
+    this.upLadder = null;
 
     switch (this.type) {
       case RoomType.DUNGEON:
@@ -584,10 +607,14 @@ export class Level {
       case RoomType.GRASS:
         this.generateGrass();
         break;
+      case RoomType.UPLADDER:
+        this.generateUpLadder();
+        break;
+      case RoomType.DOWNLADDER:
+        this.generateDownLadder();
+        break;
     }
     this.name = ""; // + RoomType[this.type];
-
-    Level.turnStartTime = Date.now();
   }
 
   addDoor = (location: number, link: any) => {
@@ -677,6 +704,15 @@ export class Level {
     this.entered = true;
   };
 
+  enterLevelThroughLadder = (ladder: any) => {
+    this.updateLevelTextColor();
+
+    this.game.player.moveSnap(ladder.x, ladder.y + 1);
+
+    this.updateLighting();
+    this.entered = true;
+  };
+
   getEmptyTiles = (): Tile[] => {
     let returnVal: Tile[] = [];
     for (let x = this.roomX; x < this.roomX + this.width; x++) {
@@ -701,14 +737,24 @@ export class Level {
     return null;
   };
 
+  fadeLighting = () => {
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
+        if (this.visibilityArray[x][y] <= LevelConstants.MIN_VISIBILITY)
+          this.visibilityArray[x][y] -= 0.01;
+      }
+    }
+  };
+
   updateLighting = () => {
     let oldVisibilityArray = [];
     for (let x = 0; x < this.levelArray.length; x++) {
       oldVisibilityArray[x] = [];
       for (let y = 0; y < this.levelArray[0].length; y++) {
         oldVisibilityArray[x][y] = this.visibilityArray[x][y];
-        if (this.visibilityArray[x][y] > LevelConstants.MIN_VISIBILITY)
-          this.visibilityArray[x][y] = 0;
+        this.visibilityArray[x][y] = 0;
+        //if (this.visibilityArray[x][y] > LevelConstants.MIN_VISIBILITY)
+        //  this.visibilityArray[x][y] = 0;
       }
     }
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
@@ -723,7 +769,7 @@ export class Level {
           this.visibilityArray[x][y] = Math.min(
             oldVisibilityArray[x][y],
             LevelConstants.MIN_VISIBILITY
-          ); // once a tile has been viewed, it won't go below MIN_VISIBILITY
+          );
         }
       }
     }
@@ -759,7 +805,7 @@ export class Level {
         if (!hitWall) returnVal = i;
         hitWall = true;
       }
-      this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(2 - (2 / radius) * i, 2);
+      this.visibilityArray[Math.floor(px)][Math.floor(py)] = 2; //Math.min(2 - (2 / radius) * i, 2);
 
       px += dx;
       py += dy;
@@ -805,8 +851,6 @@ export class Level {
     }
 
     this.turn = TurnState.computerTurn;
-
-    Level.turnStartTime = Date.now();
   };
 
   update = () => {
@@ -814,10 +858,6 @@ export class Level {
       if (this.game.player.doneMoving()) {
         this.computerTurn();
       }
-    }
-    if (Date.now() - Level.turnStartTime >= LevelConstants.TURN_TIME) {
-      this.game.player.heartbeat();
-      this.tick();
     }
   };
 
@@ -857,6 +897,8 @@ export class Level {
 
   draw = () => {
     HitWarning.updateFrame();
+
+    this.fadeLighting();
 
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
@@ -914,32 +956,6 @@ export class Level {
     }
   };
 
-  drawTurnTimer = () => {
-    let timeFraction =
-      (LevelConstants.TURN_TIME - (Date.now() - Level.turnStartTime)) / LevelConstants.TURN_TIME;
-    let cX =
-      (this.game.player.health + (this.game.player.inventory.getArmor() ? 1 : 0) + 0.4) *
-      GameConstants.TILESIZE;
-    let cY = GameConstants.HEIGHT - GameConstants.TILESIZE / 2;
-    let dX = GameConstants.TILESIZE * 0.45 * -Math.sin(timeFraction * Math.PI * 2);
-    let dY = GameConstants.TILESIZE * 0.45 * -Math.cos(timeFraction * Math.PI * 2);
-    Game.ctx.strokeStyle = GameConstants.RED;
-    Game.ctx.fill;
-    Game.ctx.beginPath();
-    Game.ctx.moveTo(cX, cY);
-    Game.ctx.lineTo(cX, cY - GameConstants.TILESIZE * 0.45);
-    Game.ctx.stroke();
-
-    Game.ctx.strokeStyle = LevelConstants.LEVEL_TEXT_COLOR;
-    Game.ctx.beginPath();
-    Game.ctx.moveTo(cX, cY);
-    Game.ctx.lineTo(cX + dX, cY + dY);
-    Game.ctx.stroke();
-    Game.ctx.beginPath();
-    Game.ctx.arc(cX, cY, 1, 0, Math.PI * 2);
-    Game.ctx.stroke();
-  };
-
   // for stuff rendered on top of the player
   drawTopLayer = () => {
     for (const e of this.enemies) {
@@ -960,9 +976,5 @@ export class Level {
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
       (this.roomY - 1) * GameConstants.TILESIZE - (GameConstants.FONT_SIZE - 1)
     );
-
-    if (this.game.levelState === LevelState.IN_LEVEL) {
-      this.drawTurnTimer();
-    }
   };
 }

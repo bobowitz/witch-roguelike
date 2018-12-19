@@ -46,7 +46,7 @@ export class Map {
 
     Game.ctx.globalAlpha = 1;
     for (const level of this.game.levels) {
-      if (level.entered || drawAll) {
+      if (this.game.level.depth == level.depth && (level.entered || drawAll)) {
         Game.ctx.fillStyle = "black";
         Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
         for (const door of level.doors) {

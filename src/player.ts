@@ -69,7 +69,7 @@ export class Player {
 
     this.missProb = 0.1;
 
-    this.sightRadius = 7; // maybe can be manipulated by items? e.g. better torch
+    this.sightRadius = 3; // maybe can be manipulated by items? e.g. better torch
 
     this.map = new Map(this.game);
   }
@@ -82,29 +82,33 @@ export class Player {
   };
   leftListener = () => {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
-      else this.tryMove(this.x - 1, this.y);
+      //if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
+      //else
+      this.tryMove(this.x - 1, this.y);
       this.direction = PlayerDirection.LEFT;
     }
   };
   rightListener = () => {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
-      else this.tryMove(this.x + 1, this.y);
+      //if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
+      //else
+      this.tryMove(this.x + 1, this.y);
       this.direction = PlayerDirection.RIGHT;
     }
   };
   upListener = () => {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
-      else this.tryMove(this.x, this.y - 1);
+      //if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
+      //else
+      this.tryMove(this.x, this.y - 1);
       this.direction = PlayerDirection.UP;
     }
   };
   downListener = () => {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
-      else this.tryMove(this.x, this.y + 1);
+      //if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
+      //else
+      this.tryMove(this.x, this.y + 1);
       this.direction = PlayerDirection.DOWN;
     }
   };

@@ -71,17 +71,17 @@
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var gameConstants_1 = __webpack_require__(2);
-var level_1 = __webpack_require__(17);
 var player_1 = __webpack_require__(42);
 var sound_1 = __webpack_require__(15);
 var levelConstants_1 = __webpack_require__(3);
-var levelGenerator_1 = __webpack_require__(50);
+var levelGenerator_1 = __webpack_require__(49);
 var bottomDoor_1 = __webpack_require__(6);
 var input_1 = __webpack_require__(16);
 var LevelState;
 (function (LevelState) {
     LevelState[LevelState["IN_LEVEL"] = 0] = "IN_LEVEL";
     LevelState[LevelState["TRANSITIONING"] = 1] = "TRANSITIONING";
+    LevelState[LevelState["TRANSITIONING_LADDER"] = 2] = "TRANSITIONING_LADDER";
 })(LevelState = exports.LevelState || (exports.LevelState = {}));
 var Game = (function () {
     function Game() {
@@ -90,6 +90,14 @@ var Game = (function () {
             _this.level.exitLevel();
             _this.level = newLevel;
             _this.level.enterLevel();
+        };
+        this.changeLevelThroughLadder = function (ladder) {
+            _this.levelState = LevelState.TRANSITIONING_LADDER;
+            _this.transitionStartTime = Date.now();
+            _this.prevLevel = _this.level;
+            _this.level.exitLevel();
+            _this.level = ladder.level;
+            _this.transitioningLadder = ladder;
         };
         this.changeLevelThroughDoor = function (door) {
             _this.levelState = LevelState.TRANSITIONING;
@@ -116,8 +124,12 @@ var Game = (function () {
                 input_1.Input.onKeydown({ repeat: false, keyCode: input_1.Input.lastPressKeyCode });
             }
             if (_this.levelState === LevelState.TRANSITIONING) {
-                level_1.Level.turnStartTime = Date.now(); // don't tick until finished transitioning
                 if (Date.now() - _this.transitionStartTime >= levelConstants_1.LevelConstants.LEVEL_TRANSITION_TIME) {
+                    _this.levelState = LevelState.IN_LEVEL;
+                }
+            }
+            if (_this.levelState === LevelState.TRANSITIONING_LADDER) {
+                if (Date.now() - _this.transitionStartTime >= levelConstants_1.LevelConstants.LEVEL_TRANSITION_TIME_LADDER) {
                     _this.levelState = LevelState.IN_LEVEL;
                 }
             }
@@ -176,6 +188,39 @@ var Game = (function () {
                 _this.level.drawTopLayer();
                 _this.player.drawTopLayer();
             }
+            else if (_this.levelState === LevelState.TRANSITIONING_LADDER) {
+                var deadFrames = 6;
+                var ditherFrame = Math.floor(((7 * 2 + deadFrames) * (Date.now() - _this.transitionStartTime)) /
+                    levelConstants_1.LevelConstants.LEVEL_TRANSITION_TIME_LADDER);
+                if (ditherFrame < 7) {
+                    _this.prevLevel.draw();
+                    _this.prevLevel.drawEntitiesBehindPlayer();
+                    _this.player.draw();
+                    _this.prevLevel.drawEntitiesInFrontOfPlayer();
+                    _this.prevLevel.drawTopLayer();
+                    for (var x = _this.prevLevel.roomX - 1; x <= _this.prevLevel.roomX + _this.prevLevel.width; x++) {
+                        for (var y = _this.prevLevel.roomY - 1; y <= _this.prevLevel.roomY + _this.prevLevel.height; y++) {
+                            Game.drawFX(7 - ditherFrame, 10, 1, 1, x, y, 1, 1);
+                        }
+                    }
+                }
+                else if (ditherFrame >= 7 + deadFrames) {
+                    if (_this.transitioningLadder) {
+                        _this.level.enterLevelThroughLadder(_this.transitioningLadder);
+                        _this.transitioningLadder = null;
+                    }
+                    _this.level.draw();
+                    _this.level.drawEntitiesBehindPlayer();
+                    _this.player.draw();
+                    _this.level.drawEntitiesInFrontOfPlayer();
+                    for (var x = _this.level.roomX - 1; x <= _this.level.roomX + _this.level.width; x++) {
+                        for (var y = _this.level.roomY - 1; y <= _this.level.roomY + _this.level.height; y++) {
+                            Game.drawFX(ditherFrame - (7 + deadFrames), 10, 1, 1, x, y, 1, 1);
+                        }
+                    }
+                }
+                _this.level.drawTopLayer();
+            }
             else {
                 _this.level.draw();
                 _this.level.drawEntitiesBehindPlayer();
@@ -216,7 +261,8 @@ var Game = (function () {
             sound_1.Sound.playMusic(); // loops forever
             _this.player = new player_1.Player(_this, 0, 0);
             _this.levels = Array();
-            var levelgen = new levelGenerator_1.LevelGenerator(_this);
+            _this.levelgen = new levelGenerator_1.LevelGenerator();
+            _this.levelgen.generate(_this, 0);
             _this.level = _this.levels[0];
             _this.level.enterLevel();
             _this.levelState = LevelState.IN_LEVEL;
@@ -357,10 +403,11 @@ var LevelConstants = (function () {
     LevelConstants.SCREEN_H = 17; // screen size in tiles
     LevelConstants.TURN_TIME = 1000; // milliseconds
     LevelConstants.LEVEL_TRANSITION_TIME = 300; // milliseconds
+    LevelConstants.LEVEL_TRANSITION_TIME_LADDER = 1000; // milliseconds
     LevelConstants.ROOM_COUNT = 15;
     LevelConstants.SHADED_TILE_CUTOFF = 1;
     LevelConstants.SMOOTH_LIGHTING = false;
-    LevelConstants.MIN_VISIBILITY = 1; // visibility level of places you've already seen
+    LevelConstants.MIN_VISIBILITY = 1.9; // visibility level of places you've already seen
     LevelConstants.LIGHTING_ANGLE_STEP = 5; // how many degrees between each ray
     LevelConstants.LEVEL_TEXT_COLOR = "white"; // not actually a constant
     return LevelConstants;
@@ -1165,6 +1212,8 @@ var pottedPlant_1 = __webpack_require__(39);
 var insideLevelDoor_1 = __webpack_require__(40);
 var button_1 = __webpack_require__(41);
 var hitWarning_1 = __webpack_require__(11);
+var upLadder_1 = __webpack_require__(51);
+var downLadder_1 = __webpack_require__(52);
 var RoomType;
 (function (RoomType) {
     RoomType[RoomType["DUNGEON"] = 0] = "DUNGEON";
@@ -1178,6 +1227,8 @@ var RoomType;
     RoomType[RoomType["MAZE"] = 8] = "MAZE";
     RoomType[RoomType["CORRIDOR"] = 9] = "CORRIDOR";
     RoomType[RoomType["SPIKECORRIDOR"] = 10] = "SPIKECORRIDOR";
+    RoomType[RoomType["UPLADDER"] = 11] = "UPLADDER";
+    RoomType[RoomType["DOWNLADDER"] = 12] = "DOWNLADDER";
 })(RoomType = exports.RoomType || (exports.RoomType = {}));
 var TurnState;
 (function (TurnState) {
@@ -1198,9 +1249,7 @@ var Level = (function () {
             _this.addPlants(game_1.Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
             _this.addSpikes(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
-            _this.addEnemies(Math.floor(numEmptyTiles *
-                (_this.difficulty * 0.5 + 0.5) *
-                game_1.Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])) // 0.25, 0.2, 0.3, 0.5
+            _this.addEnemies(Math.floor(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])) // 0.25, 0.2, 0.3, 0.5
             );
             _this.addObstacles(game_1.Game.randTable([0, 0, 1, 1, 2, 3, 5]));
         };
@@ -1299,15 +1348,30 @@ var Level = (function () {
             _this.addPlants(game_1.Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
             _this.addSpikes(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
-            _this.addEnemies(numEmptyTiles *
-                (_this.difficulty * 0.5 + 0.5) *
-                game_1.Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3]));
+            _this.addEnemies(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3]));
             _this.addObstacles(game_1.Game.randTable([0, 0, 1, 1, 2, 3, 5]));
             for (var x = 0; x < _this.levelArray.length; x++) {
                 for (var y = 0; y < _this.levelArray[0].length; y++) {
                     _this.levelArray[x][y].skin = tile_1.SkinType.GRASS;
                 }
             }
+        };
+        this.generateUpLadder = function () {
+            _this.skin = tile_1.SkinType.DUNGEON;
+            _this.buildEmptyRoom();
+            _this.fixWalls();
+            var cX = Math.floor(_this.roomX + _this.width / 2);
+            var cY = Math.floor(_this.roomY + _this.height / 2);
+            _this.upLadder = new upLadder_1.UpLadder(_this, _this.game, cX, cY);
+            _this.levelArray[cX][cY] = _this.upLadder;
+        };
+        this.generateDownLadder = function () {
+            _this.skin = tile_1.SkinType.DUNGEON;
+            _this.buildEmptyRoom();
+            _this.fixWalls();
+            var cX = Math.floor(_this.roomX + _this.width / 2);
+            var cY = Math.floor(_this.roomY + _this.height / 2);
+            _this.levelArray[cX][cY] = new downLadder_1.DownLadder(_this, _this.game, cX, cY);
         };
         this.addDoor = function (location, link) {
             var d;
@@ -1364,6 +1428,12 @@ var Level = (function () {
             _this.updateLighting();
             _this.entered = true;
         };
+        this.enterLevelThroughLadder = function (ladder) {
+            _this.updateLevelTextColor();
+            _this.game.player.moveSnap(ladder.x, ladder.y + 1);
+            _this.updateLighting();
+            _this.entered = true;
+        };
         this.getEmptyTiles = function () {
             var returnVal = [];
             for (var x = _this.roomX; x < _this.roomX + _this.width; x++) {
@@ -1393,14 +1463,23 @@ var Level = (function () {
             }
             return null;
         };
+        this.fadeLighting = function () {
+            for (var x = 0; x < _this.levelArray.length; x++) {
+                for (var y = 0; y < _this.levelArray[0].length; y++) {
+                    if (_this.visibilityArray[x][y] <= levelConstants_1.LevelConstants.MIN_VISIBILITY)
+                        _this.visibilityArray[x][y] -= 0.01;
+                }
+            }
+        };
         this.updateLighting = function () {
             var oldVisibilityArray = [];
             for (var x = 0; x < _this.levelArray.length; x++) {
                 oldVisibilityArray[x] = [];
                 for (var y = 0; y < _this.levelArray[0].length; y++) {
                     oldVisibilityArray[x][y] = _this.visibilityArray[x][y];
-                    if (_this.visibilityArray[x][y] > levelConstants_1.LevelConstants.MIN_VISIBILITY)
-                        _this.visibilityArray[x][y] = 0;
+                    _this.visibilityArray[x][y] = 0;
+                    //if (this.visibilityArray[x][y] > LevelConstants.MIN_VISIBILITY)
+                    //  this.visibilityArray[x][y] = 0;
                 }
             }
             for (var i = 0; i < 360; i += levelConstants_1.LevelConstants.LIGHTING_ANGLE_STEP) {
@@ -1411,7 +1490,7 @@ var Level = (function () {
             for (var x = 0; x < _this.visibilityArray.length; x++) {
                 for (var y = 0; y < _this.visibilityArray[0].length; y++) {
                     if (_this.visibilityArray[x][y] < oldVisibilityArray[x][y]) {
-                        _this.visibilityArray[x][y] = Math.min(oldVisibilityArray[x][y], levelConstants_1.LevelConstants.MIN_VISIBILITY); // once a tile has been viewed, it won't go below MIN_VISIBILITY
+                        _this.visibilityArray[x][y] = Math.min(oldVisibilityArray[x][y], levelConstants_1.LevelConstants.MIN_VISIBILITY);
                     }
                 }
             }
@@ -1443,7 +1522,7 @@ var Level = (function () {
                         returnVal = i;
                     hitWall = true;
                 }
-                _this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(2 - (2 / radius) * i, 2);
+                _this.visibilityArray[Math.floor(px)][Math.floor(py)] = 2; //Math.min(2 - (2 / radius) * i, 2);
                 px += dx;
                 py += dy;
             }
@@ -1484,17 +1563,12 @@ var Level = (function () {
                 }
             }
             _this.turn = TurnState.computerTurn;
-            Level.turnStartTime = Date.now();
         };
         this.update = function () {
             if (_this.turn == TurnState.computerTurn) {
                 if (_this.game.player.doneMoving()) {
                     _this.computerTurn();
                 }
-            }
-            if (Date.now() - Level.turnStartTime >= levelConstants_1.LevelConstants.TURN_TIME) {
-                _this.game.player.heartbeat();
-                _this.tick();
             }
         };
         this.computerTurn = function () {
@@ -1535,6 +1609,7 @@ var Level = (function () {
         };
         this.draw = function () {
             hitWarning_1.HitWarning.updateFrame();
+            _this.fadeLighting();
             for (var x = _this.roomX - 1; x < _this.roomX + _this.width + 1; x++) {
                 for (var y = _this.roomY - 1; y < _this.roomY + _this.height + 1; y++) {
                     if (_this.visibilityArray[x][y] > 0)
@@ -1594,28 +1669,6 @@ var Level = (function () {
                     i.draw();
             }
         };
-        this.drawTurnTimer = function () {
-            var timeFraction = (levelConstants_1.LevelConstants.TURN_TIME - (Date.now() - Level.turnStartTime)) / levelConstants_1.LevelConstants.TURN_TIME;
-            var cX = (_this.game.player.health + (_this.game.player.inventory.getArmor() ? 1 : 0) + 0.4) *
-                gameConstants_1.GameConstants.TILESIZE;
-            var cY = gameConstants_1.GameConstants.HEIGHT - gameConstants_1.GameConstants.TILESIZE / 2;
-            var dX = gameConstants_1.GameConstants.TILESIZE * 0.45 * -Math.sin(timeFraction * Math.PI * 2);
-            var dY = gameConstants_1.GameConstants.TILESIZE * 0.45 * -Math.cos(timeFraction * Math.PI * 2);
-            game_1.Game.ctx.strokeStyle = gameConstants_1.GameConstants.RED;
-            game_1.Game.ctx.fill;
-            game_1.Game.ctx.beginPath();
-            game_1.Game.ctx.moveTo(cX, cY);
-            game_1.Game.ctx.lineTo(cX, cY - gameConstants_1.GameConstants.TILESIZE * 0.45);
-            game_1.Game.ctx.stroke();
-            game_1.Game.ctx.strokeStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
-            game_1.Game.ctx.beginPath();
-            game_1.Game.ctx.moveTo(cX, cY);
-            game_1.Game.ctx.lineTo(cX + dX, cY + dY);
-            game_1.Game.ctx.stroke();
-            game_1.Game.ctx.beginPath();
-            game_1.Game.ctx.arc(cX, cY, 1, 0, Math.PI * 2);
-            game_1.Game.ctx.stroke();
-        };
         // for stuff rendered on top of the player
         this.drawTopLayer = function () {
             for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
@@ -1631,9 +1684,6 @@ var Level = (function () {
             // room name
             game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
             game_1.Game.ctx.fillText(_this.name, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(_this.name).width / 2, (_this.roomY - 1) * gameConstants_1.GameConstants.TILESIZE - (gameConstants_1.GameConstants.FONT_SIZE - 1));
-            if (_this.game.levelState === game_1.LevelState.IN_LEVEL) {
-                _this.drawTurnTimer();
-            }
         };
         this.game = game;
         this.x = x;
@@ -1641,7 +1691,7 @@ var Level = (function () {
         this.width = w;
         this.height = h;
         this.type = type;
-        this.difficulty = difficulty;
+        this.depth = difficulty;
         this.entered = false;
         this.turn = TurnState.playerTurn;
         this.items = Array();
@@ -1662,6 +1712,7 @@ var Level = (function () {
         }
         this.roomX = Math.floor(levelConstants_1.LevelConstants.SCREEN_W / 2 - this.width / 2);
         this.roomY = Math.floor(levelConstants_1.LevelConstants.SCREEN_H / 2 - this.height / 2);
+        this.upLadder = null;
         switch (this.type) {
             case RoomType.DUNGEON:
                 this.generateDungeon();
@@ -1690,9 +1741,14 @@ var Level = (function () {
             case RoomType.GRASS:
                 this.generateGrass();
                 break;
+            case RoomType.UPLADDER:
+                this.generateUpLadder();
+                break;
+            case RoomType.DOWNLADDER:
+                this.generateDownLadder();
+                break;
         }
         this.name = ""; // + RoomType[this.type];
-        Level.turnStartTime = Date.now();
     }
     Level.prototype.pointInside = function (x, y, rX, rY, rW, rH) {
         if (x < rX || x >= rX + rW)
@@ -1890,8 +1946,8 @@ var Level = (function () {
                 return;
             var x = t.x;
             var y = t.y;
-            if (this.difficulty !== 0) {
-                switch (game_1.Game.rand(1, this.difficulty)) {
+            if (this.depth !== 0) {
+                switch (game_1.Game.rand(1, this.depth)) {
                     case 1:
                         this.enemies.push(new knightEnemy_1.KnightEnemy(this, this.game, x, y));
                         break;
@@ -3629,16 +3685,16 @@ var gameConstants_1 = __webpack_require__(2);
 var game_1 = __webpack_require__(0);
 var door_1 = __webpack_require__(10);
 var bottomDoor_1 = __webpack_require__(6);
-var trapdoor_1 = __webpack_require__(43);
-var inventory_1 = __webpack_require__(44);
-var lockedDoor_1 = __webpack_require__(45);
+var trapdoor_1 = __webpack_require__(50);
+var inventory_1 = __webpack_require__(43);
+var lockedDoor_1 = __webpack_require__(44);
 var sound_1 = __webpack_require__(15);
 var textParticle_1 = __webpack_require__(13);
-var dashParticle_1 = __webpack_require__(46);
+var dashParticle_1 = __webpack_require__(45);
 var levelConstants_1 = __webpack_require__(3);
-var stats_1 = __webpack_require__(47);
+var stats_1 = __webpack_require__(46);
 var chest_1 = __webpack_require__(24);
-var map_1 = __webpack_require__(49);
+var map_1 = __webpack_require__(48);
 var PlayerDirection;
 (function (PlayerDirection) {
     PlayerDirection[PlayerDirection["DOWN"] = 0] = "DOWN";
@@ -3657,37 +3713,33 @@ var Player = (function () {
         };
         this.leftListener = function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
-                if (input_1.Input.isDown(input_1.Input.SPACE))
-                    _this.tryDash(-1, 0);
-                else
-                    _this.tryMove(_this.x - 1, _this.y);
+                //if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
+                //else
+                _this.tryMove(_this.x - 1, _this.y);
                 _this.direction = PlayerDirection.LEFT;
             }
         };
         this.rightListener = function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
-                if (input_1.Input.isDown(input_1.Input.SPACE))
-                    _this.tryDash(1, 0);
-                else
-                    _this.tryMove(_this.x + 1, _this.y);
+                //if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
+                //else
+                _this.tryMove(_this.x + 1, _this.y);
                 _this.direction = PlayerDirection.RIGHT;
             }
         };
         this.upListener = function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
-                if (input_1.Input.isDown(input_1.Input.SPACE))
-                    _this.tryDash(0, -1);
-                else
-                    _this.tryMove(_this.x, _this.y - 1);
+                //if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
+                //else
+                _this.tryMove(_this.x, _this.y - 1);
                 _this.direction = PlayerDirection.UP;
             }
         };
         this.downListener = function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
-                if (input_1.Input.isDown(input_1.Input.SPACE))
-                    _this.tryDash(0, 1);
-                else
-                    _this.tryMove(_this.x, _this.y + 1);
+                //if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
+                //else
+                _this.tryMove(_this.x, _this.y + 1);
                 _this.direction = PlayerDirection.DOWN;
             }
         };
@@ -3960,7 +4012,7 @@ var Player = (function () {
         this.guiHeartFrame = 0;
         this.inventory = new inventory_1.Inventory(game);
         this.missProb = 0.1;
-        this.sightRadius = 7; // maybe can be manipulated by items? e.g. better torch
+        this.sightRadius = 3; // maybe can be manipulated by items? e.g. better torch
         this.map = new map_1.Map(this.game);
     }
     return Player;
@@ -3970,43 +4022,6 @@ exports.Player = Player;
 
 /***/ }),
 /* 43 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var tile_1 = __webpack_require__(1);
-var Trapdoor = (function (_super) {
-    __extends(Trapdoor, _super);
-    function Trapdoor(level, game, x, y) {
-        var _this = _super.call(this, level, x, y) || this;
-        _this.draw = function () {
-            game_1.Game.drawTile(13, _this.skin, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
-        };
-        _this.onCollide = function (player) {
-            // TODO
-        };
-        _this.game = game;
-        return _this;
-    }
-    return Trapdoor;
-}(tile_1.Tile));
-exports.Trapdoor = Trapdoor;
-
-
-/***/ }),
-/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4160,7 +4175,7 @@ exports.Inventory = Inventory;
 
 
 /***/ }),
-/* 45 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4209,7 +4224,7 @@ exports.LockedDoor = LockedDoor;
 
 
 /***/ }),
-/* 46 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4249,13 +4264,13 @@ exports.DashParticle = DashParticle;
 
 
 /***/ }),
-/* 47 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var statconstants_1 = __webpack_require__(48);
+var statconstants_1 = __webpack_require__(47);
 var game_1 = __webpack_require__(0);
 var gameConstants_1 = __webpack_require__(2);
 var levelConstants_1 = __webpack_require__(3);
@@ -4298,7 +4313,7 @@ exports.Stats = Stats;
 
 
 /***/ }),
-/* 48 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4316,7 +4331,7 @@ exports.StatConstants = StatConstants;
 
 
 /***/ }),
-/* 49 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4356,7 +4371,7 @@ var Map = (function () {
             game_1.Game.ctx.globalAlpha = 1;
             for (var _i = 0, _a = _this.game.levels; _i < _a.length; _i++) {
                 var level = _a[_i];
-                if (level.entered || drawAll) {
+                if (_this.game.level.depth == level.depth && (level.entered || drawAll)) {
                     game_1.Game.ctx.fillStyle = "black";
                     game_1.Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
                     for (var _b = 0, _c = level.doors; _b < _c.length; _b++) {
@@ -4381,7 +4396,7 @@ exports.Map = Map;
 
 
 /***/ }),
-/* 50 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4389,7 +4404,7 @@ exports.Map = Map;
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var level_1 = __webpack_require__(17);
-var ROOM_SIZE = [5, 5, 7, 7, 9, 11, 11, 11, 13, 13];
+var ROOM_SIZE = [5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 13];
 var N = (function () {
     function N(type, difficulty, children) {
         this.type = type;
@@ -4454,9 +4469,11 @@ var Room = (function () {
     return Room;
 }());
 var LevelGenerator = (function () {
-    function LevelGenerator(game) {
+    function LevelGenerator() {
         var _this = this;
         this.rooms = [];
+        this.levels = [];
+        this.upLadder = null;
         this.noCollisions = function (r) {
             for (var _i = 0, _a = _this.rooms; _i < _a.length; _i++) {
                 var room = _a[_i];
@@ -4530,12 +4547,14 @@ var LevelGenerator = (function () {
                     else {
                         r.x = 128;
                         r.y = 128;
-                        r.w = 11; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-                        r.h = 11; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+                        r.w = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+                        r.h = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
                     }
                     if (_this.noCollisions(r)) {
                         var level = new level_1.Level(_this.game, r.x, r.y, r.w, r.h, thisNode.type, thisNode.difficulty);
-                        _this.game.levels.push(level);
+                        if (level.upLadder)
+                            _this.upLadder = level.upLadder;
+                        _this.levels.push(level);
                         if (parentLevel) {
                             var newDoor = level.addDoor(newLevelDoorDir, null);
                             parentLevel.doors[ind] = parentLevel.addDoor(ind, newDoor);
@@ -4554,47 +4573,175 @@ var LevelGenerator = (function () {
             }
             return false;
         };
-        // prettier-ignore
-        var node = new N(level_1.RoomType.DUNGEON, 0, [
-            new N(level_1.RoomType.DUNGEON, 1, [
-                new N(level_1.RoomType.COFFIN, 1, [])
-            ]),
-            new N(level_1.RoomType.PUZZLE, 0, [
-                new N(level_1.RoomType.SPIKECORRIDOR, 2, [
-                    new N(level_1.RoomType.TREASURE, 1, [])
+        this.generate = function (game, depth) {
+            var d = depth;
+            // prettier-ignore
+            var node = new N(d == 0 ? level_1.RoomType.DUNGEON : level_1.RoomType.UPLADDER, d, [
+                new N(level_1.RoomType.DUNGEON, d, [new N(level_1.RoomType.DOWNLADDER, d, [])])
+            ]);
+            /*  new N(RoomType.DUNGEON, d, [
+                new N(RoomType.COFFIN, d, [])
+              ]),
+              new N(RoomType.PUZZLE, d, [
+                new N(RoomType.SPIKECORRIDOR, d, [
+                  new N(RoomType.TREASURE, d, [])
                 ])
-            ]),
-            new N(level_1.RoomType.DUNGEON, 1, [
-                new N(level_1.RoomType.DUNGEON, 2, [
-                    new N(level_1.RoomType.DUNGEON, 3, [
-                        new N(level_1.RoomType.FOUNTAIN, 1, [
-                            new N(level_1.RoomType.DUNGEON, 3, [
-                                new N(level_1.RoomType.SPIKECORRIDOR, 1, [
-                                    new N(level_1.RoomType.KEYROOM, 1, [])
-                                ]),
-                            ]),
-                            new N(level_1.RoomType.TREASURE, 1, []),
+              ]),
+              new N(RoomType.DUNGEON, d, [
+                new N(RoomType.DUNGEON, d, [
+                  new N(RoomType.DUNGEON, d, [
+                    new N(RoomType.FOUNTAIN, d, [
+                      new N(RoomType.DUNGEON, d, [
+                        new N(RoomType.SPIKECORRIDOR, d, [
+                          new N(RoomType.KEYROOM, d, [])
                         ]),
+                      ]),
+                      new N(RoomType.TREASURE, d, []),
                     ]),
-                    new N(level_1.RoomType.GRASS, 2, [
-                        new N(level_1.RoomType.GRASS, 2, [
-                            new N(level_1.RoomType.TREASURE, 0, [])
-                        ])
-                    ]),
+                  ]),
+                  new N(RoomType.GRASS, d, [
+                    new N(RoomType.GRASS, d, [
+                      new N(RoomType.TREASURE, d, [])
+                    ])
+                  ]),
                 ]),
-            ]),
-        ]);
-        this.game = game;
-        var success = false;
-        do {
-            this.rooms.splice(0);
-            this.game.levels.splice(0);
-            success = this.addRooms(node, null, null);
-        } while (!success);
+              ]),
+            ]);*/
+            _this.game = game;
+            var success = false;
+            do {
+                _this.rooms.splice(0);
+                _this.levels.splice(0);
+                success = _this.addRooms(node, null, null);
+            } while (!success);
+            _this.game.levels = _this.game.levels.concat(_this.levels);
+            if (d != 0) {
+                return _this.upLadder;
+            }
+        };
     }
     return LevelGenerator;
 }());
 exports.LevelGenerator = LevelGenerator;
+
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var tile_1 = __webpack_require__(1);
+var Trapdoor = (function (_super) {
+    __extends(Trapdoor, _super);
+    function Trapdoor(level, game, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.draw = function () {
+            game_1.Game.drawTile(13, _this.skin, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
+        };
+        _this.onCollide = function (player) {
+            // TODO
+        };
+        _this.game = game;
+        return _this;
+    }
+    return Trapdoor;
+}(tile_1.Tile));
+exports.Trapdoor = Trapdoor;
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var tile_1 = __webpack_require__(1);
+var UpLadder = (function (_super) {
+    __extends(UpLadder, _super);
+    function UpLadder(level, game, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.onCollide = function (player) {
+            _this.game.changeLevelThroughLadder(_this.linkedLadder);
+        };
+        _this.draw = function () {
+            game_1.Game.drawTile(29, 0, 1, 1, _this.x, _this.y - 1, 1, 1, _this.isShaded());
+            game_1.Game.drawTile(29, 1, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
+        };
+        _this.drawAbovePlayer = function () { };
+        _this.game = game;
+        return _this;
+    }
+    return UpLadder;
+}(tile_1.Tile));
+exports.UpLadder = UpLadder;
+
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var tile_1 = __webpack_require__(1);
+var DownLadder = (function (_super) {
+    __extends(DownLadder, _super);
+    function DownLadder(level, game, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.onCollide = function (player) {
+            if (!_this.linkedLadder) {
+                _this.linkedLadder = _this.game.levelgen.generate(_this.game, _this.level.depth + 1);
+                _this.linkedLadder.linkedLadder = _this;
+            }
+            _this.game.changeLevelThroughLadder(_this.linkedLadder);
+        };
+        _this.draw = function () {
+            game_1.Game.drawTile(4, _this.skin, 1, 1, _this.x, _this.y, 1, 1, _this.isShaded());
+        };
+        _this.drawAbovePlayer = function () { };
+        _this.game = game;
+        _this.linkedLadder = null;
+        return _this;
+    }
+    return DownLadder;
+}(tile_1.Tile));
+exports.DownLadder = DownLadder;
 
 
 /***/ })

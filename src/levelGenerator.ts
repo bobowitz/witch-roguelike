@@ -4,7 +4,7 @@ import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { LevelConstants } from "./levelConstants";
 
-let ROOM_SIZE = [5, 5, 7, 7, 9, 11, 11, 11, 13, 13];
+let ROOM_SIZE = [5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 13];
 
 class N {
   // Node
@@ -84,6 +84,8 @@ class Room {
 
 export class LevelGenerator {
   rooms = [];
+  levels = [];
+  upLadder = null;
   game: Game;
 
   noCollisions = r => {
@@ -165,12 +167,13 @@ export class LevelGenerator {
         } else {
           r.x = 128;
           r.y = 128;
-          r.w = 11; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-          r.h = 11; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.w = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.h = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         }
         if (this.noCollisions(r)) {
           let level = new Level(this.game, r.x, r.y, r.w, r.h, thisNode.type, thisNode.difficulty);
-          this.game.levels.push(level);
+          if (level.upLadder) this.upLadder = level.upLadder;
+          this.levels.push(level);
           if (parentLevel) {
             let newDoor = level.addDoor(newLevelDoorDir, null);
             parentLevel.doors[ind] = parentLevel.addDoor(ind, newDoor);
@@ -188,45 +191,53 @@ export class LevelGenerator {
     return false;
   };
 
-  constructor(game: Game) {
+  generate = (game: Game, depth: number) => {
+    let d = depth;
     // prettier-ignore
-    let node = new N(RoomType.DUNGEON, 0, [
-      new N(RoomType.DUNGEON, 1, [
-        new N(RoomType.COFFIN, 1, [])
+    let node = new N(d == 0 ? RoomType.DUNGEON : RoomType.UPLADDER, d, [
+      new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])])]);
+    /*  new N(RoomType.DUNGEON, d, [
+        new N(RoomType.COFFIN, d, [])
       ]),
-      new N(RoomType.PUZZLE, 0, [
-        new N(RoomType.SPIKECORRIDOR, 2, [
-          new N(RoomType.TREASURE, 1, [])
+      new N(RoomType.PUZZLE, d, [
+        new N(RoomType.SPIKECORRIDOR, d, [
+          new N(RoomType.TREASURE, d, [])
         ])
       ]),
-      new N(RoomType.DUNGEON, 1, [
-        new N(RoomType.DUNGEON, 2, [
-          new N(RoomType.DUNGEON, 3, [
-            new N(RoomType.FOUNTAIN, 1, [
-              new N(RoomType.DUNGEON, 3, [
-                new N(RoomType.SPIKECORRIDOR, 1, [
-                  new N(RoomType.KEYROOM, 1, [])
+      new N(RoomType.DUNGEON, d, [
+        new N(RoomType.DUNGEON, d, [
+          new N(RoomType.DUNGEON, d, [
+            new N(RoomType.FOUNTAIN, d, [
+              new N(RoomType.DUNGEON, d, [
+                new N(RoomType.SPIKECORRIDOR, d, [
+                  new N(RoomType.KEYROOM, d, [])
                 ]),
               ]),
-              new N(RoomType.TREASURE, 1, []),
+              new N(RoomType.TREASURE, d, []),
             ]),
           ]),
-          new N(RoomType.GRASS, 2, [
-            new N(RoomType.GRASS, 2, [
-              new N(RoomType.TREASURE, 0, [])
+          new N(RoomType.GRASS, d, [
+            new N(RoomType.GRASS, d, [
+              new N(RoomType.TREASURE, d, [])
             ])
           ]),
         ]),
       ]),
-    ]);
+    ]);*/
 
     this.game = game;
 
     let success = false;
     do {
       this.rooms.splice(0);
-      this.game.levels.splice(0);
+      this.levels.splice(0);
       success = this.addRooms(node, null, null);
     } while (!success);
-  }
+
+    this.game.levels = this.game.levels.concat(this.levels);
+
+    if (d != 0) {
+      return this.upLadder;
+    }
+  };
 }
