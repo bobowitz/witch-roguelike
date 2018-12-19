@@ -284,7 +284,7 @@ export class Level {
     }
   }
 
-  private addSpikes(numSpikes: number) {
+  private addSpikeTraps(numSpikes: number) {
     // add spikes
     let tiles = this.getEmptyTiles();
     for (let i = 0; i < numSpikes; i++) {
@@ -294,6 +294,19 @@ export class Level {
       let y = t.y;
 
       this.levelArray[x][y] = new SpikeTrap(this, x, y);
+    }
+  }
+
+  private addSpikes(numSpikes: number) {
+    // add spikes
+    let tiles = this.getEmptyTiles();
+    for (let i = 0; i < numSpikes; i++) {
+      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      if (tiles.length == 0) return;
+      let x = t.x;
+      let y = t.y;
+
+      this.levelArray[x][y] = new Spike(this, x, y);
     }
   }
 
@@ -360,7 +373,7 @@ export class Level {
     this.fixWalls();
 
     this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
-    this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
+    this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
       Math.floor(

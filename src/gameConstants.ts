@@ -10,8 +10,8 @@ export class GameConstants {
 
   static readonly KEY_REPEAT_TIME = 300; // milliseconds
 
-  static readonly WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;
-  static readonly HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
+  static WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;
+  static HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
 
   static readonly SCRIPT_FONT_SIZE = 13;
   static readonly FONT_SIZE = 10; // 20

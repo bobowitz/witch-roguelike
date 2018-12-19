@@ -88,6 +88,7 @@ export class Game {
       this.levelState = LevelState.IN_LEVEL;
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
+      window.addEventListener("resize", this.onResize);
     });
   }
 
@@ -156,6 +157,28 @@ export class Game {
 
   lerp = (a: number, b: number, t: number): number => {
     return (1 - t) * a + t * b;
+  };
+
+  onResize = () => {
+    let maxWidthScale = Math.floor(window.innerWidth / GameConstants.WIDTH);
+    let maxHeightScale = Math.floor(window.innerHeight / GameConstants.HEIGHT);
+    let scale = Math.min(maxWidthScale, maxHeightScale);
+    Game.ctx.canvas.setAttribute(
+      "style",
+      `width: ${GameConstants.HEIGHT * scale}px; height: ${GameConstants.HEIGHT * scale}px;
+    display: block;
+    margin: 0 auto;
+  
+    image-rendering: optimizeSpeed; /* Older versions of FF          */
+    image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
+    image-rendering: -webkit-optimize-contrast; /* Safari                        */
+    image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
+    image-rendering: pixelated; /* Awesome future-browsers       */
+  
+    -ms-interpolation-mode: nearest-neighbor;`
+    );
+    //Game.ctx.canvas.width = window.innerWidth;
+    //Game.ctx.canvas.height = window.innerHeight;
   };
 
   draw = () => {

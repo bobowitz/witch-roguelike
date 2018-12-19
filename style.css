@@ -13,6 +13,9 @@ canvas {
 
   -ms-interpolation-mode: nearest-neighbor; /* IE                            */
 }
+body {
+  margin: 0;
+}
 
 @font-face {
   font-family: PixelFont;
