@@ -15,6 +15,9 @@ export class FountainTile extends Tile {
   isSolid = (): boolean => {
     return true;
   };
+  canCrushEnemy = (): boolean => {
+    return true;
+  };
 
   draw = () => {
     Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());

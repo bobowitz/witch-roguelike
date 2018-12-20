@@ -103,7 +103,7 @@ export class Enemy {
   };
 
   isShaded = () => {
-    return this.level.visibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
+    return this.level.softVisibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
   };
 
   doneMoving = (): boolean => {

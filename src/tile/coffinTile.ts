@@ -13,6 +13,9 @@ export class CoffinTile extends Tile {
   isSolid = (): boolean => {
     return true;
   };
+  canCrushEnemy = (): boolean => {
+    return true;
+  };
 
   drawUnderPlayer = () => {
     if (this.subTileY === 0) {

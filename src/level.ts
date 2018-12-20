@@ -37,6 +37,7 @@ import { DownLadder } from "./tile/downLadder";
 import { CoalResource } from "./enemy/coalResource";
 import { GoldResource } from "./enemy/goldResource";
 import { Emerald } from "./enemy/emerald";
+import { Chasm } from "./tile/chasm";
 
 export enum RoomType {
   DUNGEON,
@@ -66,6 +67,7 @@ export class Level {
   x: number;
   y: number;
   levelArray: Tile[][];
+  softVisibilityArray: number[][];
   visibilityArray: number[][]; // visibility is 0, 1, or 2 (0 = black, 2 = fully lit)
   enemies: Array<Enemy>;
   items: Array<Item>;
@@ -274,7 +276,38 @@ export class Level {
     }
   }
 
-  private addChests(numChests: number): number {
+  private addChasms() {
+    // add chasms
+    let w = Game.rand(2, 4);
+    let h = Game.rand(2, 4);
+    let xmin = this.roomX + 1;
+    let xmax = this.roomX + this.width - w - 1;
+    let ymin = this.roomY + 2;
+    let ymax = this.roomY + this.height - h - 1;
+    if (xmax < xmin || ymax < ymin) return;
+    let x = Game.rand(xmin, xmax);
+    let y = Game.rand(ymin, ymax);
+
+    for (let xx = x - 1; xx < x + w + 1; xx++) {
+      for (let yy = y - 1; yy < y + h + 1; yy++) {
+        // add a floor border
+        if (xx === x - 1 || xx === x + w || yy === y - 1 || yy === y + h)
+          this.levelArray[xx][yy] = new Floor(this, xx, yy);
+        else
+          this.levelArray[xx][yy] = new Chasm(
+            this,
+            xx,
+            yy,
+            xx === x,
+            xx === x + w - 1,
+            yy === y,
+            yy === y + h - 1
+          );
+      }
+    }
+  }
+
+  private addChests(numChests: number) {
     // add chests
     let tiles = this.getEmptyTiles();
     for (let i = 0; i < numChests; i++) {
@@ -375,40 +408,37 @@ export class Level {
       let x = t.x;
       let y = t.y;
 
-      switch (Game.rand(1, 3)) {
-        case 1:
-          this.enemies.push(new CoalResource(this, this.game, x, y));
-          break;
-        case 2:
-          this.enemies.push(new GoldResource(this, this.game, x, y));
-          break;
-        case 3:
-          this.enemies.push(new Emerald(this, this.game, x, y));
-          break;
-      }
+      let r = Game.rand(0, 150);
+      if (r <= 150 - this.depth ** 3) this.enemies.push(new CoalResource(this, this.game, x, y));
+      else if (r <= 150 - Math.max(0, this.depth - 5) ** 3)
+        this.enemies.push(new GoldResource(this, this.game, x, y));
+      else this.enemies.push(new Emerald(this, this.game, x, y));
     }
   }
 
   generateDungeon = () => {
     this.skin = SkinType.DUNGEON;
 
+    let factor = Game.rand(1, 36);
+
     this.buildEmptyRoom();
-    this.addWallBlocks();
-    this.addFingers();
+    if (factor < 30) this.addWallBlocks();
+    if (factor < 26) this.addFingers();
+    if (factor % 2 === 0) this.addChasms();
     this.fixWalls();
 
-    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
-    this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
+    if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     this.addEnemies(
       Math.floor(
         numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
       ) // 0.25, 0.2, 0.3, 0.5
     );
-    this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
-    this.addResources(
-      Game.randTable([0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 4, 5, 6, 7, 8])
-    );
+    if (factor > 20) this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+    if (Game.rand(0, 10) <= this.depth + 2) {
+      this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
+    }
   };
   generateKeyRoom = () => {
     this.skin = SkinType.DUNGEON;
@@ -608,10 +638,13 @@ export class Level {
       this.levelArray[x] = [];
     }
     this.visibilityArray = [];
+    this.softVisibilityArray = [];
     for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
       this.visibilityArray[x] = [];
+      this.softVisibilityArray[x] = [];
       for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
         this.visibilityArray[x][y] = 0;
+        this.softVisibilityArray[x][y] = 0;
       }
     }
 
@@ -783,8 +816,11 @@ export class Level {
   fadeLighting = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.visibilityArray[x][y] <= LevelConstants.MIN_VISIBILITY)
-          this.visibilityArray[x][y] -= 0.01;
+        if (this.softVisibilityArray[x][y] < this.visibilityArray[x][y])
+          this.softVisibilityArray[x][y] += 0.1;
+        else if (this.softVisibilityArray[x][y] > this.visibilityArray[x][y])
+          this.softVisibilityArray[x][y] -= 0.05;
+        if (this.softVisibilityArray[x][y] < 0.1) this.softVisibilityArray[x][y] = 0;
       }
     }
   };
@@ -806,7 +842,7 @@ export class Level {
     if (LevelConstants.SMOOTH_LIGHTING)
       this.visibilityArray = this.blur3x3(this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
 
-    for (let x = 0; x < this.visibilityArray.length; x++) {
+    /*for (let x = 0; x < this.visibilityArray.length; x++) {
       for (let y = 0; y < this.visibilityArray[0].length; y++) {
         if (this.visibilityArray[x][y] < oldVisibilityArray[x][y]) {
           this.visibilityArray[x][y] = Math.min(
@@ -815,7 +851,7 @@ export class Level {
           );
         }
       }
-    }
+    }*/
   };
 
   castShadowsAtAngle = (angle: number, radius: number) => {
@@ -945,7 +981,7 @@ export class Level {
 
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
-        if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].draw();
+        if (this.softVisibilityArray[x][y] > 0) this.levelArray[x][y].draw();
       }
     }
   };
@@ -953,7 +989,7 @@ export class Level {
   drawEntitiesBehindPlayer = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].drawUnderPlayer();
+        if (this.softVisibilityArray[x][y] > 0) this.levelArray[x][y].drawUnderPlayer();
       }
     }
 
@@ -970,24 +1006,24 @@ export class Level {
     }
 
     for (const e of this.enemies) {
-      if (e.y <= this.game.player.y && this.visibilityArray[e.x][e.y] > 0) e.draw();
+      if (e.y <= this.game.player.y) e.draw();
     }
     for (const i of this.items) {
-      if (i.y <= this.game.player.y && this.visibilityArray[i.x][i.y] > 0) i.draw();
+      if (i.y <= this.game.player.y) i.draw();
     }
   };
   drawEntitiesInFrontOfPlayer = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.visibilityArray[x][y] > 0) this.levelArray[x][y].drawAbovePlayer();
+        if (this.softVisibilityArray[x][y] > 0) this.levelArray[x][y].drawAbovePlayer();
       }
     }
 
     for (const e of this.enemies) {
-      if (e.y > this.game.player.y && this.visibilityArray[e.x][e.y] > 0) e.draw();
+      if (e.y > this.game.player.y) e.draw();
     }
     for (const i of this.items) {
-      if (i.y > this.game.player.y && this.visibilityArray[i.x][i.y] > 0) i.draw();
+      if (i.y > this.game.player.y) i.draw();
     }
 
     for (const e of this.enemies) {
@@ -1002,13 +1038,10 @@ export class Level {
     // D I T H E R E D     S H A D I N G
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
-        if (
-          this.visibilityArray[x][y] > 0 &&
-          this.visibilityArray[x][y] < LevelConstants.MIN_VISIBILITY
-        ) {
-          let frame = Math.round(6 * (this.visibilityArray[x][y] / LevelConstants.MIN_VISIBILITY));
-          Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
-        }
+        let frame = Math.round(
+          6 * (this.softVisibilityArray[x][y] / LevelConstants.MIN_VISIBILITY)
+        );
+        Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
       }
     }
 

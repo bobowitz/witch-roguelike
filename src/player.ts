@@ -13,6 +13,8 @@ import { LevelConstants } from "./levelConstants";
 import { Stats } from "./stats";
 import { Chest } from "./enemy/chest";
 import { Map } from "./map";
+import { GenericParticle } from "./particle/genericParticle";
+import { SlashParticle } from "./particle/slashParticle";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -82,9 +84,9 @@ export class Player {
   };
   leftListener = () => {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      //if (Input.isDown(Input.SPACE)) this.tryDash(-1, 0);
-      //else
-      this.tryMove(this.x - 1, this.y);
+      if (Input.isDown(Input.SPACE))
+        GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
+      else this.tryMove(this.x - 1, this.y);
       this.direction = PlayerDirection.LEFT;
     }
   };
@@ -201,11 +203,15 @@ export class Player {
           // here, (nextX, nextY) is the position immediately after the end of the train
           if (
             pushedEnemies.length === 0 &&
-            (this.game.level.levelArray[nextX][nextY].isSolid() || enemyEnd)
+            (this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
           ) {
             if (e.destroyable) {
               e.kill();
+              this.drawX = 0.5 * (this.x - e.x);
+              this.drawY = 0.5 * (this.y - e.y);
+              this.game.level.particles.push(new SlashParticle(e.x, e.y));
               this.game.level.tick();
+              this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
               return;
             }
           } else {
@@ -217,7 +223,7 @@ export class Player {
               f.drawY = dy;
               f.skipNextTurns = 1; // skip next turn, so they don't move while we're pushing them
             }
-            if (this.game.level.levelArray[nextX][nextY].isSolid() || enemyEnd)
+            if (this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
               pushedEnemies[pushedEnemies.length - 1].killNoBones();
             e.x += dx;
             e.y += dy;
@@ -230,9 +236,13 @@ export class Player {
         } else {
           // if we're trying to hit an enemy, check if it's destroyable
           if (e.destroyable) {
-            // and kill it
-            e.kill();
+            // and hurt it
+            e.hurt(1);
+            this.drawX = 0.5 * (this.x - e.x);
+            this.drawY = 0.5 * (this.y - e.y);
+            this.game.level.particles.push(new SlashParticle(e.x, e.y));
             this.game.level.tick();
+            this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
             return;
           }
         }

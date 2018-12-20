@@ -24,7 +24,8 @@ export class KnightEnemy extends Enemy {
     this.health = 1;
     this.tileX = 4;
     this.tileY = 0;
-    this.seenPlayer = false;
+    this.seenPlayer = true;
+    this.deathParticleColor = "#ffffff";
   }
 
   hit = (): number => {
@@ -39,7 +40,7 @@ export class KnightEnemy extends Enemy {
       }
       this.ticks++;
       this.tileX = 5;
-      if (this.seenPlayer || this.level.visibilityArray[this.x][this.y] > 0) {
+      if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
         if (this.ticks % 2 === 0) {
           this.tileX = 4;
           // visible to player, chase them

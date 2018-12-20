@@ -17,7 +17,7 @@ export class LevelConstants {
 
   static readonly SHADED_TILE_CUTOFF = 1;
   static SMOOTH_LIGHTING = false;
-  static readonly MIN_VISIBILITY = 1.9; // visibility level of places you've already seen
+  static readonly MIN_VISIBILITY = 2.0; // visibility level of places you've already seen
   static readonly LIGHTING_ANGLE_STEP = 5; // how many degrees between each ray
 
   static LEVEL_TEXT_COLOR = "white"; // not actually a constant

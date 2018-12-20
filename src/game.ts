@@ -27,6 +27,8 @@ export class Game {
   transitionY: number;
   upwardTransition: boolean;
   transitioningLadder: any;
+  screenShakeX: number;
+  screenShakeY: number;
   static tileset: HTMLImageElement;
   static objset: HTMLImageElement;
   static mobset: HTMLImageElement;
@@ -182,6 +184,11 @@ export class Game {
     //Game.ctx.canvas.height = window.innerHeight;
   };
 
+  shakeScreen = (shakeX: number, shakeY: number) => {
+    this.screenShakeX = shakeX;
+    this.screenShakeY = shakeY;
+  };
+
   draw = () => {
     Game.ctx.globalAlpha = 1;
     Game.ctx.fillStyle = "black";
@@ -309,10 +316,18 @@ export class Game {
       }
       this.player.drawTopLayer();
     } else {
+      this.screenShakeX *= -0.8;
+      this.screenShakeY *= -0.8;
+
+      Game.ctx.translate(Math.round(this.screenShakeX), Math.round(this.screenShakeY));
+
       this.level.draw();
       this.level.drawEntitiesBehindPlayer();
       this.player.draw();
       this.level.drawEntitiesInFrontOfPlayer();
+
+      Game.ctx.translate(-Math.round(this.screenShakeX), -Math.round(this.screenShakeY));
+
       this.level.drawTopLayer();
       this.player.drawTopLayer();
     }

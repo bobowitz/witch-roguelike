@@ -33,6 +33,7 @@ export class WizardEnemy extends Enemy {
     this.tileY = 0;
     this.frame = 0;
     this.state = WizardState.attack;
+    this.deathParticleColor = "#ffffff";
   }
 
   hit = (): number => {
@@ -47,7 +48,8 @@ export class WizardEnemy extends Enemy {
   };
 
   tick = () => {
-    if (!this.dead && this.level.visibilityArray[this.x][this.y] > 0) {
+    if (!this.dead) {
+      //  && this.level.visibilityArray[this.x][this.y] > 0
       if (this.skipNextTurns > 0) {
         this.skipNextTurns--;
         return;

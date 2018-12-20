@@ -12,6 +12,7 @@ import { DeathParticle } from "../particle/deathParticle";
 import { HitWarning } from "../projectile/hitWarning";
 import { Gem } from "../item/gem";
 import { SpikeTrap } from "../tile/spiketrap";
+import { GenericParticle } from "../particle/genericParticle";
 
 export class SkullEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -28,9 +29,10 @@ export class SkullEnemy extends Enemy {
     this.health = 2;
     this.tileX = 2;
     this.tileY = 0;
-    this.seenPlayer = false;
+    this.seenPlayer = true;
     this.ticksSinceFirstHit = 0;
     this.flashingFrame = 0;
+    this.deathParticleColor = "#ffffff";
   }
 
   hit = (): number => {
@@ -42,6 +44,8 @@ export class SkullEnemy extends Enemy {
     this.health -= damage;
     if (this.health <= 0) {
       this.kill();
+    } else {
+      GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, this.deathParticleColor);
     }
   };
 
@@ -57,7 +61,7 @@ export class SkullEnemy extends Enemy {
           this.health = 2;
         }
       } else {
-        if (this.seenPlayer || this.level.visibilityArray[this.x][this.y] > 0) {
+        if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;

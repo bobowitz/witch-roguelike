@@ -17,6 +17,10 @@ export class Door extends Tile {
     this.opened = false;
   }
 
+  canCrushEnemy = (): boolean => {
+    return true;
+  };
+
   onCollide = (player: Player) => {
     this.opened = true;
     this.game.changeLevelThroughDoor(this.linkedDoor);

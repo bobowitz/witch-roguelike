@@ -22,10 +22,13 @@ export class Tile {
   }
 
   isShaded = () => {
-    return this.level.visibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
+    return this.level.softVisibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
   };
 
   isSolid = (): boolean => {
+    return false;
+  };
+  canCrushEnemy = (): boolean => {
     return false;
   };
   isOpaque = (): boolean => {

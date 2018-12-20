@@ -18,6 +18,9 @@ export class InsideLevelDoor extends Tile {
   isSolid = (): boolean => {
     return !this.opened;
   };
+  canCrushEnemy = (): boolean => {
+    return !this.opened;
+  };
   isOpaque = (): boolean => {
     return !this.opened;
   };

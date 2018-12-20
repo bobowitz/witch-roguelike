@@ -13,6 +13,9 @@ export class Wall extends Tile {
   isSolid = (): boolean => {
     return true;
   };
+  canCrushEnemy = (): boolean => {
+    return true;
+  };
   isOpaque = (): boolean => {
     return true;
   };
