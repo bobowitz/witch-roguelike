@@ -73,7 +73,11 @@ export class Enemy {
     return 0;
   };
 
+  hurtCallback = () => {};
+
   hurt = (damage: number) => {
+    this.hurtCallback();
+
     this.health -= damage;
     if (this.health <= 0) {
       this.kill();

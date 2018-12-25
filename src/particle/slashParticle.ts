@@ -10,7 +10,7 @@ export class SlashParticle extends Particle {
   constructor(x: number, y: number) {
     super();
     this.x = x;
-    this.y = y - 1.5;
+    this.y = y - 1.25;
     this.dead = false;
     this.frame = 0;
   }

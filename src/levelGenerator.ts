@@ -198,13 +198,40 @@ export class LevelGenerator {
   generate = (game: Game, depth: number) => {
     let d = depth;
     // prettier-ignore
-    let node = new N(d == 0 ? RoomType.DUNGEON : RoomType.UPLADDER, d, [
-      new N((Math.random() < 0.2) ? RoomType.TREASURE : RoomType.DUNGEON, d, [
-        new N(RoomType.DOWNLADDER, d, []),
-        new N((Math.random() < 0.2) ? RoomType.TREASURE : RoomType.DUNGEON, d, [])
-      ]),
-      new N((Math.random() < 0.2) ? RoomType.TREASURE : RoomType.DUNGEON, d, [])
-    ]);
+    let node;
+    if (d == 0) {
+      node = new N(RoomType.DUNGEON, d, [
+        new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+          new N(RoomType.DOWNLADDER, d, []),
+          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+        ]),
+        new N(RoomType.SHOP, d, []),
+      ]);
+    } else {
+      if (Game.rand(1, 5) !== 1) {
+        node = new N(RoomType.UPLADDER, d, [
+          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+            new N(RoomType.DOWNLADDER, d, []),
+            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+          ]),
+          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+        ]);
+      } else {
+        node = new N(RoomType.UPLADDER, d, [
+          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+              new N(RoomType.DOWNLADDER, d, []),
+            ]),
+            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+              new N(RoomType.SPIKECORRIDOR, d, [new N(RoomType.TREASURE, d, [])]),
+            ]),
+            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+          ]),
+          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+        ]);
+      }
+    }
     /*  new N(RoomType.DUNGEON, d, [
         new N(RoomType.COFFIN, d, [])
       ]),

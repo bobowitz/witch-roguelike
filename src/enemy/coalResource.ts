@@ -17,15 +17,17 @@ export class CoalResource extends Resource {
 
     this.tileX = 12;
     this.tileY = 0;
-    this.health = 1;
+    this.health = 3;
   }
+
+  hurtCallback = () => {
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#000000");
+  };
 
   kill = () => {
     this.dead = true;
 
     this.game.level.items.push(new Coal(this.level, this.x, this.y));
-
-    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#000000");
   };
   killNoBones = () => {
     this.kill();

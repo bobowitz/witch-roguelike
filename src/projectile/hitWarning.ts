@@ -5,9 +5,11 @@ import { Player } from "../player";
 
 export class HitWarning extends Projectile {
   static frame = 0;
+  game: Game;
 
-  constructor(x: number, y: number) {
+  constructor(game: Game, x: number, y: number) {
     super(x, y);
+    this.game = game;
   }
 
   tick = () => {
@@ -20,6 +22,10 @@ export class HitWarning extends Projectile {
   };
 
   draw = () => {
-    Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
+    if (
+      (this.x === this.game.player.x && Math.abs(this.y - this.game.player.y) <= 1) ||
+      (this.y === this.game.player.y && Math.abs(this.x - this.game.player.x) <= 1)
+    )
+      Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
   };
 }

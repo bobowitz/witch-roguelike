@@ -36,7 +36,7 @@ import { UpLadder } from "./tile/upLadder";
 import { DownLadder } from "./tile/downLadder";
 import { CoalResource } from "./enemy/coalResource";
 import { GoldResource } from "./enemy/goldResource";
-import { Emerald } from "./enemy/emerald";
+import { EmeraldResource } from "./enemy/emeraldResource";
 import { Chasm } from "./tile/chasm";
 
 export enum RoomType {
@@ -53,6 +53,7 @@ export enum RoomType {
   SPIKECORRIDOR,
   UPLADDER,
   DOWNLADDER,
+  SHOP,
 }
 
 export enum TurnState {
@@ -309,7 +310,7 @@ export class Level {
 
   private addChests(numChests: number) {
     // add chests
-    let tiles = this.getEmptyTiles();
+    let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numChests; i++) {
       let t, x, y;
       if (tiles.length == 0) return;
@@ -322,7 +323,7 @@ export class Level {
 
   private addSpikeTraps(numSpikes: number) {
     // add spikes
-    let tiles = this.getEmptyTiles();
+    let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numSpikes; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -335,7 +336,7 @@ export class Level {
 
   private addSpikes(numSpikes: number) {
     // add spikes
-    let tiles = this.getEmptyTiles();
+    let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numSpikes; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -347,14 +348,16 @@ export class Level {
   }
 
   private addEnemies(numEnemies: number) {
-    let tiles = this.getEmptyTiles();
+    let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numEnemies; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
       if (this.depth !== 0) {
-        switch (Game.rand(1, this.depth)) {
+        let d = Game.rand(1, this.depth);
+        if (d > 1) d = 1;
+        switch (d) {
           case 1:
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
             break;
@@ -371,7 +374,7 @@ export class Level {
 
   private addObstacles(numObstacles: number) {
     // add crates/barrels
-    let tiles = this.getEmptyTiles();
+    let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numObstacles; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -389,7 +392,7 @@ export class Level {
   }
 
   private addPlants(numPlants: number) {
-    let tiles = this.getEmptyTiles();
+    let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numPlants; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -401,7 +404,7 @@ export class Level {
   }
 
   private addResources(numResources: number) {
-    let tiles = this.getEmptyTiles();
+    let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numResources; i++) {
       let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
       if (tiles.length == 0) return;
@@ -412,7 +415,7 @@ export class Level {
       if (r <= 150 - this.depth ** 3) this.enemies.push(new CoalResource(this, this.game, x, y));
       else if (r <= 150 - Math.max(0, this.depth - 5) ** 3)
         this.enemies.push(new GoldResource(this, this.game, x, y));
-      else this.enemies.push(new Emerald(this, this.game, x, y));
+      else this.enemies.push(new EmeraldResource(this, this.game, x, y));
     }
   }
 
@@ -424,18 +427,20 @@ export class Level {
     this.buildEmptyRoom();
     if (factor < 30) this.addWallBlocks();
     if (factor < 26) this.addFingers();
-    if (factor % 2 === 0) this.addChasms();
+    if (factor % 4 === 0) this.addChasms();
     this.fixWalls();
 
     if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
-    this.addEnemies(
-      Math.floor(
-        numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
-      ) // 0.25, 0.2, 0.3, 0.5
+    let numEnemies = Math.floor(
+      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1])
     );
-    if (factor > 20) this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+    if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
+    //numEnemies = 10;
+    this.addEnemies(numEnemies);
+    if (numEnemies > 0) this.addObstacles(Game.rand(1, 2) * numEnemies);
+    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
     if (Game.rand(0, 10) <= this.depth + 2) {
       this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
     }
@@ -515,7 +520,7 @@ export class Level {
 
     this.levelArray[x][y] = new Button(this, x, y, d);
 
-    let crateTiles = this.getEmptyTiles().filter(
+    let crateTiles = this.getEmptyMiddleTiles().filter(
       t =>
         t.x >= this.roomX + 1 &&
         t.x <= this.roomX + this.width - 2 &&
@@ -573,7 +578,7 @@ export class Level {
 
     this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
     this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
-    let numEmptyTiles = this.getEmptyTiles().length;
+    let numEmptyTiles = this.getEmptyMiddleTiles().length;
     this.addEnemies(
       numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
     );
@@ -690,6 +695,9 @@ export class Level {
         this.generateDownLadder();
         this.name = "FLOOR " + -this.depth;
         break;
+      case RoomType.SHOP:
+        this.generateDungeon();
+        break;
     }
   }
 
@@ -789,10 +797,27 @@ export class Level {
     this.entered = true;
   };
 
-  getEmptyTiles = (): Tile[] => {
+  // doesn't include top row or bottom row, as to not block doors
+  getEmptyMiddleTiles = (): Tile[] => {
     let returnVal: Tile[] = [];
     for (let x = this.roomX; x < this.roomX + this.width; x++) {
       for (let y = this.roomY + 2; y < this.roomY + this.height - 1; y++) {
+        if (!this.levelArray[x][y].isSolid() && !(this.levelArray[x][y] instanceof SpikeTrap)) {
+          returnVal.push(this.levelArray[x][y]);
+        }
+      }
+    }
+    for (const e of this.enemies) {
+      returnVal = returnVal.filter(t => t.x !== e.x || t.y !== e.y);
+    }
+    return returnVal;
+  };
+
+  // includes top row and bottom row
+  getEmptyTiles = (): Tile[] => {
+    let returnVal: Tile[] = [];
+    for (let x = this.roomX; x < this.roomX + this.width; x++) {
+      for (let y = this.roomY + 1; y < this.roomY + this.height; y++) {
         if (!this.levelArray[x][y].isSolid() && !(this.levelArray[x][y] instanceof SpikeTrap)) {
           returnVal.push(this.levelArray[x][y]);
         }

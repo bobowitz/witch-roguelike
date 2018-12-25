@@ -15,6 +15,8 @@ import { Chest } from "./enemy/chest";
 import { Map } from "./map";
 import { GenericParticle } from "./particle/genericParticle";
 import { SlashParticle } from "./particle/slashParticle";
+import { SkullEnemy } from "./enemy/skullEnemy";
+import { KnightEnemy } from "./enemy/knightEnemy";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -236,14 +238,20 @@ export class Player {
         } else {
           // if we're trying to hit an enemy, check if it's destroyable
           if (e.destroyable) {
-            // and hurt it
-            e.hurt(1);
-            this.drawX = 0.5 * (this.x - e.x);
-            this.drawY = 0.5 * (this.y - e.y);
-            this.game.level.particles.push(new SlashParticle(e.x, e.y));
-            this.game.level.tick();
-            this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
-            return;
+            if (e instanceof SkullEnemy || e instanceof KnightEnemy) {
+              this.hurt(1);
+              this.game.level.tick();
+              return;
+            } else {
+              // and hurt it
+              e.hurt(1);
+              this.drawX = 0.5 * (this.x - e.x);
+              this.drawY = 0.5 * (this.y - e.y);
+              this.game.level.particles.push(new SlashParticle(e.x, e.y));
+              this.game.level.tick();
+              this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
+              return;
+            }
           }
         }
       }

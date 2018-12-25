@@ -17,7 +17,7 @@ export class GoldResource extends Resource {
 
     this.tileX = 13;
     this.tileY = 0;
-    this.health = 1;
+    this.health = 10;
   }
 
   kill = () => {

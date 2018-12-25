@@ -21,7 +21,7 @@ export class KnightEnemy extends Enemy {
     super(level, game, x, y);
     this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
-    this.health = 1;
+    this.health = 2;
     this.tileX = 4;
     this.tileY = 0;
     this.seenPlayer = true;
@@ -41,7 +41,7 @@ export class KnightEnemy extends Enemy {
       this.ticks++;
       this.tileX = 5;
       if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
-        if (this.ticks % 2 === 0) {
+        if (this.ticks % 3 === 0) {
           this.tileX = 4;
           // visible to player, chase them
 
@@ -77,7 +77,7 @@ export class KnightEnemy extends Enemy {
               this.game.player.x === this.moves[0].pos.x &&
               this.game.player.y === this.moves[0].pos.y
             ) {
-              this.game.player.hurt(this.hit());
+              //this.game.player.hurt(this.hit());
             } else {
               this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
             }
@@ -89,10 +89,10 @@ export class KnightEnemy extends Enemy {
           else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
           else if (this.y < oldY) this.direction = EnemyDirection.UP;
         } else {
-          this.level.projectiles.push(new HitWarning(this.x - 1, this.y));
-          this.level.projectiles.push(new HitWarning(this.x + 1, this.y));
-          this.level.projectiles.push(new HitWarning(this.x, this.y - 1));
-          this.level.projectiles.push(new HitWarning(this.x, this.y + 1));
+          //this.level.projectiles.push(new HitWarning(this.game, this.x - 1, this.y));
+          //this.level.projectiles.push(new HitWarning(this.game, this.x + 1, this.y));
+          //this.level.projectiles.push(new HitWarning(this.game, this.x, this.y - 1));
+          //this.level.projectiles.push(new HitWarning(this.game, this.x, this.y + 1));
         }
       }
     }
