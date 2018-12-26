@@ -271,7 +271,7 @@ export class Game {
       this.player.draw();
       Game.ctx.translate(-playerOffsetX, -playerOffsetY);
 
-      this.player.drawTopLayer();
+      this.player.drawGUI();
     } else if (this.levelState === LevelState.TRANSITIONING_LADDER) {
       let deadFrames = 6;
       let ditherFrame = Math.floor(
@@ -314,7 +314,7 @@ export class Game {
           }
         }
       }
-      this.player.drawTopLayer();
+      this.player.drawGUI();
     } else {
       this.screenShakeX *= -0.8;
       this.screenShakeY *= -0.8;
@@ -330,6 +330,7 @@ export class Game {
 
       this.level.drawTopLayer();
       this.player.drawTopLayer();
+      this.player.drawGUI();
     }
 
     // game version

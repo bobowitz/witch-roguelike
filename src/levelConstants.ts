@@ -16,6 +16,10 @@ export class LevelConstants {
   static readonly LEVEL_TRANSITION_TIME_LADDER = 1000; // milliseconds
   static readonly ROOM_COUNT = 15;
 
+  static readonly HEALTH_BAR_FADEIN = 100;
+  static readonly HEALTH_BAR_FADEOUT = 100;
+  static readonly HEALTH_BAR_TOTALTIME = 2500;
+
   static readonly SHADED_TILE_CUTOFF = 1;
   static SMOOTH_LIGHTING = false;
   static readonly MIN_VISIBILITY = 2.0; // visibility level of places you've already seen

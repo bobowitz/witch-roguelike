@@ -22,6 +22,7 @@ export class Spawner extends Enemy {
     super(level, game, x, y);
     this.ticks = 0;
     this.health = 6;
+    this.maxHealth = 6;
     this.tileX = 6;
     this.tileY = 4;
     this.seenPlayer = true;

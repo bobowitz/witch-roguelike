@@ -1099,6 +1099,10 @@ export class Level {
       }
     }
 
+    for (const i of this.items) {
+      if (i.y <= this.game.player.y) i.drawTopLayer();
+    }
+
     // draw over dithered shading
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {

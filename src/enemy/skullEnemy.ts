@@ -27,6 +27,7 @@ export class SkullEnemy extends Enemy {
     super(level, game, x, y);
     this.ticks = 0;
     this.health = 2;
+    this.maxHealth = 2;
     this.tileX = 2;
     this.tileY = 0;
     this.seenPlayer = true;
@@ -44,6 +45,7 @@ export class SkullEnemy extends Enemy {
   hurt = (damage: number) => {
     this.ticksSinceFirstHit = 0;
     this.health -= damage;
+    this.healthBar.hurt();
     if (this.health <= 0) {
       this.kill();
     } else {
@@ -94,17 +96,21 @@ export class SkullEnemy extends Enemy {
               this.dy++;
             }
           }
+
           if (this.game.player.x === moveX && this.game.player.y === moveY) {
             this.game.player.hurt(this.hit());
+            this.drawX = 1 * (this.x - this.game.player.x);
+            this.drawY = 1 * (this.y - this.game.player.y);
+            this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
           } else {
             this.tryMove(moveX, moveY);
+            this.drawX = this.x - oldX;
+            this.drawY = this.y - oldY;
+            if (this.x > oldX) this.direction = EnemyDirection.RIGHT;
+            else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
+            else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
+            else if (this.y < oldY) this.direction = EnemyDirection.UP;
           }
-          this.drawX = this.x - oldX;
-          this.drawY = this.y - oldY;
-          if (this.x > oldX) this.direction = EnemyDirection.RIGHT;
-          else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
-          else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
-          else if (this.y < oldY) this.direction = EnemyDirection.UP;
 
           this.level.projectiles.push(new HitWarning(this.game, this.x - 1, this.y));
           this.level.projectiles.push(new HitWarning(this.game, this.x + 1, this.y));

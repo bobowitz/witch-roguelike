@@ -43,4 +43,6 @@ export class Barrel extends Enemy {
       );
     }
   };
+
+  drawTopLayer = () => {};
 }

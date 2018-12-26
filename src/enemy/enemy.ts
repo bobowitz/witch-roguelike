@@ -6,6 +6,7 @@ import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
 import { Floor } from "../tile/floor";
 import { GenericParticle } from "../particle/genericParticle";
+import { HealthBar } from "../healthbar";
 
 export enum EnemyDirection {
   DOWN = 0,
@@ -24,6 +25,7 @@ export class Enemy {
   dead: boolean;
   game: Game;
   health: number;
+  maxHealth: number;
   tileX: number;
   tileY: number;
   hasShadow: boolean;
@@ -33,6 +35,7 @@ export class Enemy {
   pushable: boolean; // can the player push this enemy? (true for crates/barrels, false for regular mobs)
   chainPushable: boolean; // can the player pushing another enemy push this enemy? (default true)
   deathParticleColor: string;
+  healthBar: HealthBar;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     this.level = level;
@@ -42,6 +45,7 @@ export class Enemy {
     this.drawX = 0;
     this.drawY = 0;
     this.health = 1;
+    this.maxHealth = 1;
     this.tileX = 0;
     this.tileY = 0;
     this.hasShadow = true;
@@ -51,6 +55,7 @@ export class Enemy {
     this.pushable = false;
     this.chainPushable = true;
     this.deathParticleColor = "#ff00ff";
+    this.healthBar = new HealthBar();
   }
 
   tryMove = (x: number, y: number) => {
@@ -77,6 +82,7 @@ export class Enemy {
 
   hurt = (damage: number) => {
     this.hurtCallback();
+    this.healthBar.hurt();
 
     this.health -= damage;
     if (this.health <= 0) {
@@ -149,5 +155,7 @@ export class Enemy {
     }
   };
   tick = () => {};
-  drawTopLayer = () => {};
+  drawTopLayer = () => {
+    this.healthBar.draw(this.health, this.maxHealth, this.x, this.y, true);
+  };
 }

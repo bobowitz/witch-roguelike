@@ -32,15 +32,16 @@ export class Coal extends Item {
   onPickup = (player: Player) => {
     if (this.firstTickCounter < this.TICKS) return;
 
-    player.inventory.addItem(this);
-    this.level.particles.push(
-      new TextParticle("+1", this.x + 0.5, this.y - 0.5, GameConstants.GREEN, 0)
-    );
-    this.level.items = this.level.items.filter(x => x !== this); // removes itself from the level
+    if (!this.pickedUp) {
+      player.inventory.addItem(this);
+      this.level.particles.push(new TextParticle("+1", this.x + 0.5, this.y - 0.5, "#000000", 0));
+      this.pickedUp = true;
+    }
   };
 
   draw = () => {
     if (this.firstTickCounter < this.TICKS) return;
+    if (this.pickedUp) return;
 
     if (this.scaleFactor < 1) this.scaleFactor += 0.04;
     else this.scaleFactor = 1;

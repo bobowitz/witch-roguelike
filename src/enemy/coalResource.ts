@@ -48,4 +48,6 @@ export class CoalResource extends Resource {
       );
     }
   };
+
+  drawTopLayer = () => {};
 }

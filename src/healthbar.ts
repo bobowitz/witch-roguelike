@@ -1,20 +1,59 @@
 import { Game } from "./game";
+import { LevelConstants } from "./levelConstants";
 
 export class HealthBar {
-  static draw = (hearts: number, maxHearts: number, x: number, y: number) => {
-    let fullHearts = Math.floor(hearts);
+  hurtTimer: number;
 
-    let halfHearts = Math.ceil(hearts - fullHearts);
+  constructor() {
+    this.hurtTimer = 0;
+  }
 
-    let emptyHearts = maxHearts - fullHearts - halfHearts;
+  hurt = () => {
+    this.hurtTimer = Date.now();
+  };
 
-    // I wouldn't normally use magic numbers here, but these are hardcoded based on the tileset
-    //   (which isn't really parameterizable)
-    let width = (9.0 / 16.0) * maxHearts - 1.0 / 16.0;
-    let xx = -width / 2;
-    for (let i = 0; i < maxHearts; i++) {
-      Game.drawFX(0, 24, 0.5, 0.5, x - width / 2, y - 1.5625, 0.5, 0.5);
-      xx += 9.0 / 16.0;
+  draw = (hearts: number, maxHearts: number, x: number, y: number, flashing: boolean) => {
+    let t = Date.now() - this.hurtTimer;
+    if (t <= LevelConstants.HEALTH_BAR_TOTALTIME) {
+      let fullHearts = Math.floor(hearts);
+
+      let halfHearts = Math.ceil(hearts - fullHearts);
+
+      let emptyHearts = maxHearts - fullHearts - halfHearts;
+
+      // I wouldn't normally use magic numbers here, but these are hardcoded based on the tileset
+      //   (which isn't really parameterizable)
+      let drawWidth = Math.round(
+        Math.min(9, Math.min(0.05 * (LevelConstants.HEALTH_BAR_TOTALTIME - t), 0.05 * t))
+      );
+      let drawHeight =
+        Math.round(
+          Math.min(0.5, Math.min(0.003 * (LevelConstants.HEALTH_BAR_TOTALTIME - t), 0.003 * t)) * 16
+        ) / 16.0;
+      let width = (drawWidth * (maxHearts - 1) + 8) / 16.0;
+      let xxStart = 0.5 + -width / 2;
+      for (let i = 0; i < Math.ceil(0.5 * maxHearts); i++) {
+        let tileX = 0;
+        if (!flashing) tileX = 1.5;
+        else if (i < fullHearts) tileX = 0;
+        else if (i < fullHearts + halfHearts) tileX = 0.5;
+        else tileX = 1;
+        let xx = (drawWidth * i) / 16.0 + xxStart;
+        Game.drawFX(tileX, 8, 0.5, 0.5, x + xx, y - 1 - drawHeight / 2, 0.5, drawHeight);
+        xx += 9.0 / 16.0;
+
+        let j = maxHearts - i - 1;
+        if (j !== i) {
+          let tileX = 0;
+          if (!flashing) tileX = 1.5;
+          else if (j < fullHearts) tileX = 0;
+          else if (j < fullHearts + halfHearts) tileX = 0.5;
+          else tileX = 1;
+          let xx = (drawWidth * j) / 16.0 + xxStart;
+          Game.drawFX(tileX, 8, 0.5, 0.5, x + xx, y - 1 - drawHeight / 2, 0.5, drawHeight);
+          xx += 9.0 / 16.0;
+        }
+      }
     }
   };
 }

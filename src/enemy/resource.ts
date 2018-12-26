@@ -40,4 +40,6 @@ export class Resource extends Enemy {
       );
     }
   };
+
+  drawTopLayer = () => {};
 }

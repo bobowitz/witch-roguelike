@@ -10,6 +10,7 @@ export class Crate extends Enemy {
     super(level, game, x, y);
     this.level = level;
     this.health = 1;
+    this.maxHealth = 1;
     this.tileX = 0;
     this.tileY = 0;
     this.hasShadow = false;
@@ -43,4 +44,6 @@ export class Crate extends Enemy {
       );
     }
   };
+
+  drawTopLayer = () => {};
 }

@@ -21,7 +21,8 @@ export class KnightEnemy extends Enemy {
     super(level, game, x, y);
     this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
-    this.health = 3;
+    this.health = 2;
+    this.maxHealth = 2;
     this.tileX = 4;
     this.tileY = 0;
     this.seenPlayer = true;

@@ -46,4 +46,6 @@ export class GoldResource extends Resource {
       );
     }
   };
+
+  drawTopLayer = () => {};
 }

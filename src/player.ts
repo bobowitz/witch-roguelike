@@ -17,6 +17,9 @@ import { GenericParticle } from "./particle/genericParticle";
 import { SlashParticle } from "./particle/slashParticle";
 import { SkullEnemy } from "./enemy/skullEnemy";
 import { KnightEnemy } from "./enemy/knightEnemy";
+import { HealthBar } from "./healthbar";
+import { EmeraldResource } from "./enemy/emeraldResource";
+import { Gem } from "./item/gem";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -37,6 +40,8 @@ export class Player {
   flashing: boolean;
   flashingFrame: number;
   health: number;
+  maxHealth: number;
+  healthBar: HealthBar;
   stats: Stats;
   dead: boolean;
   lastTickHealth: number;
@@ -62,6 +67,8 @@ export class Player {
     Input.downListener = this.downListener;
 
     this.health = 3;
+    this.maxHealth = 3;
+    this.healthBar = new HealthBar();
     this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
@@ -86,9 +93,11 @@ export class Player {
   };
   leftListener = () => {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      if (Input.isDown(Input.SPACE))
+      if (Input.isDown(Input.SPACE)) {
         GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
-      else this.tryMove(this.x - 1, this.y);
+        this.healthBar.hurt();
+        this.game.level.items.push(new Gem(this.game.level, this.x - 1, this.y));
+      } else this.tryMove(this.x - 1, this.y);
       this.direction = PlayerDirection.LEFT;
     }
   };
@@ -267,6 +276,7 @@ export class Player {
   };
 
   hurt = (damage: number) => {
+    this.healthBar.hurt();
     if (this.inventory.getArmor() && this.inventory.getArmor().health > 0) {
       this.inventory.getArmor().hurt(damage);
     } else {
@@ -382,6 +392,16 @@ export class Player {
   };
 
   drawTopLayer = () => {
+    this.healthBar.draw(
+      this.health,
+      this.maxHealth,
+      this.x - this.drawX,
+      this.y - this.drawY,
+      !this.flashing || Math.floor(this.flashingFrame) % 2 === 0
+    );
+  };
+
+  drawGUI = () => {
     if (!this.dead) {
       if (this.guiHeartFrame > 0) this.guiHeartFrame++;
       if (this.guiHeartFrame > 5) {

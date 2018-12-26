@@ -60,4 +60,6 @@ export class Chest extends Enemy {
       );
     }
   };
+
+  drawTopLayer = () => {};
 }
