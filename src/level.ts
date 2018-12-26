@@ -38,6 +38,7 @@ import { CoalResource } from "./enemy/coalResource";
 import { GoldResource } from "./enemy/goldResource";
 import { EmeraldResource } from "./enemy/emeraldResource";
 import { Chasm } from "./tile/chasm";
+import { Spawner } from "./enemy/spawner";
 
 export enum RoomType {
   DUNGEON,
@@ -54,6 +55,8 @@ export enum RoomType {
   UPLADDER,
   DOWNLADDER,
   SHOP,
+  CAVE,
+  SPAWNER,
 }
 
 export enum TurnState {
@@ -84,6 +87,7 @@ export class Level {
   depth: number;
   name: string;
   turn: TurnState;
+  playerTurnTime: number;
   skin: SkinType;
   entered: boolean; // has the player entered this level
   upLadder: UpLadder;
@@ -421,6 +425,7 @@ export class Level {
 
   generateDungeon = () => {
     this.skin = SkinType.DUNGEON;
+    if (Game.rand(1, 2) === 1) this.skin = SkinType.CAVE;
 
     let factor = Game.rand(1, 36);
 
@@ -433,17 +438,31 @@ export class Level {
     if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
-    let numEnemies = Math.floor(
+    let numEnemies = Math.ceil(
       numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1])
     );
-    if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
-    //numEnemies = 10;
+    //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
     this.addEnemies(numEnemies);
-    if (numEnemies > 0) this.addObstacles(Game.rand(1, 2) * numEnemies);
+    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
     else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
     if (Game.rand(0, 10) <= this.depth + 2) {
       this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
     }
+  };
+  generateSpawner = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
+    this.fixWalls();
+
+    this.enemies.push(
+      new Spawner(
+        this,
+        this.game,
+        Math.floor(this.roomX + this.width / 2),
+        Math.floor(this.roomY + this.height / 2)
+      )
+    );
   };
   generateKeyRoom = () => {
     this.skin = SkinType.DUNGEON;
@@ -568,26 +587,29 @@ export class Level {
     this.buildEmptyRoom();
     this.fixWalls();
   };
-  generateGrass = () => {
-    this.skin = SkinType.GRASS;
+  generateCave = () => {
+    this.skin = SkinType.CAVE;
+
+    let factor = Game.rand(1, 36);
 
     this.buildEmptyRoom();
-    this.addWallBlocks();
-    this.addFingers();
+    if (factor < 30) this.addWallBlocks();
+    if (factor < 26) this.addFingers();
+    if (factor % 4 === 0) this.addChasms();
     this.fixWalls();
 
-    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
-    this.addSpikes(Game.randTable([0, 0, 0, 1, 1, 2, 3, 5]));
-    let numEmptyTiles = this.getEmptyMiddleTiles().length;
-    this.addEnemies(
-      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.1, 0.1, 0.12, 0.15, 0.3])
+    if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
+    let numEmptyTiles = this.getEmptyTiles().length;
+    let numEnemies = Math.ceil(
+      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1])
     );
-    this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
-
-    for (let x = 0; x < this.levelArray.length; x++) {
-      for (let y = 0; y < this.levelArray[0].length; y++) {
-        this.levelArray[x][y].skin = SkinType.GRASS;
-      }
+    //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
+    this.addEnemies(numEnemies);
+    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
+    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+    if (Game.rand(0, 10) <= this.depth + 2) {
+      this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
     }
   };
   generateUpLadder = () => {
@@ -631,6 +653,7 @@ export class Level {
 
     this.entered = false;
     this.turn = TurnState.playerTurn;
+    this.playerTurnTime = Date.now();
 
     this.items = Array<Item>();
     this.projectiles = Array<Projectile>();
@@ -685,7 +708,10 @@ export class Level {
         this.generateKeyRoom();
         break;
       case RoomType.GRASS:
-        this.generateGrass();
+        this.generateDungeon();
+        break;
+      case RoomType.CAVE:
+        this.generateCave();
         break;
       case RoomType.UPLADDER:
         this.generateUpLadder();
@@ -698,6 +724,8 @@ export class Level {
       case RoomType.SHOP:
         this.generateDungeon();
         break;
+      case RoomType.SPAWNER:
+        this.generateSpawner();
     }
   }
 
@@ -955,11 +983,12 @@ export class Level {
     }
 
     this.turn = TurnState.computerTurn;
+    this.playerTurnTime = Date.now();
   };
 
   update = () => {
     if (this.turn == TurnState.computerTurn) {
-      if (this.game.player.doneMoving()) {
+      if (Date.now() - this.playerTurnTime >= LevelConstants.COMPUTER_TURN_DELAY) {
         this.computerTurn();
       }
     }

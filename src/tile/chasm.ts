@@ -18,7 +18,7 @@ export class Chasm extends Tile {
   ) {
     super(level, x, y);
 
-    this.tileX = 20;
+    this.tileX = this.skin === 1 ? 24 : 20;
     this.tileY = 1;
 
     if (leftEdge) this.tileX--;

@@ -6,30 +6,47 @@ import { astar } from "../astarclass";
 import { Heart } from "../item/heart";
 import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
-import { DeathParticle } from "../particle/deathParticle";
 import { GameConstants } from "../gameConstants";
+import { Player } from "../player";
+import { DeathParticle } from "../particle/deathParticle";
 import { HitWarning } from "../projectile/hitWarning";
 import { Gem } from "../item/gem";
 import { SpikeTrap } from "../tile/spiketrap";
+import { GenericParticle } from "../particle/genericParticle";
 
-export class KnightEnemy extends Enemy {
+export class AStarSkullEnemy extends Enemy {
   moves: Array<astar.AStarData>;
   ticks: number;
   seenPlayer: boolean;
+  ticksSinceFirstHit: number;
+  flashingFrame: number;
+  readonly REGEN_TICKS = 5;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
     this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
-    this.health = 3;
-    this.tileX = 4;
+    this.health = 2;
+    this.tileX = 2;
     this.tileY = 0;
     this.seenPlayer = true;
+    this.ticksSinceFirstHit = 0;
+    this.flashingFrame = 0;
     this.deathParticleColor = "#ffffff";
   }
 
   hit = (): number => {
     return 1;
+  };
+
+  hurt = (damage: number) => {
+    this.ticksSinceFirstHit = 0;
+    this.health -= damage;
+    if (this.health <= 0) {
+      this.kill();
+    } else {
+      GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, this.deathParticleColor);
+    }
   };
 
   tick = () => {
@@ -38,18 +55,17 @@ export class KnightEnemy extends Enemy {
         this.skipNextTurns--;
         return;
       }
-      this.ticks++;
-      this.tileX = 5;
-      if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
-        if (this.ticks % 2 === 0) {
-          this.tileX = 4;
-          // visible to player, chase them
-
-          // now that we've seen the player, we can keep chasing them even if we lose line of sight
+      if (this.health === 1) {
+        this.ticksSinceFirstHit++;
+        if (this.ticksSinceFirstHit >= this.REGEN_TICKS) {
+          this.health = 2;
+        }
+      } else {
+        if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;
-          let disablePositions = Array<astar.Position>();
+          let disablePositions = new Array<astar.Position>();
           for (const e of this.level.enemies) {
             if (e !== this) {
               disablePositions.push({ x: e.x, y: e.y } as astar.Position);
@@ -78,20 +94,17 @@ export class KnightEnemy extends Enemy {
               this.game.player.y === this.moves[0].pos.y
             ) {
               this.game.player.hurt(this.hit());
-              this.drawX = 0.5 * (this.x - this.game.player.x);
-              this.drawY = 0.5 * (this.y - this.game.player.y);
-              this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
             } else {
               this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
-              this.drawX = this.x - oldX;
-              this.drawY = this.y - oldY;
-              if (this.x > oldX) this.direction = EnemyDirection.RIGHT;
-              else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
-              else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
-              else if (this.y < oldY) this.direction = EnemyDirection.UP;
             }
           }
-        } else {
+          this.drawX = this.x - oldX;
+          this.drawY = this.y - oldY;
+          if (this.x > oldX) this.direction = EnemyDirection.RIGHT;
+          else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
+          else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
+          else if (this.y < oldY) this.direction = EnemyDirection.UP;
+
           this.level.projectiles.push(new HitWarning(this.game, this.x - 1, this.y));
           this.level.projectiles.push(new HitWarning(this.game, this.x + 1, this.y));
           this.level.projectiles.push(new HitWarning(this.game, this.x, this.y - 1));
@@ -103,9 +116,23 @@ export class KnightEnemy extends Enemy {
 
   draw = () => {
     if (!this.dead) {
+      this.tileX = 2;
+      if (this.health === 1) {
+        this.tileX = 3;
+        if (this.ticksSinceFirstHit >= 3) {
+          this.flashingFrame += 0.1;
+          if (Math.floor(this.flashingFrame) % 2 === 0) {
+            this.tileX = 2;
+          } else {
+            this.tileX = 3;
+          }
+        }
+      }
+
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      if (this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
+      if (this.health === 2 && this.doneMoving() && this.game.player.doneMoving())
+        this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
       Game.drawMob(

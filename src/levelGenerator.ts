@@ -151,6 +151,7 @@ export class LevelGenerator {
             case RoomType.DOWNLADDER:
               newLevelDoorDir = r.generateAroundPoint(points[ind], ind, 5, 5);
               break;
+            case RoomType.SPAWNER:
             case RoomType.PUZZLE:
             case RoomType.COFFIN:
             case RoomType.FOUNTAIN:
@@ -201,34 +202,34 @@ export class LevelGenerator {
     let node;
     if (d == 0) {
       node = new N(RoomType.DUNGEON, d, [
-        new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+        new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.SPAWNER, d, [
           new N(RoomType.DOWNLADDER, d, []),
-          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+          new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
         ]),
         new N(RoomType.SHOP, d, []),
       ]);
     } else {
       if (Game.rand(1, 5) !== 1) {
         node = new N(RoomType.UPLADDER, d, [
-          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+          new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
             new N(RoomType.DOWNLADDER, d, []),
-            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+            new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
           ]),
-          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+          new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
         ]);
       } else {
         node = new N(RoomType.UPLADDER, d, [
-          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
-            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+          new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+            new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
               new N(RoomType.DOWNLADDER, d, []),
             ]),
-            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
+            new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, [
               new N(RoomType.SPIKECORRIDOR, d, [new N(RoomType.TREASURE, d, [])]),
             ]),
-            new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+            new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
           ]),
-          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
-          new N(Math.random() < 0.2 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+          new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+          new N(Math.random() < 0.1 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
         ]);
       }
     }

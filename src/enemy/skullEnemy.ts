@@ -15,16 +15,16 @@ import { SpikeTrap } from "../tile/spiketrap";
 import { GenericParticle } from "../particle/genericParticle";
 
 export class SkullEnemy extends Enemy {
-  moves: Array<astar.AStarData>;
   ticks: number;
   seenPlayer: boolean;
   ticksSinceFirstHit: number;
   flashingFrame: number;
+  dx: number;
+  dy: number;
   readonly REGEN_TICKS = 5;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
-    this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
     this.health = 2;
     this.tileX = 2;
@@ -32,6 +32,8 @@ export class SkullEnemy extends Enemy {
     this.seenPlayer = true;
     this.ticksSinceFirstHit = 0;
     this.flashingFrame = 0;
+    this.dx = 0;
+    this.dy = 0;
     this.deathParticleColor = "#ffffff";
   }
 
@@ -65,38 +67,37 @@ export class SkullEnemy extends Enemy {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;
-          let disablePositions = new Array<astar.Position>();
-          for (const e of this.level.enemies) {
-            if (e !== this) {
-              disablePositions.push({ x: e.x, y: e.y } as astar.Position);
+          if (this.game.player.x > this.x) this.dx++;
+          if (this.game.player.x < this.x) this.dx--;
+          if (this.game.player.y > this.y) this.dy++;
+          if (this.game.player.y < this.y) this.dy--;
+          let moveX = this.x;
+          let moveY = this.y;
+          if (
+            Math.abs(this.dx) > Math.abs(this.dy) ||
+            (this.dx === this.dy &&
+              Math.abs(this.game.player.x - this.x) >= Math.abs(this.game.player.y - this.y))
+          ) {
+            if (this.dx > 0) {
+              moveX++;
+              this.dx--;
+            } else if (this.dx < 0) {
+              moveX--;
+              this.dx++;
+            }
+          } else {
+            if (this.dy > 0) {
+              moveY++;
+              this.dy--;
+            } else if (this.dy < 0) {
+              moveY--;
+              this.dy++;
             }
           }
-          for (let xx = this.x - 1; xx <= this.x + 1; xx++) {
-            for (let yy = this.y - 1; yy <= this.y + 1; yy++) {
-              if (
-                this.level.levelArray[xx][yy] instanceof SpikeTrap &&
-                (this.level.levelArray[xx][yy] as SpikeTrap).on
-              ) {
-                // don't walk on active spiketraps
-                disablePositions.push({ x: xx, y: yy } as astar.Position);
-              }
-            }
-          }
-          this.moves = astar.AStar.search(
-            this.level.levelArray,
-            this,
-            this.game.player,
-            disablePositions
-          );
-          if (this.moves.length > 0) {
-            if (
-              this.game.player.x === this.moves[0].pos.x &&
-              this.game.player.y === this.moves[0].pos.y
-            ) {
-              //this.game.player.hurt(this.hit());
-            } else {
-              this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
-            }
+          if (this.game.player.x === moveX && this.game.player.y === moveY) {
+            this.game.player.hurt(this.hit());
+          } else {
+            this.tryMove(moveX, moveY);
           }
           this.drawX = this.x - oldX;
           this.drawY = this.y - oldY;
@@ -105,10 +106,10 @@ export class SkullEnemy extends Enemy {
           else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
           else if (this.y < oldY) this.direction = EnemyDirection.UP;
 
-          // this.level.projectiles.push(new HitWarning(this.game, this.x - 1, this.y));
-          // this.level.projectiles.push(new HitWarning(this.game, this.x + 1, this.y));
-          // this.level.projectiles.push(new HitWarning(this.game, this.x, this.y - 1));
-          // this.level.projectiles.push(new HitWarning(this.game, this.x, this.y + 1));
+          this.level.projectiles.push(new HitWarning(this.game, this.x - 1, this.y));
+          this.level.projectiles.push(new HitWarning(this.game, this.x + 1, this.y));
+          this.level.projectiles.push(new HitWarning(this.game, this.x, this.y - 1));
+          this.level.projectiles.push(new HitWarning(this.game, this.x, this.y + 1));
         }
       }
     }

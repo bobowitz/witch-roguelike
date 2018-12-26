@@ -5,7 +5,7 @@ import { Enemy } from "../enemy/enemy";
 
 export enum SkinType {
   DUNGEON = 0,
-  GRASS = 1,
+  CAVE = 1,
 }
 
 export class Tile {

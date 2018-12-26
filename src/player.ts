@@ -238,20 +238,14 @@ export class Player {
         } else {
           // if we're trying to hit an enemy, check if it's destroyable
           if (e.destroyable) {
-            if (e instanceof SkullEnemy || e instanceof KnightEnemy) {
-              this.hurt(1);
-              this.game.level.tick();
-              return;
-            } else {
-              // and hurt it
-              e.hurt(1);
-              this.drawX = 0.5 * (this.x - e.x);
-              this.drawY = 0.5 * (this.y - e.y);
-              this.game.level.particles.push(new SlashParticle(e.x, e.y));
-              this.game.level.tick();
-              this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
-              return;
-            }
+            // and hurt it
+            e.hurt(1);
+            this.drawX = 0.5 * (this.x - e.x);
+            this.drawY = 0.5 * (this.y - e.y);
+            this.game.level.particles.push(new SlashParticle(e.x, e.y));
+            this.game.level.tick();
+            this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
+            return;
           }
         }
       }
