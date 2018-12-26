@@ -29,16 +29,6 @@ export class Coal extends Item {
     return "COAL\nA lump of coal.";
   };
 
-  onPickup = (player: Player) => {
-    if (this.firstTickCounter < this.TICKS) return;
-
-    if (!this.pickedUp) {
-      player.inventory.addItem(this);
-      this.level.particles.push(new TextParticle("+1", this.x + 0.5, this.y - 0.5, "#000000", 0));
-      this.pickedUp = true;
-    }
-  };
-
   draw = () => {
     if (this.firstTickCounter < this.TICKS) return;
     if (this.pickedUp) return;

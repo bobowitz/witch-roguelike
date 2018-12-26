@@ -29,18 +29,6 @@ export class Gem extends Item {
     return "GEM\nA shiny emerald.";
   };
 
-  onPickup = (player: Player) => {
-    if (this.firstTickCounter < this.TICKS) return;
-
-    if (!this.pickedUp) {
-      this.pickedUp = true;
-      player.inventory.addItem(this);
-    }
-    this.level.particles.push(
-      new TextParticle("+1", this.x + 0.5, this.y - 0.5, GameConstants.GREEN, 0)
-    );
-  };
-
   draw = () => {
     if (this.firstTickCounter < this.TICKS) return;
     if (this.pickedUp) return;

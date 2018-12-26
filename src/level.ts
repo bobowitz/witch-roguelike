@@ -445,9 +445,6 @@ export class Level {
     this.addEnemies(numEnemies);
     if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
     else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
-    if (Game.rand(0, 10) <= this.depth + 2) {
-      this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
-    }
   };
   generateSpawner = () => {
     this.skin = SkinType.DUNGEON;
@@ -598,16 +595,14 @@ export class Level {
     if (factor % 4 === 0) this.addChasms();
     this.fixWalls();
 
-    if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     let numEnemies = Math.ceil(
-      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1])
+      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0.07, 0.08, 0.09, 0.1, 0.15])
     );
     //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
     this.addEnemies(numEnemies);
     if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
-    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
     if (Game.rand(0, 10) <= this.depth + 2) {
       this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
     }

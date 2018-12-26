@@ -685,8 +685,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var item_1 = __webpack_require__(8);
 var game_1 = __webpack_require__(0);
-var textParticle_1 = __webpack_require__(9);
-var gameConstants_1 = __webpack_require__(2);
 var Gem = /** @class */ (function (_super) {
     __extends(Gem, _super);
     function Gem(level, x, y) {
@@ -698,15 +696,6 @@ var Gem = /** @class */ (function (_super) {
         };
         _this.getDescription = function () {
             return "GEM\nA shiny emerald.";
-        };
-        _this.onPickup = function (player) {
-            if (_this.firstTickCounter < _this.TICKS)
-                return;
-            if (!_this.pickedUp) {
-                _this.pickedUp = true;
-                player.inventory.addItem(_this);
-            }
-            _this.level.particles.push(new textParticle_1.TextParticle("+1", _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.GREEN, 0));
         };
         _this.draw = function () {
             if (_this.firstTickCounter < _this.TICKS)
@@ -2867,13 +2856,13 @@ var SlashParticle = /** @class */ (function (_super) {
     function SlashParticle(x, y) {
         var _this = _super.call(this) || this;
         _this.draw = function () {
-            game_1.Game.drawFX(Math.round(_this.frame), 12, 1, 2, _this.x, _this.y, 1, 2);
+            game_1.Game.drawFX(Math.round(_this.frame), 13, 1, 1, _this.x, _this.y, 1, 1);
             _this.frame += 0.5;
             if (_this.frame > 9)
                 _this.dead = true;
         };
         _this.x = x;
-        _this.y = y - 1.25;
+        _this.y = y - 0.25;
         _this.dead = false;
         _this.frame = 0;
         return _this;
@@ -3309,9 +3298,6 @@ var Level = /** @class */ (function () {
                 _this.addObstacles(numEnemies / game_1.Game.rand(1, 2));
             else
                 _this.addObstacles(game_1.Game.randTable([0, 0, 1, 1, 2, 3, 5]));
-            if (game_1.Game.rand(0, 10) <= _this.depth + 2) {
-                _this.addResources(game_1.Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
-            }
         };
         this.generateSpawner = function () {
             _this.skin = tile_1.SkinType.DUNGEON;
@@ -3416,18 +3402,14 @@ var Level = /** @class */ (function () {
             if (factor % 4 === 0)
                 _this.addChasms();
             _this.fixWalls();
-            if (factor % 3 === 0)
-                _this.addPlants(game_1.Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
             if (factor > 15)
                 _this.addSpikeTraps(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
-            var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1]));
+            var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0.07, 0.08, 0.09, 0.1, 0.15]));
             //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
             _this.addEnemies(numEnemies);
             if (numEnemies > 0)
                 _this.addObstacles(numEnemies / game_1.Game.rand(1, 2));
-            else
-                _this.addObstacles(game_1.Game.randTable([0, 0, 1, 1, 2, 3, 5]));
             if (game_1.Game.rand(0, 10) <= _this.depth + 2) {
                 _this.addResources(game_1.Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
             }
@@ -5585,7 +5567,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var item_1 = __webpack_require__(8);
 var game_1 = __webpack_require__(0);
-var textParticle_1 = __webpack_require__(9);
 var Coal = /** @class */ (function (_super) {
     __extends(Coal, _super);
     function Coal(level, x, y) {
@@ -5597,15 +5578,6 @@ var Coal = /** @class */ (function (_super) {
         };
         _this.getDescription = function () {
             return "COAL\nA lump of coal.";
-        };
-        _this.onPickup = function (player) {
-            if (_this.firstTickCounter < _this.TICKS)
-                return;
-            if (!_this.pickedUp) {
-                player.inventory.addItem(_this);
-                _this.level.particles.push(new textParticle_1.TextParticle("+1", _this.x + 0.5, _this.y - 0.5, "#000000", 0));
-                _this.pickedUp = true;
-            }
         };
         _this.draw = function () {
             if (_this.firstTickCounter < _this.TICKS)
@@ -5706,8 +5678,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var item_1 = __webpack_require__(8);
 var game_1 = __webpack_require__(0);
-var textParticle_1 = __webpack_require__(9);
-var gameConstants_1 = __webpack_require__(2);
 var Gold = /** @class */ (function (_super) {
     __extends(Gold, _super);
     function Gold(level, x, y) {
@@ -5719,15 +5689,6 @@ var Gold = /** @class */ (function (_super) {
         };
         _this.getDescription = function () {
             return "GOLD\nA nugget of gold.";
-        };
-        _this.onPickup = function (player) {
-            if (_this.firstTickCounter < _this.TICKS)
-                return;
-            if (!_this.pickedUp) {
-                _this.pickedUp = true;
-                player.inventory.addItem(_this);
-                _this.level.particles.push(new textParticle_1.TextParticle("+1", _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.GREEN, 0));
-            }
         };
         _this.draw = function () {
             if (_this.firstTickCounter < _this.TICKS)
@@ -5965,6 +5926,7 @@ var EnemySpawnAnimation = /** @class */ (function (_super) {
     __extends(EnemySpawnAnimation, _super);
     function EnemySpawnAnimation(level, enemy, x, y, knockbackX, knockbackY) {
         var _this = _super.call(this, x, y) || this;
+        _this.ANIM_COUNT = 3;
         _this.tick = function () {
             _this.dead = true;
             _this.enemy.skipNextTurns = 1;
@@ -5979,13 +5941,23 @@ var EnemySpawnAnimation = /** @class */ (function (_super) {
             _this.frame += 0.25;
             if (_this.frame >= 8)
                 _this.frame = 0;
-            game_1.Game.drawFX(Math.floor(_this.frame), 26, 1, 2, _this.x, _this.y - 1, 1, 2);
-            //GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#000000");
+            for (var i = 0; i < _this.ANIM_COUNT; i++) {
+                var offsetX = 4 * Math.sin(_this.frame + _this.xx[i]);
+                game_1.Game.drawFX(Math.floor(_this.frame), 26, 1, 2, _this.x + Math.round(offsetX) / 16.0, _this.y - 1 + Math.round(_this.yy[i]) / 16.0, 1, 2);
+            }
+            _this.level.particles.push(new genericParticle_1.GenericParticle(_this.level, _this.x + 0.5 + Math.random() * 0.05 - 0.025, _this.y + 0.5 + Math.random() * 0.05 - 0.025, Math.random() * 0.5, Math.random() * 0.5, 0.025 * (Math.random() * 2 - 1), 0.025 * (Math.random() * 2 - 1), 0.2 * (Math.random() - 1), "#ffffff", 0));
             //Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
         };
         _this.level = level;
         _this.enemy = enemy;
         _this.frame = 0;
+        _this.f = [];
+        _this.xx = [];
+        _this.yy = [];
+        for (var i = 0; i < _this.ANIM_COUNT; i++) {
+            _this.f[i] = _this.xx[i] = Math.random() * 6.28;
+            _this.yy[i] = Math.random() * 8 - 8;
+        }
         _this.knockbackX = knockbackX;
         _this.knockbackY = knockbackY;
         return _this;

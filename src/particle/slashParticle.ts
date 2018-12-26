@@ -10,13 +10,13 @@ export class SlashParticle extends Particle {
   constructor(x: number, y: number) {
     super();
     this.x = x;
-    this.y = y - 1.25;
+    this.y = y - 0.25;
     this.dead = false;
     this.frame = 0;
   }
 
   draw = () => {
-    Game.drawFX(Math.round(this.frame), 12, 1, 2, this.x, this.y, 1, 2);
+    Game.drawFX(Math.round(this.frame), 13, 1, 1, this.x, this.y, 1, 1);
 
     this.frame += 0.5;
     if (this.frame > 9) this.dead = true;

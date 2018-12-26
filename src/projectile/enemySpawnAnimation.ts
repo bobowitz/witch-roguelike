@@ -7,11 +7,16 @@ import { Level } from "../level";
 import { GenericParticle } from "../particle/genericParticle";
 
 export class EnemySpawnAnimation extends Projectile {
+  readonly ANIM_COUNT = 3;
+
   level: Level;
   enemy: Enemy;
   frame: number;
   knockbackX: number;
   knockbackY: number;
+  f: number[];
+  xx: number[];
+  yy: number[];
 
   constructor(
     level: Level,
@@ -25,6 +30,14 @@ export class EnemySpawnAnimation extends Projectile {
     this.level = level;
     this.enemy = enemy;
     this.frame = 0;
+
+    this.f = [];
+    this.xx = [];
+    this.yy = [];
+    for (let i = 0; i < this.ANIM_COUNT; i++) {
+      this.f[i] = this.xx[i] = Math.random() * 6.28;
+      this.yy[i] = Math.random() * 8 - 8;
+    }
 
     this.knockbackX = knockbackX;
     this.knockbackY = knockbackY;
@@ -44,8 +57,33 @@ export class EnemySpawnAnimation extends Projectile {
   draw = () => {
     this.frame += 0.25;
     if (this.frame >= 8) this.frame = 0;
-    Game.drawFX(Math.floor(this.frame), 26, 1, 2, this.x, this.y - 1, 1, 2);
-    //GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#000000");
+    for (let i = 0; i < this.ANIM_COUNT; i++) {
+      let offsetX = 4 * Math.sin(this.frame + this.xx[i]);
+      Game.drawFX(
+        Math.floor(this.frame),
+        26,
+        1,
+        2,
+        this.x + Math.round(offsetX) / 16.0,
+        this.y - 1 + Math.round(this.yy[i]) / 16.0,
+        1,
+        2
+      );
+    }
+    this.level.particles.push(
+      new GenericParticle(
+        this.level,
+        this.x + 0.5 + Math.random() * 0.05 - 0.025,
+        this.y + 0.5 + Math.random() * 0.05 - 0.025,
+        Math.random() * 0.5,
+        Math.random() * 0.5,
+        0.025 * (Math.random() * 2 - 1),
+        0.025 * (Math.random() * 2 - 1),
+        0.2 * (Math.random() - 1),
+        "#ffffff",
+        0
+      )
+    );
     //Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
   };
 }
