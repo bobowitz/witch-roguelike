@@ -73,6 +73,10 @@ export class Player {
     Input.rightListener = this.rightListener;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
+    Input.leftSwipeListener = this.leftListener;
+    Input.rightSwipeListener = this.rightListener;
+    Input.upSwipeListener = this.upListener;
+    Input.downSwipeListener = this.downListener;
 
     this.health = 1;
     this.maxHealth = 1;

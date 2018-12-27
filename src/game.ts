@@ -125,6 +125,10 @@ export class Game {
         },
         false
       );
+
+      document.addEventListener("touchstart", Input.handleTouchStart, { passive: false });
+      document.addEventListener("touchmove", Input.handleTouchMove, { passive: false });
+      document.addEventListener("touchend", Input.handleTouchEnd, { passive: false });
     });
   }
 
@@ -200,6 +204,8 @@ export class Game {
     let maxHeightScale = Math.floor(window.innerHeight / GameConstants.HEIGHT);
     Game.scale = Math.min(maxWidthScale, maxHeightScale);
     console.log(Game.scale);
+    Game.ctx.canvas.setAttribute("width", `${GameConstants.WIDTH}`);
+    Game.ctx.canvas.setAttribute("height", `${GameConstants.HEIGHT}`);
     Game.ctx.canvas.setAttribute(
       "style",
       `width: ${GameConstants.WIDTH * Game.scale}px; height: ${GameConstants.HEIGHT * Game.scale}px;
@@ -370,6 +376,8 @@ export class Game {
     // game version
     Game.ctx.globalAlpha = 0.2;
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
+    Game.ctx.font = GameConstants.FONT_SIZE + "px PixelFont";
+    Game.ctx.textBaseline = "top";
     Game.ctx.fillText(
       GameConstants.VERSION,
       GameConstants.WIDTH - Game.ctx.measureText(GameConstants.VERSION).width - 1,

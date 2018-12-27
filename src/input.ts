@@ -8,10 +8,14 @@ export const Input = {
   iUpListener: function() {},
   mListener: function() {},
   mUpListener: function() {},
-  rightListener: function() {},
   leftListener: function() {},
+  rightListener: function() {},
   upListener: function() {},
   downListener: function() {},
+  leftSwipeListener: function() {},
+  rightSwipeListener: function() {},
+  upSwipeListener: function() {},
+  downSwipeListener: function() {},
 
   mouseLeftClickListeners: [],
 
@@ -100,6 +104,91 @@ export const Input = {
 
     Input.mouseX = Math.floor(x / Game.scale);
     Input.mouseY = Math.floor(y / Game.scale);
+  },
+
+  getTouches: function(evt) {
+    return (
+      evt.touches || evt.originalEvent.touches // browser API
+    ); // jQuery
+  },
+
+  xDown: null,
+  yDown: null,
+  currentX: 0,
+  currentY: 0,
+  swiped: false,
+
+  handleTouchStart: function(evt) {
+    evt.preventDefault();
+
+    const firstTouch = Input.getTouches(evt)[0];
+    Input.xDown = firstTouch.clientX;
+    Input.yDown = firstTouch.clientY;
+    Input.currentX = firstTouch.clientX;
+    Input.currentY = firstTouch.clientY;
+
+    Input.updateMousePos({
+      clientX: Input.currentX,
+      clientY: Input.currentY,
+    } as MouseEvent);
+
+    Input.swiped = false;
+  },
+
+  handleTouchMove: function(evt) {
+    evt.preventDefault();
+
+    Input.currentX = evt.touches[0].clientX;
+    Input.currentY = evt.touches[0].clientY;
+
+    Input.updateMousePos({
+      clientX: Input.currentX,
+      clientY: Input.currentY,
+    } as MouseEvent);
+
+    if (Input.swiped) return;
+
+    var xDiff = Input.xDown - Input.currentX;
+    var yDiff = Input.yDown - Input.currentY;
+
+    // we have not swiped yet
+    // check if we've swiped
+    if (xDiff ** 2 + yDiff ** 2 >= GameConstants.SWIPE_THRESH) {
+      if (Math.abs(xDiff) > Math.abs(yDiff)) {
+        /*most significant*/
+        if (xDiff > 0) {
+          Input.leftSwipeListener();
+        } else {
+          Input.rightSwipeListener();
+        }
+        Input.swiped = true;
+      } else {
+        if (yDiff > 0) {
+          Input.upSwipeListener();
+        } else {
+          Input.downSwipeListener();
+        }
+        Input.swiped = true;
+      }
+    }
+  },
+
+  handleTouchEnd: function(evt) {
+    evt.preventDefault();
+
+    // we've already swiped, don't count the click
+    if (Input.swiped) return;
+
+    Input.mouseClickListener({
+      button: 0,
+      clientX: Input.currentX,
+      clientY: Input.currentY,
+    } as MouseEvent);
+
+    Input.updateMousePos({
+      clientX: 0,
+      clientY: 0,
+    } as MouseEvent);
   },
 };
 window.addEventListener(

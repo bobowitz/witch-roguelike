@@ -16,6 +16,13 @@ canvas {
 body {
   background-color: black;
   margin: 0;
+  overscroll-behavior-y: contain;
+  touch-action: none;
+}
+
+html {
+  overscroll-behavior-y: contain;
+  touch-action: none;
 }
 
 @font-face {

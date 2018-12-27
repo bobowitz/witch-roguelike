@@ -144,6 +144,8 @@ var Game = /** @class */ (function () {
             var maxHeightScale = Math.floor(window.innerHeight / gameConstants_1.GameConstants.HEIGHT);
             Game.scale = Math.min(maxWidthScale, maxHeightScale);
             console.log(Game.scale);
+            Game.ctx.canvas.setAttribute("width", "" + gameConstants_1.GameConstants.WIDTH);
+            Game.ctx.canvas.setAttribute("height", "" + gameConstants_1.GameConstants.HEIGHT);
             Game.ctx.canvas.setAttribute("style", "width: " + gameConstants_1.GameConstants.WIDTH * Game.scale + "px; height: " + gameConstants_1.GameConstants.HEIGHT * Game.scale + "px;\n    display: block;\n    margin: 0 auto;\n  \n    image-rendering: optimizeSpeed; /* Older versions of FF          */\n    image-rendering: -moz-crisp-edges; /* FF 6.0+                       */\n    image-rendering: -webkit-optimize-contrast; /* Safari                        */\n    image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */\n    image-rendering: pixelated; /* Awesome future-browsers       */\n  \n    -ms-interpolation-mode: nearest-neighbor;");
             //Game.ctx.canvas.width = window.innerWidth;
             //Game.ctx.canvas.height = window.innerHeight;
@@ -248,6 +250,8 @@ var Game = /** @class */ (function () {
             // game version
             Game.ctx.globalAlpha = 0.2;
             Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
+            Game.ctx.font = gameConstants_1.GameConstants.FONT_SIZE + "px PixelFont";
+            Game.ctx.textBaseline = "top";
             Game.ctx.fillText(gameConstants_1.GameConstants.VERSION, gameConstants_1.GameConstants.WIDTH - Game.ctx.measureText(gameConstants_1.GameConstants.VERSION).width - 1, gameConstants_1.GameConstants.HEIGHT - (gameConstants_1.GameConstants.FONT_SIZE - 1));
             Game.ctx.globalAlpha = 1;
         };
@@ -304,6 +308,9 @@ var Game = /** @class */ (function () {
                     e.preventDefault();
                 }
             }, false);
+            document.addEventListener("touchstart", input_1.Input.handleTouchStart, { passive: false });
+            document.addEventListener("touchmove", input_1.Input.handleTouchMove, { passive: false });
+            document.addEventListener("touchend", input_1.Input.handleTouchEnd, { passive: false });
         });
     }
     // [min, max] inclusive
@@ -405,13 +412,15 @@ var levelConstants_1 = __webpack_require__(5);
 var GameConstants = /** @class */ (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.3.369";
+    GameConstants.VERSION = "v4.20";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
+    GameConstants.SWIPE_THRESH = Math.pow(50, 2); // (size of swipe threshold circle)^2
     GameConstants.KEY_REPEAT_TIME = 300; // milliseconds
     GameConstants.WIDTH = levelConstants_1.LevelConstants.SCREEN_W * GameConstants.TILESIZE;
     GameConstants.HEIGHT = levelConstants_1.LevelConstants.SCREEN_H * GameConstants.TILESIZE;
+    GameConstants.scrolling = true;
     GameConstants.SCRIPT_FONT_SIZE = 13;
     GameConstants.FONT_SIZE = 10;
     GameConstants.BIG_FONT_SIZE = 20;
@@ -676,8 +685,10 @@ var LevelConstants = /** @class */ (function () {
     LevelConstants.MIN_LEVEL_H = 5;
     LevelConstants.MAX_LEVEL_W = 13;
     LevelConstants.MAX_LEVEL_H = 13;
-    LevelConstants.SCREEN_W = 17; // screen size in tiles
-    LevelConstants.SCREEN_H = 17; // screen size in tiles
+    LevelConstants.SCREEN_W = 17;
+    LevelConstants.SCREEN_H = 17;
+    LevelConstants.ROOM_W = 17;
+    LevelConstants.ROOM_H = 17;
     LevelConstants.COMPUTER_TURN_DELAY = 250; // milliseconds
     LevelConstants.TURN_TIME = 1000; // milliseconds
     LevelConstants.LEVEL_TRANSITION_TIME = 300; // milliseconds
@@ -1019,6 +1030,7 @@ exports.Gem = Gem;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var gameConstants_1 = __webpack_require__(2);
 var game_1 = __webpack_require__(0);
 exports.Input = {
     _pressed: {},
@@ -1026,10 +1038,14 @@ exports.Input = {
     iUpListener: function () { },
     mListener: function () { },
     mUpListener: function () { },
-    rightListener: function () { },
     leftListener: function () { },
+    rightListener: function () { },
     upListener: function () { },
     downListener: function () { },
+    leftSwipeListener: function () { },
+    rightSwipeListener: function () { },
+    upSwipeListener: function () { },
+    downSwipeListener: function () { },
     mouseLeftClickListeners: [],
     mouseLeftClickListener: function (x, y) {
         for (var i = 0; i < exports.Input.mouseLeftClickListeners.length; i++)
@@ -1110,6 +1126,79 @@ exports.Input = {
         var y = event.clientY - rect.top;
         exports.Input.mouseX = Math.floor(x / game_1.Game.scale);
         exports.Input.mouseY = Math.floor(y / game_1.Game.scale);
+    },
+    getTouches: function (evt) {
+        return (evt.touches || evt.originalEvent.touches // browser API
+        ); // jQuery
+    },
+    xDown: null,
+    yDown: null,
+    currentX: 0,
+    currentY: 0,
+    swiped: false,
+    handleTouchStart: function (evt) {
+        evt.preventDefault();
+        var firstTouch = exports.Input.getTouches(evt)[0];
+        exports.Input.xDown = firstTouch.clientX;
+        exports.Input.yDown = firstTouch.clientY;
+        exports.Input.currentX = firstTouch.clientX;
+        exports.Input.currentY = firstTouch.clientY;
+        exports.Input.updateMousePos({
+            clientX: exports.Input.currentX,
+            clientY: exports.Input.currentY,
+        });
+        exports.Input.swiped = false;
+    },
+    handleTouchMove: function (evt) {
+        evt.preventDefault();
+        exports.Input.currentX = evt.touches[0].clientX;
+        exports.Input.currentY = evt.touches[0].clientY;
+        exports.Input.updateMousePos({
+            clientX: exports.Input.currentX,
+            clientY: exports.Input.currentY,
+        });
+        if (exports.Input.swiped)
+            return;
+        var xDiff = exports.Input.xDown - exports.Input.currentX;
+        var yDiff = exports.Input.yDown - exports.Input.currentY;
+        // we have not swiped yet
+        // check if we've swiped
+        if (Math.pow(xDiff, 2) + Math.pow(yDiff, 2) >= gameConstants_1.GameConstants.SWIPE_THRESH) {
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                /*most significant*/
+                if (xDiff > 0) {
+                    exports.Input.leftSwipeListener();
+                }
+                else {
+                    exports.Input.rightSwipeListener();
+                }
+                exports.Input.swiped = true;
+            }
+            else {
+                if (yDiff > 0) {
+                    exports.Input.upSwipeListener();
+                }
+                else {
+                    exports.Input.downSwipeListener();
+                }
+                exports.Input.swiped = true;
+            }
+        }
+    },
+    handleTouchEnd: function (evt) {
+        evt.preventDefault();
+        // we've already swiped, don't count the click
+        if (exports.Input.swiped)
+            return;
+        exports.Input.mouseClickListener({
+            button: 0,
+            clientX: exports.Input.currentX,
+            clientY: exports.Input.currentY,
+        });
+        exports.Input.updateMousePos({
+            clientX: 0,
+            clientY: 0,
+        });
     },
 };
 window.addEventListener("keyup", function (event) {
@@ -2719,6 +2808,10 @@ var Player = /** @class */ (function () {
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
+        input_1.Input.leftSwipeListener = this.leftListener;
+        input_1.Input.rightSwipeListener = this.rightListener;
+        input_1.Input.upSwipeListener = this.upListener;
+        input_1.Input.downSwipeListener = this.downListener;
         this.health = 1;
         this.maxHealth = 1;
         this.healthBar = new healthbar_1.HealthBar();

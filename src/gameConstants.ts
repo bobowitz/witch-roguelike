@@ -1,17 +1,20 @@
 import { LevelConstants } from "./levelConstants";
 
 export class GameConstants {
-  static readonly VERSION = "v0.3.369";
+  static readonly VERSION = "v0.4.0";
 
   static readonly FPS = 60;
 
   static readonly TILESIZE = 16;
   static readonly SCALE = 2;
 
+  static readonly SWIPE_THRESH = 50 ** 2; // (size of swipe threshold circle)^2
+
   static readonly KEY_REPEAT_TIME = 300; // milliseconds
 
   static WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;
   static HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
+  static scrolling = true;
 
   static readonly SCRIPT_FONT_SIZE = 13;
   static readonly FONT_SIZE = 10;

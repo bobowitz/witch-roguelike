@@ -7,8 +7,11 @@ export class LevelConstants {
   static readonly MAX_LEVEL_W = 13;
   static readonly MAX_LEVEL_H = 13;
 
-  static SCREEN_W = 17; // screen size in tiles
-  static SCREEN_H = 17; // screen size in tiles
+  static SCREEN_W = 17;
+  static SCREEN_H = 17;
+
+  static ROOM_W = 17;
+  static ROOM_H = 17;
 
   static readonly COMPUTER_TURN_DELAY = 250; // milliseconds
   static readonly TURN_TIME = 1000; // milliseconds
