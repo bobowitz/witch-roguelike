@@ -30,7 +30,6 @@ export class Spear extends Weapon {
       this.game.player.drawY = 0.5 * (this.game.player.y - newY);
       this.game.level.particles.push(new SlashParticle(newX, newY));
       this.game.level.particles.push(new SlashParticle(newX2, newY2));
-      this.game.level.tick();
       this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
     }
     return !flag;

@@ -6977,7 +6977,6 @@ var Spear = /** @class */ (function (_super) {
                 _this.game.player.drawY = 0.5 * (_this.game.player.y - newY);
                 _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX, newY));
                 _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX2, newY2));
-                _this.game.level.tick();
                 _this.game.shakeScreen(10 * _this.game.player.drawX, 10 * _this.game.player.drawY);
             }
             return !flag;
