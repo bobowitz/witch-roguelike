@@ -2653,9 +2653,6 @@ var Player = /** @class */ (function () {
                 var refreshString = "[refresh to restart]";
                 game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + gameConstants_1.GameConstants.FONT_SIZE);
             }
-            if (input_1.Input.isDown(input_1.Input.N)) {
-                _this.map.draw(true);
-            }
             if (input_1.Input.isDown(input_1.Input.M)) {
                 _this.map.draw();
             }
@@ -3229,8 +3226,7 @@ var bottomDoor_1 = __webpack_require__(11);
 var Map = /** @class */ (function () {
     function Map(game) {
         var _this = this;
-        this.draw = function (drawAll) {
-            if (drawAll === void 0) { drawAll = false; }
+        this.draw = function () {
             var SCALE = 2;
             var startLevel = _this.game.levels[0];
             game_1.Game.ctx.translate(startLevel.x + Math.floor(startLevel.width / 2), startLevel.y + Math.floor(startLevel.height / 2));
@@ -3242,20 +3238,17 @@ var Map = /** @class */ (function () {
             game_1.Game.ctx.globalAlpha = 1;
             for (var _i = 0, _a = _this.game.levels; _i < _a.length; _i++) {
                 var level = _a[_i];
-                if (_this.game.level.depth == level.depth && (level.entered || drawAll)) {
-                    game_1.Game.ctx.fillStyle = "black";
-                    if (!level.entered && drawAll)
-                        game_1.Game.ctx.fillStyle = "#606060";
-                    game_1.Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
-                    for (var _b = 0, _c = level.doors; _b < _c.length; _b++) {
-                        var door = _c[_b];
-                        //Game.ctx.fillStyle = "#0085ff";
-                        if (door instanceof door_1.Door)
-                            game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
-                        if (door instanceof bottomDoor_1.BottomDoor)
-                            game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y - 1, 1, 1);
-                    }
-                    game_1.Game.ctx.globalAlpha = 1.0;
+                game_1.Game.ctx.fillStyle = "black";
+                if (!level.entered)
+                    game_1.Game.ctx.fillStyle = "#606060";
+                game_1.Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
+                for (var _b = 0, _c = level.doors; _b < _c.length; _b++) {
+                    var door = _c[_b];
+                    //Game.ctx.fillStyle = "#0085ff";
+                    if (door instanceof door_1.Door)
+                        game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
+                    if (door instanceof bottomDoor_1.BottomDoor)
+                        game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y - 1, 1, 1);
                 }
             }
             game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.RED;

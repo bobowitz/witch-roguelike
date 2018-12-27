@@ -459,9 +459,6 @@ export class Player {
         GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
       );
     }
-    if (Input.isDown(Input.N)) {
-      this.map.draw(true);
-    }
     if (Input.isDown(Input.M)) {
       this.map.draw();
     }
