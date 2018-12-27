@@ -26,12 +26,8 @@ export class Coin extends Item {
     if (this.firstTickCounter < this.TICKS) this.firstTickCounter++;
   };
 
-  onPickup = (player: Player) => {
-    if (!this.pickedUp) {
-      Sound.pickupCoin();
-      this.pickedUp = true;
-      player.inventory.addItem(this);
-    }
+  pickupSound = () => {
+    Sound.pickupCoin();
   };
 
   getDescription = (): string => {

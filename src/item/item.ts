@@ -3,6 +3,7 @@ import { GameConstants } from "../gameConstants";
 import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
 import { Level } from "../level";
+import { Sound } from "../sound";
 
 export class Item {
   x: number;
@@ -42,8 +43,13 @@ export class Item {
     return "";
   };
 
+  pickupSound = () => {
+    Sound.genericPickup();
+  };
+
   onPickup = (player: Player) => {
     if (!this.pickedUp) {
+      this.pickupSound();
       this.pickedUp = true;
       player.inventory.addItem(this);
     }

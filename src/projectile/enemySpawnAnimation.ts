@@ -55,6 +55,7 @@ export class EnemySpawnAnimation extends Projectile {
       this.level.game.player.move(this.knockbackX, this.knockbackY);
     }
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");
+    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");
   };
 
   draw = () => {

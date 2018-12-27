@@ -17,7 +17,7 @@ export class GenericParticle extends Particle {
   delay: number;
 
   static spawnCluster = (level: Level, cx: number, cy: number, color: string) => {
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 4; i++) {
       level.particles.push(
         new GenericParticle(
           level,
@@ -75,7 +75,14 @@ export class GenericParticle extends Particle {
     ); */
 
     Game.ctx.beginPath();
-    Game.ctx.arc(this.x * scale, (this.y - this.z) * scale, halfS * scale, 0, 2 * Math.PI, false);
+    Game.ctx.arc(
+      Math.round(this.x * scale),
+      Math.round((this.y - this.z) * scale),
+      Math.round(halfS * scale),
+      0,
+      2 * Math.PI,
+      false
+    );
     Game.ctx.fill();
 
     Game.ctx.fillStyle = oldFillStyle;

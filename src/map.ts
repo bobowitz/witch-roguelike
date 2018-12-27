@@ -46,20 +46,22 @@ export class Map {
 
     Game.ctx.globalAlpha = 1;
     for (const level of this.game.levels) {
-      Game.ctx.fillStyle = "black";
-      if (!level.entered) Game.ctx.fillStyle = "#606060";
-      Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
-      for (const door of level.doors) {
-        //Game.ctx.fillStyle = "#0085ff";
-        if (door instanceof Door)
-          Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
-        if (door instanceof BottomDoor)
-          Game.ctx.fillRect(
-            level.x - level.roomX + door.x,
-            level.y - level.roomY + door.y - 1,
-            1,
-            1
-          );
+      if (this.game.level.depth == level.depth) {
+        Game.ctx.fillStyle = "black";
+        if (!level.entered) Game.ctx.fillStyle = "#606060";
+        Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
+        for (const door of level.doors) {
+          //Game.ctx.fillStyle = "#0085ff";
+          if (door instanceof Door)
+            Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
+          if (door instanceof BottomDoor)
+            Game.ctx.fillRect(
+              level.x - level.roomX + door.x,
+              level.y - level.roomY + door.y - 1,
+              1,
+              1
+            );
+        }
       }
     }
     Game.ctx.fillStyle = GameConstants.RED;

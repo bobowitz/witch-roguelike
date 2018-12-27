@@ -70,8 +70,8 @@ export class Player {
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
 
-    this.health = 3;
-    this.maxHealth = 3;
+    this.health = 1;
+    this.maxHealth = 1;
     this.healthBar = new HealthBar();
     this.stats = new Stats();
     this.dead = false;
@@ -248,6 +248,7 @@ export class Player {
               return;
             }
           } else {
+            Sound.push();
             // here pushedEnemies may still be []
             for (const f of pushedEnemies) {
               f.x += dx;

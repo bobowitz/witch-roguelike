@@ -452,7 +452,7 @@ var GenericParticle = /** @class */ (function (_super) {
               Math.round(scaledS * scale)
             ); */
             game_1.Game.ctx.beginPath();
-            game_1.Game.ctx.arc(_this.x * scale, (_this.y - _this.z) * scale, halfS * scale, 0, 2 * Math.PI, false);
+            game_1.Game.ctx.arc(Math.round(_this.x * scale), Math.round((_this.y - _this.z) * scale), Math.round(halfS * scale), 0, 2 * Math.PI, false);
             game_1.Game.ctx.fill();
             game_1.Game.ctx.fillStyle = oldFillStyle;
         };
@@ -502,7 +502,7 @@ var GenericParticle = /** @class */ (function (_super) {
         return _this;
     }
     GenericParticle.spawnCluster = function (level, cx, cy, color) {
-        for (var i = 0; i < 7; i++) {
+        for (var i = 0; i < 4; i++) {
             level.particles.push(new GenericParticle(level, cx + Math.random() * 0.05 - 0.025, cy + Math.random() * 0.05 - 0.025, Math.random() * 0.5, 0.0625 * (i + 8), 0.025 * (Math.random() * 2 - 1), 0.025 * (Math.random() * 2 - 1), 0.2 * (Math.random() - 1), color, 0));
         }
     };
@@ -709,40 +709,54 @@ var Sound = /** @class */ (function () {
             var f = _c[_b];
             f.volume = 1.0;
         }
-        Sound.hitSound = new Audio("res/SFX/attacks/hit.wav");
-        Sound.hitSound.volume = 1.0;
+        Sound.hitSounds = new Array();
+        [1, 2, 3, 4].forEach(function (i) {
+            return Sound.hitSounds.push(new Audio("res/SFX/attacks/swing" + i + ".wav"));
+        });
+        for (var _d = 0, _e = Sound.hitSounds; _d < _e.length; _d++) {
+            var f = _e[_d];
+            f.volume = 1.0;
+        }
         Sound.enemySpawnSound = new Audio("res/SFX/attacks/enemyspawn.wav");
         Sound.enemySpawnSound.volume = 1.0;
         Sound.chestSounds = new Array();
         [1, 2, 3].forEach(function (i) { return Sound.chestSounds.push(new Audio("res/SFX/items/chest" + i + ".wav")); });
-        for (var _d = 0, _e = Sound.chestSounds; _d < _e.length; _d++) {
-            var f = _e[_d];
+        for (var _f = 0, _g = Sound.chestSounds; _f < _g.length; _f++) {
+            var f = _g[_f];
             f.volume = 1.0;
         }
         Sound.coinPickupSounds = new Array();
         [1, 2, 3, 4].forEach(function (i) {
             return Sound.coinPickupSounds.push(new Audio("res/SFX/items/coins" + i + ".wav"));
         });
-        for (var _f = 0, _g = Sound.coinPickupSounds; _f < _g.length; _f++) {
-            var f = _g[_f];
+        for (var _h = 0, _j = Sound.coinPickupSounds; _h < _j.length; _h++) {
+            var f = _j[_h];
             f.volume = 1.0;
         }
         Sound.miningSounds = new Array();
         [1, 2, 3, 4].forEach(function (i) {
             return Sound.miningSounds.push(new Audio("res/SFX/resources/Pickaxe" + i + ".wav"));
         });
-        for (var _h = 0, _j = Sound.miningSounds; _h < _j.length; _h++) {
-            var f = _j[_h];
-            f.volume = 1.0;
-        }
-        Sound.hurtSounds = new Array();
-        [1, 2].forEach(function (i) { return Sound.hurtSounds.push(new Audio("res/SFX/attacks/hurt" + i + ".wav")); });
-        for (var _k = 0, _l = Sound.hurtSounds; _k < _l.length; _k++) {
+        for (var _k = 0, _l = Sound.miningSounds; _k < _l.length; _k++) {
             var f = _l[_k];
             f.volume = 1.0;
         }
+        Sound.hurtSounds = new Array();
+        [1].forEach(function (i) { return Sound.hurtSounds.push(new Audio("res/SFX/attacks/hit.wav")); });
+        for (var _m = 0, _o = Sound.hurtSounds; _m < _o.length; _m++) {
+            var f = _o[_m];
+            f.volume = 1.0;
+        }
+        Sound.genericPickupSound = new Audio("res/SFX/items/pickup.wav");
+        Sound.genericPickupSound.volume = 1.0;
         Sound.breakRockSound = new Audio("res/SFX/resources/rockbreak.wav");
         Sound.breakRockSound.volume = 1.0;
+        Sound.pushSounds = new Array();
+        [1, 2].forEach(function (i) { return Sound.pushSounds.push(new Audio("res/SFX/pushing/push" + i + ".wav")); });
+        for (var _p = 0, _q = Sound.pushSounds; _p < _q.length; _p++) {
+            var f = _q[_p];
+            f.volume = 1.0;
+        }
         Sound.powerupSound = new Audio("res/powerup.wav");
         Sound.powerupSound.volume = 0.5;
         Sound.healSound = new Audio("res/heal.wav");
@@ -760,8 +774,14 @@ var Sound = /** @class */ (function () {
         f.currentTime = 0;
     };
     Sound.hit = function () {
-        Sound.hitSound.play();
-        Sound.hitSound.currentTime = 0;
+        var f = game_1.Game.randTable(Sound.hitSounds);
+        f.play();
+        f.currentTime = 0;
+        f = game_1.Game.randTable(Sound.hurtSounds);
+        f.volume = 0.5;
+        f.play();
+        f.currentTime = 0;
+        f.volume = 1.0;
     };
     Sound.hurt = function () {
         var f = game_1.Game.randTable(Sound.hurtSounds);
@@ -799,6 +819,15 @@ var Sound = /** @class */ (function () {
         Sound.healSound.play();
         Sound.healSound.currentTime = 0;
     };
+    Sound.genericPickup = function () {
+        Sound.genericPickupSound.play();
+        Sound.genericPickupSound.currentTime = 0;
+    };
+    Sound.push = function () {
+        var f = game_1.Game.randTable(Sound.pushSounds);
+        f.play();
+        f.currentTime = 0;
+    };
     Sound.playMusic = function () {
         Sound.music.addEventListener("ended", function () {
             Sound.music.currentTime = 0;
@@ -820,6 +849,7 @@ exports.Sound = Sound;
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var gameConstants_1 = __webpack_require__(2);
+var sound_1 = __webpack_require__(6);
 var Item = /** @class */ (function () {
     function Item(level, x, y) {
         var _this = this;
@@ -828,8 +858,12 @@ var Item = /** @class */ (function () {
         this.getDescription = function () {
             return "";
         };
+        this.pickupSound = function () {
+            sound_1.Sound.genericPickup();
+        };
         this.onPickup = function (player) {
             if (!_this.pickedUp) {
+                _this.pickupSound();
                 _this.pickedUp = true;
                 player.inventory.addItem(_this);
             }
@@ -1193,12 +1227,8 @@ var Coin = /** @class */ (function (_super) {
             if (_this.firstTickCounter < _this.TICKS)
                 _this.firstTickCounter++;
         };
-        _this.onPickup = function (player) {
-            if (!_this.pickedUp) {
-                sound_1.Sound.pickupCoin();
-                _this.pickedUp = true;
-                player.inventory.addItem(_this);
-            }
+        _this.pickupSound = function () {
+            sound_1.Sound.pickupCoin();
         };
         _this.getDescription = function () {
             return "COINS\nA pound of gold coins.";
@@ -2475,6 +2505,7 @@ var Player = /** @class */ (function () {
                             }
                         }
                         else {
+                            sound_1.Sound.push();
                             // here pushedEnemies may still be []
                             for (var _d = 0, pushedEnemies_1 = pushedEnemies; _d < pushedEnemies_1.length; _d++) {
                                 var f = pushedEnemies_1[_d];
@@ -2669,8 +2700,8 @@ var Player = /** @class */ (function () {
         input_1.Input.rightListener = this.rightListener;
         input_1.Input.upListener = this.upListener;
         input_1.Input.downListener = this.downListener;
-        this.health = 3;
-        this.maxHealth = 3;
+        this.health = 1;
+        this.maxHealth = 1;
         this.healthBar = new healthbar_1.HealthBar();
         this.stats = new stats_1.Stats();
         this.dead = false;
@@ -3238,17 +3269,19 @@ var Map = /** @class */ (function () {
             game_1.Game.ctx.globalAlpha = 1;
             for (var _i = 0, _a = _this.game.levels; _i < _a.length; _i++) {
                 var level = _a[_i];
-                game_1.Game.ctx.fillStyle = "black";
-                if (!level.entered)
-                    game_1.Game.ctx.fillStyle = "#606060";
-                game_1.Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
-                for (var _b = 0, _c = level.doors; _b < _c.length; _b++) {
-                    var door = _c[_b];
-                    //Game.ctx.fillStyle = "#0085ff";
-                    if (door instanceof door_1.Door)
-                        game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
-                    if (door instanceof bottomDoor_1.BottomDoor)
-                        game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y - 1, 1, 1);
+                if (_this.game.level.depth == level.depth) {
+                    game_1.Game.ctx.fillStyle = "black";
+                    if (!level.entered)
+                        game_1.Game.ctx.fillStyle = "#606060";
+                    game_1.Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
+                    for (var _b = 0, _c = level.doors; _b < _c.length; _b++) {
+                        var door = _c[_b];
+                        //Game.ctx.fillStyle = "#0085ff";
+                        if (door instanceof door_1.Door)
+                            game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
+                        if (door instanceof bottomDoor_1.BottomDoor)
+                            game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y - 1, 1, 1);
+                    }
                 }
             }
             game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.RED;
@@ -6655,6 +6688,7 @@ var EnemySpawnAnimation = /** @class */ (function (_super) {
                 _this.level.game.player.hurt(1);
                 _this.level.game.player.move(_this.knockbackX, _this.knockbackY);
             }
+            genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#ffffff");
             genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#ffffff");
         };
         _this.draw = function () {

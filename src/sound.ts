@@ -3,7 +3,7 @@ import { Game } from "./game";
 export class Sound {
   static playerStoneFootsteps: Array<HTMLAudioElement>;
   static enemyFootsteps: Array<HTMLAudioElement>;
-  static hitSound: HTMLAudioElement;
+  static hitSounds: Array<HTMLAudioElement>;
   static enemySpawnSound: HTMLAudioElement;
   static chestSounds: Array<HTMLAudioElement>;
   static coinPickupSounds: Array<HTMLAudioElement>;
@@ -11,6 +11,8 @@ export class Sound {
   static breakRockSound: HTMLAudioElement;
   static powerupSound: HTMLAudioElement;
   static hurtSounds: Array<HTMLAudioElement>;
+  static genericPickupSound: HTMLAudioElement;
+  static pushSounds: Array<HTMLAudioElement>;
   static healSound: HTMLAudioElement;
   static music: HTMLAudioElement;
 
@@ -27,8 +29,11 @@ export class Sound {
     );
     for (let f of Sound.enemyFootsteps) f.volume = 1.0;
 
-    Sound.hitSound = new Audio("res/SFX/attacks/hit.wav");
-    Sound.hitSound.volume = 1.0;
+    Sound.hitSounds = new Array<HTMLAudioElement>();
+    [1, 2, 3, 4].forEach(i =>
+      Sound.hitSounds.push(new Audio("res/SFX/attacks/swing" + i + ".wav"))
+    );
+    for (let f of Sound.hitSounds) f.volume = 1.0;
 
     Sound.enemySpawnSound = new Audio("res/SFX/attacks/enemyspawn.wav");
     Sound.enemySpawnSound.volume = 1.0;
@@ -50,11 +55,18 @@ export class Sound {
     for (let f of Sound.miningSounds) f.volume = 1.0;
 
     Sound.hurtSounds = new Array<HTMLAudioElement>();
-    [1, 2].forEach(i => Sound.hurtSounds.push(new Audio("res/SFX/attacks/hurt" + i + ".wav")));
+    [1].forEach(i => Sound.hurtSounds.push(new Audio("res/SFX/attacks/hit.wav")));
     for (let f of Sound.hurtSounds) f.volume = 1.0;
+
+    Sound.genericPickupSound = new Audio("res/SFX/items/pickup.wav");
+    Sound.genericPickupSound.volume = 1.0;
 
     Sound.breakRockSound = new Audio("res/SFX/resources/rockbreak.wav");
     Sound.breakRockSound.volume = 1.0;
+
+    Sound.pushSounds = new Array<HTMLAudioElement>();
+    [1, 2].forEach(i => Sound.pushSounds.push(new Audio("res/SFX/pushing/push" + i + ".wav")));
+    for (let f of Sound.pushSounds) f.volume = 1.0;
 
     Sound.powerupSound = new Audio("res/powerup.wav");
     Sound.powerupSound.volume = 0.5;
@@ -78,8 +90,14 @@ export class Sound {
   };
 
   static hit = () => {
-    Sound.hitSound.play();
-    Sound.hitSound.currentTime = 0;
+    let f = Game.randTable(Sound.hitSounds);
+    f.play();
+    f.currentTime = 0;
+    f = Game.randTable(Sound.hurtSounds);
+    f.volume = 0.5;
+    f.play();
+    f.currentTime = 0;
+    f.volume = 1.0;
   };
 
   static hurt = () => {
@@ -124,6 +142,17 @@ export class Sound {
   static heal = () => {
     Sound.healSound.play();
     Sound.healSound.currentTime = 0;
+  };
+
+  static genericPickup = () => {
+    Sound.genericPickupSound.play();
+    Sound.genericPickupSound.currentTime = 0;
+  };
+
+  static push = () => {
+    let f = Game.randTable(Sound.pushSounds);
+    f.play();
+    f.currentTime = 0;
   };
 
   static playMusic = () => {
