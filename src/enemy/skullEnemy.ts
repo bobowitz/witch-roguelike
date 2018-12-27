@@ -13,6 +13,7 @@ import { HitWarning } from "../projectile/hitWarning";
 import { Gem } from "../item/gem";
 import { SpikeTrap } from "../tile/spiketrap";
 import { GenericParticle } from "../particle/genericParticle";
+import { Coin } from "../item/coin";
 
 export class SkullEnemy extends Enemy {
   ticks: number;
@@ -39,7 +40,7 @@ export class SkullEnemy extends Enemy {
   }
 
   hit = (): number => {
-    return 1;
+    return 0.5;
   };
 
   hurt = (damage: number) => {
@@ -99,8 +100,8 @@ export class SkullEnemy extends Enemy {
 
           if (this.game.player.x === moveX && this.game.player.y === moveY) {
             this.game.player.hurt(this.hit());
-            this.drawX = 1 * (this.x - this.game.player.x);
-            this.drawY = 1 * (this.y - this.game.player.y);
+            this.drawX = 0.5 * (this.x - this.game.player.x);
+            this.drawY = 0.5 * (this.y - this.game.player.y);
             this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
           } else {
             this.tryMove(moveX, moveY);
@@ -157,6 +158,6 @@ export class SkullEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new Gem(this.level, this.x, this.y));
+    this.game.level.items.push(new Coin(this.level, this.x, this.y));
   };
 }

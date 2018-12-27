@@ -11,6 +11,7 @@ import { WizardTeleportParticle } from "../particle/wizardTeleportParticle";
 import { GameConstants } from "../gameConstants";
 import { WizardFireball } from "../projectile/wizardFireball";
 import { Gem } from "../item/gem";
+import { Player } from "../player";
 
 enum WizardState {
   idle,
@@ -45,6 +46,17 @@ export class WizardEnemy extends Enemy {
       (this.x - this.game.player.x) ** 2 + (this.y - this.game.player.y) ** 2 <=
       this.ATTACK_RADIUS ** 2
     );
+  };
+
+  shuffle = a => {
+    let j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      x = a[i];
+      a[i] = a[j];
+      a[j] = x;
+    }
+    return a;
   };
 
   tick = () => {
@@ -90,10 +102,19 @@ export class WizardEnemy extends Enemy {
         case WizardState.teleport:
           let oldX = this.x;
           let oldY = this.y;
-          while (this.x === oldX && this.y === oldY) {
-            let newPos = Game.randTable(this.level.getEmptyTiles());
-            this.tryMove(newPos.x, newPos.y);
+          let min = 100000;
+          let bestPos;
+          let emptyTiles = this.shuffle(this.level.getEmptyTiles());
+          for (let t of emptyTiles) {
+            let newPos = t;
+            let dist =
+              Math.abs(newPos.x - this.game.player.x) + Math.abs(newPos.y - this.game.player.y);
+            if (Math.abs(dist - 4) < Math.abs(min - 4)) {
+              min = dist;
+              bestPos = newPos;
+            }
           }
+          this.tryMove(bestPos.x, bestPos.y);
           this.drawX = this.x - oldX;
           this.drawY = this.y - oldY;
           this.frame = 0; // trigger teleport animation

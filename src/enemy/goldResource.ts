@@ -10,6 +10,7 @@ import { Gem } from "../item/gem";
 import { Resource } from "./resource";
 import { GenericParticle } from "../particle/genericParticle";
 import { Gold } from "../item/gold";
+import { Sound } from "../sound";
 
 export class GoldResource extends Resource {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -20,7 +21,13 @@ export class GoldResource extends Resource {
     this.health = 10;
   }
 
+  hurtCallback = () => {
+    Sound.mine();
+  };
+
   kill = () => {
+    Sound.breakRock();
+
     this.dead = true;
 
     this.game.level.items.push(new Gold(this.level, this.x, this.y));

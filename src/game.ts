@@ -35,6 +35,7 @@ export class Game {
   static itemset: HTMLImageElement;
   static fxset: HTMLImageElement;
   static inventory: HTMLImageElement;
+  static shopset: HTMLImageElement;
   static tilesetShadow: HTMLImageElement;
   static objsetShadow: HTMLImageElement;
   static mobsetShadow: HTMLImageElement;
@@ -70,6 +71,8 @@ export class Game {
       Game.fxset.src = "res/fxset.png";
       Game.inventory = new Image();
       Game.inventory.src = "res/inventory.png";
+      Game.shopset = new Image();
+      Game.shopset.src = "res/shopset.png";
       Game.tilesetShadow = new Image();
       Game.tilesetShadow.src = "res/tilesetShadow.png";
       Game.objsetShadow = new Image();
@@ -411,6 +414,29 @@ export class Game {
     //if (shaded) set = Game.mobsetShadow;
     Game.ctx.drawImage(
       set,
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
+    );
+  };
+
+  static drawShop = (
+    sX: number,
+    sY: number,
+    sW: number,
+    sH: number,
+    dX: number,
+    dY: number,
+    dW: number,
+    dH: number
+  ) => {
+    Game.ctx.drawImage(
+      Game.shopset,
       Math.round(sX * GameConstants.TILESIZE),
       Math.round(sY * GameConstants.TILESIZE),
       Math.round(sW * GameConstants.TILESIZE),

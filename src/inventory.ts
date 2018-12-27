@@ -7,6 +7,7 @@ import { GameConstants } from "./gameConstants";
 import { Equippable } from "./item/equippable";
 import { Armor } from "./item/armor";
 import { GoldenKey } from "./item/goldenKey";
+import { Coin } from "./item/coin";
 
 export class Inventory {
   items: Array<Item>;
@@ -15,12 +16,14 @@ export class Inventory {
   tileY = 0;
   game: Game;
   isOpen: boolean;
+  coins: number;
 
   constructor(game: Game) {
     this.game = game;
     this.items = new Array<Item>();
     this.equipped = new Array<Equippable>();
-    Input.mouseLeftClickListener = this.mouseLeftClickListener;
+    Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
+    this.coins = 0;
   }
 
   open = () => {
@@ -28,7 +31,7 @@ export class Inventory {
   };
 
   close = () => {
-    //this.isOpen = false;
+    this.isOpen = false;
   };
 
   hasItem = (itemType: any): Item => {
@@ -39,7 +42,23 @@ export class Inventory {
     return null;
   };
 
+  coinCount = (): number => {
+    return this.coins;
+  };
+
+  subtractCoins = (n: number) => {
+    this.coins -= n;
+  };
+
+  addCoins = (n: number) => {
+    this.coins += n;
+  };
+
   addItem = (item: Item) => {
+    if (item instanceof Coin) {
+      this.coins += 1;
+      return;
+    }
     if (item.stackable) {
       for (let i of this.items) {
         if (i.constructor === item.constructor) {
@@ -53,6 +72,13 @@ export class Inventory {
     this.items.push(item);
   };
 
+  removeItem = (item: Item) => {
+    let i = this.items.indexOf(item);
+    if (i !== -1) {
+      this.items.splice(i, 1);
+    }
+  };
+
   getArmor = (): Armor => {
     for (const e of this.equipped) {
       if (e instanceof Armor) return e;
@@ -61,6 +87,8 @@ export class Inventory {
   };
 
   mouseLeftClickListener = (x: number, y: number) => {
+    if (!this.isOpen) return;
+
     let tileX = Math.floor((x - 51) / 19);
     let tileY = Math.floor((y - 70) / 19);
     let i = tileX + tileY * 9;
@@ -111,6 +139,35 @@ export class Inventory {
   };
 
   draw = () => {
+    let coinX = 15.5;
+    let coinY = 15.5;
+
+    Game.drawItem(20, 0, 1, 2, coinX, coinY - 1, 1, 2);
+
+    let countText = "" + this.coins;
+    let width = Game.ctx.measureText(countText).width;
+    let countX = 16 - width;
+    let countY = 8;
+
+    Game.ctx.fillStyle = "black";
+    for (let xx = -1; xx <= 1; xx++) {
+      for (let yy = -1; yy <= 1; yy++) {
+        Game.ctx.fillStyle = GameConstants.OUTLINE;
+        Game.ctx.fillText(
+          countText,
+          coinX * GameConstants.TILESIZE + countX + xx,
+          coinY * GameConstants.TILESIZE + countY + yy
+        );
+      }
+    }
+
+    Game.ctx.fillStyle = "white";
+    Game.ctx.fillText(
+      countText,
+      coinX * GameConstants.TILESIZE + countX,
+      coinY * GameConstants.TILESIZE + countY
+    );
+
     if (this.isOpen) {
       Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
       Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
@@ -148,9 +205,6 @@ export class Inventory {
         let lines = this.items[i].getDescription().split("\n");
         if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
           lines.push("EQUIPPED");
-        }
-        if (this.items[i].stackable && this.items[i].stackCount > 1) {
-          lines.push("x" + this.items[i].stackCount);
         }
         let nextY = 147;
         for (let j = 0; j < lines.length; j++) {

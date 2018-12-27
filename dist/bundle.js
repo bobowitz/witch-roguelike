@@ -266,6 +266,8 @@ var Game = /** @class */ (function () {
             Game.fxset.src = "res/fxset.png";
             Game.inventory = new Image();
             Game.inventory.src = "res/inventory.png";
+            Game.shopset = new Image();
+            Game.shopset.src = "res/shopset.png";
             Game.tilesetShadow = new Image();
             Game.tilesetShadow.src = "res/tilesetShadow.png";
             Game.objsetShadow = new Image();
@@ -312,6 +314,9 @@ var Game = /** @class */ (function () {
         var set = Game.mobset;
         //if (shaded) set = Game.mobsetShadow;
         Game.ctx.drawImage(set, Math.round(sX * gameConstants_1.GameConstants.TILESIZE), Math.round(sY * gameConstants_1.GameConstants.TILESIZE), Math.round(sW * gameConstants_1.GameConstants.TILESIZE), Math.round(sH * gameConstants_1.GameConstants.TILESIZE), Math.round(dX * gameConstants_1.GameConstants.TILESIZE), Math.round(dY * gameConstants_1.GameConstants.TILESIZE), Math.round(dW * gameConstants_1.GameConstants.TILESIZE), Math.round(dH * gameConstants_1.GameConstants.TILESIZE));
+    };
+    Game.drawShop = function (sX, sY, sW, sH, dX, dY, dW, dH) {
+        Game.ctx.drawImage(Game.shopset, Math.round(sX * gameConstants_1.GameConstants.TILESIZE), Math.round(sY * gameConstants_1.GameConstants.TILESIZE), Math.round(sW * gameConstants_1.GameConstants.TILESIZE), Math.round(sH * gameConstants_1.GameConstants.TILESIZE), Math.round(dX * gameConstants_1.GameConstants.TILESIZE), Math.round(dY * gameConstants_1.GameConstants.TILESIZE), Math.round(dW * gameConstants_1.GameConstants.TILESIZE), Math.round(dH * gameConstants_1.GameConstants.TILESIZE));
     };
     Game.drawItem = function (sX, sY, sW, sH, dX, dY, dW, dH) {
         Game.ctx.drawImage(Game.itemset, Math.round(sX * gameConstants_1.GameConstants.TILESIZE), Math.round(sY * gameConstants_1.GameConstants.TILESIZE), Math.round(sW * gameConstants_1.GameConstants.TILESIZE), Math.round(sH * gameConstants_1.GameConstants.TILESIZE), Math.round(dX * gameConstants_1.GameConstants.TILESIZE), Math.round(dY * gameConstants_1.GameConstants.TILESIZE), Math.round(dW * gameConstants_1.GameConstants.TILESIZE), Math.round(dH * gameConstants_1.GameConstants.TILESIZE));
@@ -431,46 +436,52 @@ var GenericParticle = /** @class */ (function (_super) {
     __extends(GenericParticle, _super);
     function GenericParticle(level, x, y, z, s, dx, dy, dz, color, delay) {
         var _this = _super.call(this) || this;
+        _this.render = function () {
+            var scale = gameConstants_1.GameConstants.TILESIZE;
+            var scaledS = _this.s * _this.alpha; // using alpha for scaling, not alpha
+            var halfS = 0.5 * scaledS;
+            var oldFillStyle = game_1.Game.ctx.fillStyle;
+            game_1.Game.ctx.fillStyle = _this.color;
+            /* Game.ctx.fillRect(
+              Math.round((this.x - halfS) * scale),
+              Math.round((this.y - this.z - halfS) * scale),
+              Math.round(scaledS * scale),
+              Math.round(scaledS * scale)
+            ); */
+            game_1.Game.ctx.beginPath();
+            game_1.Game.ctx.arc(_this.x * scale, (_this.y - _this.z) * scale, halfS * scale, 0, 2 * Math.PI, false);
+            game_1.Game.ctx.fill();
+            game_1.Game.ctx.fillStyle = oldFillStyle;
+        };
         _this.draw = function () {
             _this.x += _this.dx;
             _this.y += _this.dy;
             _this.z += _this.dz;
-            _this.dx *= 0.93;
-            _this.dy *= 0.93;
+            _this.dx *= 0.97;
+            _this.dy *= 0.97;
             if (_this.z <= 0) {
                 _this.z = 0;
-                _this.dz *= -0.6;
+                _this.dz *= -0.8;
             }
             // apply gravity
             _this.dz -= 0.01;
-            _this.alpha -= 0.025;
-            if (_this.alpha <= 0)
+            if (_this.alpha < 0.2)
+                _this.alpha -= 0.007;
+            else
+                _this.alpha -= 0.02;
+            if (_this.alpha <= 0.1)
                 _this.dead = true;
             if (_this.dead)
                 return;
             if (_this.y >= _this.level.game.player.y) {
-                var scale = gameConstants_1.GameConstants.TILESIZE;
-                var halfS = 0.5 * _this.s;
-                var oldFillStyle = game_1.Game.ctx.fillStyle;
-                game_1.Game.ctx.fillStyle = _this.color;
-                game_1.Game.ctx.globalAlpha = _this.alpha;
-                game_1.Game.ctx.fillRect(Math.round((_this.x - halfS) * scale), Math.round((_this.y - _this.z - halfS) * scale), Math.round(halfS * scale), Math.round(halfS * scale));
-                game_1.Game.ctx.globalAlpha = 1.0;
-                game_1.Game.ctx.fillStyle = oldFillStyle;
+                _this.render();
             }
         };
         _this.drawBehind = function () {
             if (_this.dead)
                 return;
             if (_this.y < _this.level.game.player.y) {
-                var scale = gameConstants_1.GameConstants.TILESIZE;
-                var halfS = 0.5 * _this.s;
-                var oldFillStyle = game_1.Game.ctx.fillStyle;
-                game_1.Game.ctx.fillStyle = _this.color;
-                game_1.Game.ctx.globalAlpha = _this.alpha;
-                game_1.Game.ctx.fillRect(Math.round((_this.x - halfS) * scale), Math.round((_this.y - _this.z - halfS) * scale), Math.round(halfS * scale), Math.round(halfS * scale));
-                game_1.Game.ctx.globalAlpha = 1.0;
-                game_1.Game.ctx.fillStyle = oldFillStyle;
+                _this.render();
             }
         };
         _this.level = level;
@@ -488,7 +499,7 @@ var GenericParticle = /** @class */ (function (_super) {
         return _this;
     }
     GenericParticle.spawnCluster = function (level, cx, cy, color) {
-        for (var i = 0; i < 8; i++) {
+        for (var i = 0; i < 7; i++) {
             level.particles.push(new GenericParticle(level, cx + Math.random() * 0.05 - 0.025, cy + Math.random() * 0.05 - 0.025, Math.random() * 0.5, 0.0625 * (i + 8), 0.025 * (Math.random() * 2 - 1), 0.025 * (Math.random() * 2 - 1), 0.2 * (Math.random() - 1), color, 0));
         }
     };
@@ -576,13 +587,14 @@ var Enemy = /** @class */ (function () {
         };
         this.hurtCallback = function () { };
         this.hurt = function (damage) {
-            _this.hurtCallback();
             _this.healthBar.hurt();
             _this.health -= damage;
-            if (_this.health <= 0) {
+            if (_this.health <= 0)
                 _this.kill();
-            }
+            else
+                _this.hurtCallback();
         };
+        this.interact = function () { };
         this.dropLoot = function () { };
         this.kill = function () {
             if (_this.level.levelArray[_this.x][_this.y] instanceof floor_1.Floor) {
@@ -642,6 +654,8 @@ var Enemy = /** @class */ (function () {
         this.level = level;
         this.x = x;
         this.y = y;
+        this.w = 1;
+        this.h = 1;
         this.game = game;
         this.drawX = 0;
         this.drawY = 0;
@@ -655,6 +669,7 @@ var Enemy = /** @class */ (function () {
         this.destroyable = true;
         this.pushable = false;
         this.chainPushable = true;
+        this.interactable = false;
         this.deathParticleColor = "#ff00ff";
         this.healthBar = new healthbar_1.HealthBar();
     }
@@ -689,7 +704,7 @@ var Gem = /** @class */ (function (_super) {
     __extends(Gem, _super);
     function Gem(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
-        _this.TICKS = 1;
+        _this.TICKS = 0;
         _this.tick = function () {
             if (_this.firstTickCounter < _this.TICKS)
                 _this.firstTickCounter++;
@@ -747,6 +762,7 @@ exports.Particle = Particle;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
+var gameConstants_1 = __webpack_require__(2);
 var Item = /** @class */ (function () {
     function Item(level, x, y) {
         var _this = this;
@@ -781,6 +797,19 @@ var Item = /** @class */ (function () {
         };
         this.drawIcon = function (x, y) {
             game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
+            var countText = _this.stackCount <= 1 ? "" : "" + _this.stackCount;
+            var width = game_1.Game.ctx.measureText(countText).width;
+            var countX = 16 - width;
+            var countY = 8;
+            game_1.Game.ctx.fillStyle = "black";
+            for (var xx = -1; xx <= 1; xx++) {
+                for (var yy = -1; yy <= 1; yy++) {
+                    game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
+                    game_1.Game.ctx.fillText(countText, x * gameConstants_1.GameConstants.TILESIZE + countX + xx, y * gameConstants_1.GameConstants.TILESIZE + countY + yy);
+                }
+            }
+            game_1.Game.ctx.fillStyle = "white";
+            game_1.Game.ctx.fillText(countText, x * gameConstants_1.GameConstants.TILESIZE + countX, y * gameConstants_1.GameConstants.TILESIZE + countY);
         };
         this.level = level;
         this.x = x;
@@ -1019,7 +1048,11 @@ exports.Input = {
     leftListener: function () { },
     upListener: function () { },
     downListener: function () { },
-    mouseLeftClickListener: function (x, y) { },
+    mouseLeftClickListeners: [],
+    mouseLeftClickListener: function (x, y) {
+        for (var i = 0; i < exports.Input.mouseLeftClickListeners.length; i++)
+            exports.Input.mouseLeftClickListeners[i](x, y);
+    },
     mouseX: 0,
     mouseY: 0,
     lastPressTime: 0,
@@ -1181,25 +1214,103 @@ var Sound = /** @class */ (function () {
     function Sound() {
     }
     Sound.loadSounds = function () {
-        Sound.footsteps = new Array();
-        Sound.footsteps.push(new Audio("res/step1.wav"));
-        Sound.footsteps.push(new Audio("res/step2.wav"));
-        Sound.footsteps.push(new Audio("res/step3.wav"));
-        Sound.footsteps.push(new Audio("res/step4.wav"));
-        for (var _i = 0, _a = Sound.footsteps; _i < _a.length; _i++) {
+        Sound.playerStoneFootsteps = new Array();
+        [1, 2, 3].forEach(function (i) {
+            return Sound.playerStoneFootsteps.push(new Audio("res/SFX/footsteps/stone/footstep" + i + ".wav"));
+        });
+        for (var _i = 0, _a = Sound.playerStoneFootsteps; _i < _a.length; _i++) {
             var f = _a[_i];
             f.volume = 1.0;
         }
+        Sound.enemyFootsteps = new Array();
+        [1, 2, 3, 4, 5].forEach(function (i) {
+            return Sound.enemyFootsteps.push(new Audio("res/SFX/footsteps/enemy/enemyfootstep" + i + ".wav"));
+        });
+        for (var _b = 0, _c = Sound.enemyFootsteps; _b < _c.length; _b++) {
+            var f = _c[_b];
+            f.volume = 1.0;
+        }
+        Sound.hitSound = new Audio("res/SFX/attacks/hit.wav");
+        Sound.hitSound.volume = 1.0;
+        Sound.enemySpawnSound = new Audio("res/SFX/attacks/enemyspawn.wav");
+        Sound.enemySpawnSound.volume = 1.0;
+        Sound.chestSounds = new Array();
+        [1, 2, 3].forEach(function (i) { return Sound.chestSounds.push(new Audio("res/SFX/items/chest" + i + ".wav")); });
+        for (var _d = 0, _e = Sound.chestSounds; _d < _e.length; _d++) {
+            var f = _e[_d];
+            f.volume = 1.0;
+        }
+        Sound.coinPickupSounds = new Array();
+        [1, 2, 3, 4].forEach(function (i) {
+            return Sound.coinPickupSounds.push(new Audio("res/SFX/items/coins" + i + ".wav"));
+        });
+        for (var _f = 0, _g = Sound.coinPickupSounds; _f < _g.length; _f++) {
+            var f = _g[_f];
+            f.volume = 1.0;
+        }
+        Sound.miningSounds = new Array();
+        [1, 2, 3, 4].forEach(function (i) {
+            return Sound.miningSounds.push(new Audio("res/SFX/resources/Pickaxe" + i + ".wav"));
+        });
+        for (var _h = 0, _j = Sound.miningSounds; _h < _j.length; _h++) {
+            var f = _j[_h];
+            f.volume = 1.0;
+        }
+        Sound.hurtSounds = new Array();
+        [1, 2].forEach(function (i) { return Sound.hurtSounds.push(new Audio("res/SFX/attacks/hurt" + i + ".wav")); });
+        for (var _k = 0, _l = Sound.hurtSounds; _k < _l.length; _k++) {
+            var f = _l[_k];
+            f.volume = 1.0;
+        }
+        Sound.breakRockSound = new Audio("res/SFX/resources/rockbreak.wav");
+        Sound.breakRockSound.volume = 1.0;
         Sound.powerupSound = new Audio("res/powerup.wav");
         Sound.powerupSound.volume = 0.5;
         Sound.healSound = new Audio("res/heal.wav");
         Sound.healSound.volume = 0.5;
         Sound.music = new Audio("res/bewitched.mp3");
     };
-    Sound.footstep = function () {
-        var i = game_1.Game.rand(0, Sound.footsteps.length - 1);
-        Sound.footsteps[i].play();
-        Sound.footsteps[i].currentTime = 0;
+    Sound.playerStoneFootstep = function () {
+        var f = game_1.Game.randTable(Sound.playerStoneFootsteps);
+        f.play();
+        f.currentTime = 0;
+    };
+    Sound.enemyFootstep = function () {
+        var f = game_1.Game.randTable(Sound.enemyFootsteps);
+        f.play();
+        f.currentTime = 0;
+    };
+    Sound.hit = function () {
+        Sound.hitSound.play();
+        Sound.hitSound.currentTime = 0;
+    };
+    Sound.hurt = function () {
+        var f = game_1.Game.randTable(Sound.hurtSounds);
+        f.play();
+        f.currentTime = 0;
+    };
+    Sound.enemySpawn = function () {
+        Sound.enemySpawnSound.play();
+        Sound.enemySpawnSound.currentTime = 0;
+    };
+    Sound.chest = function () {
+        var f = game_1.Game.randTable(Sound.chestSounds);
+        f.play();
+        f.currentTime = 0;
+    };
+    Sound.pickupCoin = function () {
+        var f = game_1.Game.randTable(Sound.coinPickupSounds);
+        f.play();
+        f.currentTime = 0;
+    };
+    Sound.mine = function () {
+        var f = game_1.Game.randTable(Sound.miningSounds);
+        f.play();
+        f.currentTime = 0;
+    };
+    Sound.breakRock = function () {
+        Sound.breakRockSound.play();
+        Sound.breakRockSound.currentTime = 0;
     };
     Sound.powerup = function () {
         Sound.powerupSound.play();
@@ -1362,8 +1473,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var levelConstants_1 = __webpack_require__(4);
-var textParticle_1 = __webpack_require__(9);
-var gameConstants_1 = __webpack_require__(2);
 var equippable_1 = __webpack_require__(11);
 var Armor = /** @class */ (function (_super) {
     __extends(Armor, _super);
@@ -1394,7 +1503,6 @@ var Armor = /** @class */ (function (_super) {
                 return;
             _this.health -= damage;
             _this.rechargeTurnCounter = _this.RECHARGE_TURNS + 1;
-            _this.level.game.level.particles.push(new textParticle_1.TextParticle("" + -damage, _this.level.game.player.x + 0.5, _this.level.game.player.y + 0.5, gameConstants_1.GameConstants.ARMOR_GREY));
         };
         _this.drawGUI = function (playerHealth) {
             if (_this.rechargeTurnCounter === -1)
@@ -1487,21 +1595,27 @@ var armor_1 = __webpack_require__(19);
 var enemy_1 = __webpack_require__(5);
 var gem_1 = __webpack_require__(6);
 var genericParticle_1 = __webpack_require__(3);
+var coin_1 = __webpack_require__(66);
+var sound_1 = __webpack_require__(15);
 var Chest = /** @class */ (function (_super) {
     __extends(Chest, _super);
     function Chest(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.kill = function () {
+            sound_1.Sound.chest();
             _this.dead = true;
             // DROP TABLES!
             genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#fbf236");
-            var drop = game_1.Game.randTable([1, 1, 2]);
+            var drop = game_1.Game.randTable([1, 1, 1, 2, 2, 3]);
             switch (drop) {
                 case 1:
-                    _this.game.level.items.push(new gem_1.Gem(_this.level, _this.x, _this.y));
+                    _this.game.level.items.push(new coin_1.Coin(_this.level, _this.x, _this.y));
                     break;
                 case 2:
                     _this.game.level.items.push(new heart_1.Heart(_this.level, _this.x, _this.y));
+                    break;
+                case 3:
+                    _this.game.level.items.push(new gem_1.Gem(_this.level, _this.x, _this.y));
                     break;
                 case 3:
                     _this.game.level.items.push(new key_1.Key(_this.level, _this.x, _this.y));
@@ -1844,15 +1958,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
 var hitWarning_1 = __webpack_require__(16);
-var gem_1 = __webpack_require__(6);
 var genericParticle_1 = __webpack_require__(3);
+var coin_1 = __webpack_require__(66);
 var SkullEnemy = /** @class */ (function (_super) {
     __extends(SkullEnemy, _super);
     function SkullEnemy(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.REGEN_TICKS = 5;
         _this.hit = function () {
-            return 1;
+            return 0.5;
         };
         _this.hurt = function (damage) {
             _this.ticksSinceFirstHit = 0;
@@ -1916,8 +2030,8 @@ var SkullEnemy = /** @class */ (function (_super) {
                         }
                         if (_this.game.player.x === moveX && _this.game.player.y === moveY) {
                             _this.game.player.hurt(_this.hit());
-                            _this.drawX = 1 * (_this.x - _this.game.player.x);
-                            _this.drawY = 1 * (_this.y - _this.game.player.y);
+                            _this.drawX = 0.5 * (_this.x - _this.game.player.x);
+                            _this.drawY = 0.5 * (_this.y - _this.game.player.y);
                             _this.game.shakeScreen(10 * _this.drawX, 10 * _this.drawY);
                         }
                         else {
@@ -1966,7 +2080,7 @@ var SkullEnemy = /** @class */ (function (_super) {
             }
         };
         _this.dropLoot = function () {
-            _this.game.level.items.push(new gem_1.Gem(_this.level, _this.x, _this.y));
+            _this.game.level.items.push(new coin_1.Coin(_this.level, _this.x, _this.y));
         };
         _this.ticks = 0;
         _this.health = 2;
@@ -2012,6 +2126,7 @@ var genericParticle_1 = __webpack_require__(3);
 var slashParticle_1 = __webpack_require__(37);
 var healthbar_1 = __webpack_require__(38);
 var gem_1 = __webpack_require__(6);
+var shopScreen_1 = __webpack_require__(68);
 var PlayerDirection;
 (function (PlayerDirection) {
     PlayerDirection[PlayerDirection["DOWN"] = 0] = "DOWN";
@@ -2024,12 +2139,15 @@ var Player = /** @class */ (function () {
         var _this = this;
         this.iListener = function () {
             _this.inventory.open();
+            _this.shopScreen.close();
         };
         this.iUpListener = function () {
-            _this.inventory.close();
+            //this.inventory.close();
         };
         this.leftListener = function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
+                if (_this.shopScreen.isOpen)
+                    _this.shopScreen.close();
                 if (input_1.Input.isDown(input_1.Input.SPACE)) {
                     genericParticle_1.GenericParticle.spawnCluster(_this.game.level, _this.x - 1 + 0.5, _this.y + 0.5, "#ff00ff");
                     _this.healthBar.hurt();
@@ -2044,6 +2162,8 @@ var Player = /** @class */ (function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
                 //if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
                 //else
+                if (_this.shopScreen.isOpen)
+                    _this.shopScreen.close();
                 _this.tryMove(_this.x + 1, _this.y);
                 _this.direction = PlayerDirection.RIGHT;
             }
@@ -2052,6 +2172,8 @@ var Player = /** @class */ (function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
                 //if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
                 //else
+                if (_this.shopScreen.isOpen)
+                    _this.shopScreen.close();
                 _this.tryMove(_this.x, _this.y - 1);
                 _this.direction = PlayerDirection.UP;
             }
@@ -2060,6 +2182,8 @@ var Player = /** @class */ (function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
                 //if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
                 //else
+                if (_this.shopScreen.isOpen)
+                    _this.shopScreen.close();
                 _this.tryMove(_this.x, _this.y + 1);
                 _this.direction = PlayerDirection.DOWN;
             }
@@ -2113,10 +2237,17 @@ var Player = /** @class */ (function () {
                 _this.game.level.particles.push(new dashParticle_1.DashParticle(_this.x, _this.y, particleFrameOffset));
             }
         };
+        this.tryCollide = function (other, newX, newY) {
+            if (newX >= other.x + other.w || newX + _this.w <= other.x)
+                return false;
+            if (newY >= other.y + other.h || newY + _this.h <= other.y)
+                return false;
+            return true;
+        };
         this.tryMove = function (x, y) {
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
-                if (e.x === x && e.y === y) {
+                if (_this.tryCollide(e, x, y)) {
                     if (e.pushable) {
                         // pushing a crate or barrel
                         var oldEnemyX = e.x;
@@ -2155,6 +2286,7 @@ var Player = /** @class */ (function () {
                             (_this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)) {
                             if (e.destroyable) {
                                 e.kill();
+                                sound_1.Sound.hit();
                                 _this.drawX = 0.5 * (_this.x - e.x);
                                 _this.drawY = 0.5 * (_this.y - e.y);
                                 _this.game.level.particles.push(new slashParticle_1.SlashParticle(e.x, e.y));
@@ -2189,11 +2321,16 @@ var Player = /** @class */ (function () {
                         if (e.destroyable) {
                             // and hurt it
                             e.hurt(1);
+                            sound_1.Sound.hit();
                             _this.drawX = 0.5 * (_this.x - e.x);
                             _this.drawY = 0.5 * (_this.y - e.y);
                             _this.game.level.particles.push(new slashParticle_1.SlashParticle(e.x, e.y));
                             _this.game.level.tick();
                             _this.game.shakeScreen(10 * _this.drawX, 10 * _this.drawY);
+                            return;
+                        }
+                        else if (e.interactable) {
+                            e.interact();
                             return;
                         }
                     }
@@ -2216,11 +2353,12 @@ var Player = /** @class */ (function () {
             }
         };
         this.hurt = function (damage) {
-            _this.healthBar.hurt();
+            sound_1.Sound.hurt();
             if (_this.inventory.getArmor() && _this.inventory.getArmor().health > 0) {
                 _this.inventory.getArmor().hurt(damage);
             }
             else {
+                _this.healthBar.hurt();
                 _this.flashing = true;
                 _this.health -= damage;
                 if (_this.health <= 0) {
@@ -2245,7 +2383,7 @@ var Player = /** @class */ (function () {
             return Math.abs(_this.drawX) < EPSILON && Math.abs(_this.drawY) < EPSILON;
         };
         this.move = function (x, y) {
-            sound_1.Sound.footstep();
+            sound_1.Sound.playerStoneFootstep();
             _this.drawX = x - _this.x;
             _this.drawY = y - _this.y;
             _this.x = x;
@@ -2278,10 +2416,6 @@ var Player = /** @class */ (function () {
             _this.lastTickHealth = _this.health; // update last tick health
             if (totalHealthDiff < 0) {
                 _this.flashing = true;
-                _this.game.level.particles.push(new textParticle_1.TextParticle("" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.RED, 0));
-            }
-            else if (totalHealthDiff > 0) {
-                _this.game.level.particles.push(new textParticle_1.TextParticle("+" + totalHealthDiff, _this.x + 0.5, _this.y - 0.5, gameConstants_1.GameConstants.RED, 0));
             }
         };
         this.drawPlayerSprite = function () {
@@ -2309,17 +2443,29 @@ var Player = /** @class */ (function () {
         };
         this.drawGUI = function () {
             if (!_this.dead) {
+                _this.shopScreen.draw();
+                _this.inventory.draw();
                 if (_this.guiHeartFrame > 0)
                     _this.guiHeartFrame++;
                 if (_this.guiHeartFrame > 5) {
                     _this.guiHeartFrame = 0;
                 }
-                for (var i = 0; i < _this.health; i++) {
+                for (var i = 0; i < _this.maxHealth; i++) {
                     var frame = _this.guiHeartFrame > 0 ? 1 : 0;
-                    game_1.Game.drawFX(frame, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
+                    if (i >= Math.floor(_this.health)) {
+                        if (i == Math.floor(_this.health) && (_this.health * 2) % 2 == 1) {
+                            // draw half heart
+                            game_1.Game.drawFX(4, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
+                        }
+                        else {
+                            game_1.Game.drawFX(3, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
+                        }
+                    }
+                    else
+                        game_1.Game.drawFX(frame, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
                 }
                 if (_this.inventory.getArmor())
-                    _this.inventory.getArmor().drawGUI(_this.health);
+                    _this.inventory.getArmor().drawGUI(_this.maxHealth);
             }
             else {
                 game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
@@ -2328,7 +2474,6 @@ var Player = /** @class */ (function () {
                 var refreshString = "[refresh to restart]";
                 game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + gameConstants_1.GameConstants.FONT_SIZE);
             }
-            _this.inventory.draw();
             if (input_1.Input.isDown(input_1.Input.N)) {
                 _this.map.draw(true);
             }
@@ -2339,6 +2484,8 @@ var Player = /** @class */ (function () {
         this.game = game;
         this.x = x;
         this.y = y;
+        this.w = 1;
+        this.h = 1;
         this.direction = PlayerDirection.UP;
         input_1.Input.iListener = this.iListener;
         input_1.Input.iUpListener = this.iUpListener;
@@ -2356,8 +2503,9 @@ var Player = /** @class */ (function () {
         this.lastTickHealth = this.health;
         this.guiHeartFrame = 0;
         this.inventory = new inventory_1.Inventory(game);
+        this.shopScreen = new shopScreen_1.ShopScreen(game);
         this.missProb = 0.1;
-        this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
+        this.sightRadius = 5; // maybe can be manipulated by items? e.g. better torch
         this.map = new map_1.Map(this.game);
     }
     return Player;
@@ -2417,6 +2565,7 @@ var input_1 = __webpack_require__(13);
 var gameConstants_1 = __webpack_require__(2);
 var equippable_1 = __webpack_require__(11);
 var armor_1 = __webpack_require__(19);
+var coin_1 = __webpack_require__(66);
 var Inventory = /** @class */ (function () {
     function Inventory(game) {
         var _this = this;
@@ -2426,7 +2575,7 @@ var Inventory = /** @class */ (function () {
             _this.isOpen = !_this.isOpen;
         };
         this.close = function () {
-            //this.isOpen = false;
+            _this.isOpen = false;
         };
         this.hasItem = function (itemType) {
             // itemType is class of Item we're looking for
@@ -2437,7 +2586,20 @@ var Inventory = /** @class */ (function () {
             }
             return null;
         };
+        this.coinCount = function () {
+            return _this.coins;
+        };
+        this.subtractCoins = function (n) {
+            _this.coins -= n;
+        };
+        this.addCoins = function (n) {
+            _this.coins += n;
+        };
         this.addItem = function (item) {
+            if (item instanceof coin_1.Coin) {
+                _this.coins += 1;
+                return;
+            }
             if (item.stackable) {
                 for (var _i = 0, _a = _this.items; _i < _a.length; _i++) {
                     var i = _a[_i];
@@ -2451,6 +2613,12 @@ var Inventory = /** @class */ (function () {
             // item is either not stackable, or its stackable but we don't have one yet
             _this.items.push(item);
         };
+        this.removeItem = function (item) {
+            var i = _this.items.indexOf(item);
+            if (i !== -1) {
+                _this.items.splice(i, 1);
+            }
+        };
         this.getArmor = function () {
             for (var _i = 0, _a = _this.equipped; _i < _a.length; _i++) {
                 var e = _a[_i];
@@ -2460,6 +2628,8 @@ var Inventory = /** @class */ (function () {
             return null;
         };
         this.mouseLeftClickListener = function (x, y) {
+            if (!_this.isOpen)
+                return;
             var tileX = Math.floor((x - 51) / 19);
             var tileY = Math.floor((y - 70) / 19);
             var i = tileX + tileY * 9;
@@ -2507,6 +2677,22 @@ var Inventory = /** @class */ (function () {
             return y;
         };
         this.draw = function () {
+            var coinX = 15.5;
+            var coinY = 15.5;
+            game_1.Game.drawItem(20, 0, 1, 2, coinX, coinY - 1, 1, 2);
+            var countText = "" + _this.coins;
+            var width = game_1.Game.ctx.measureText(countText).width;
+            var countX = 16 - width;
+            var countY = 8;
+            game_1.Game.ctx.fillStyle = "black";
+            for (var xx = -1; xx <= 1; xx++) {
+                for (var yy = -1; yy <= 1; yy++) {
+                    game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.OUTLINE;
+                    game_1.Game.ctx.fillText(countText, coinX * gameConstants_1.GameConstants.TILESIZE + countX + xx, coinY * gameConstants_1.GameConstants.TILESIZE + countY + yy);
+                }
+            }
+            game_1.Game.ctx.fillStyle = "white";
+            game_1.Game.ctx.fillText(countText, coinX * gameConstants_1.GameConstants.TILESIZE + countX, coinY * gameConstants_1.GameConstants.TILESIZE + countY);
             if (_this.isOpen) {
                 game_1.Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
                 game_1.Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
@@ -2538,9 +2724,6 @@ var Inventory = /** @class */ (function () {
                     if (_this.items[i] instanceof equippable_1.Equippable && _this.items[i].equipped) {
                         lines.push("EQUIPPED");
                     }
-                    if (_this.items[i].stackable && _this.items[i].stackCount > 1) {
-                        lines.push("x" + _this.items[i].stackCount);
-                    }
                     var nextY = 147;
                     for (var j = 0; j < lines.length; j++) {
                         nextY = _this.textWrap(lines[j], 55, nextY, 162);
@@ -2552,7 +2735,8 @@ var Inventory = /** @class */ (function () {
         this.game = game;
         this.items = new Array();
         this.equipped = new Array();
-        input_1.Input.mouseLeftClickListener = this.mouseLeftClickListener;
+        input_1.Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
+        this.coins = 0;
     }
     return Inventory;
 }());
@@ -2751,7 +2935,7 @@ var Heart = /** @class */ (function (_super) {
     function Heart(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
         _this.onPickup = function (player) {
-            player.health += 1;
+            player.health = Math.min(player.maxHealth, player.health + 1);
             sound_1.Sound.heal();
             _this.level.items = _this.level.items.filter(function (x) { return x !== _this; }); // removes itself from the level
         };
@@ -2807,6 +2991,8 @@ var Map = /** @class */ (function () {
                 var level = _a[_i];
                 if (_this.game.level.depth == level.depth && (level.entered || drawAll)) {
                     game_1.Game.ctx.fillStyle = "black";
+                    if (!level.entered && drawAll)
+                        game_1.Game.ctx.fillStyle = "#606060";
                     game_1.Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
                     for (var _b = 0, _c = level.doors; _b < _c.length; _b++) {
                         var door = _c[_b];
@@ -2816,6 +3002,7 @@ var Map = /** @class */ (function () {
                         if (door instanceof bottomDoor_1.BottomDoor)
                             game_1.Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y - 1, 1, 1);
                     }
+                    game_1.Game.ctx.globalAlpha = 1.0;
                 }
             }
             game_1.Game.ctx.fillStyle = gameConstants_1.GameConstants.RED;
@@ -3073,11 +3260,19 @@ var LevelGenerator = /** @class */ (function () {
                     var newLevelDoorDir = game_1.Game.rand(1, 6);
                     if (parent) {
                         switch (thisNode.type) {
+                            case level_1.RoomType.DUNGEON:
+                                newLevelDoorDir = r.generateAroundPoint(points[ind], ind, game_1.Game.randTable([5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 9, 9, 10]), game_1.Game.randTable([5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 9, 9, 10]));
+                                break;
+                            case level_1.RoomType.BIGDUNGEON:
+                                newLevelDoorDir = r.generateAroundPoint(points[ind], ind, game_1.Game.randTable([10, 11, 12, 13]), game_1.Game.randTable([10, 11, 12, 13]));
+                                break;
                             case level_1.RoomType.UPLADDER:
                             case level_1.RoomType.DOWNLADDER:
                                 newLevelDoorDir = r.generateAroundPoint(points[ind], ind, 5, 5);
                                 break;
                             case level_1.RoomType.SPAWNER:
+                                newLevelDoorDir = r.generateAroundPoint(points[ind], ind, game_1.Game.randTable([9, 10, 11]), game_1.Game.randTable([9, 10, 11]));
+                                break;
                             case level_1.RoomType.PUZZLE:
                             case level_1.RoomType.COFFIN:
                             case level_1.RoomType.FOUNTAIN:
@@ -3122,41 +3317,62 @@ var LevelGenerator = /** @class */ (function () {
         };
         this.generate = function (game, depth) {
             var d = depth;
-            // prettier-ignore
             var node;
             if (d == 0) {
-                node = new N(level_1.RoomType.DUNGEON, d, [
-                    new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.SPAWNER, d, [
-                        new N(level_1.RoomType.DOWNLADDER, d, []),
-                        new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, []),
-                    ]),
+                node = new N(level_1.RoomType.SHOP, d, [
+                    new N(level_1.RoomType.DOWNLADDER, d, []),
                     new N(level_1.RoomType.SHOP, d, []),
                 ]);
             }
             else {
-                if (game_1.Game.rand(1, 5) !== 1) {
-                    node = new N(level_1.RoomType.UPLADDER, d, [
-                        new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, [
-                            new N(level_1.RoomType.DOWNLADDER, d, []),
-                            new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, []),
-                        ]),
-                        new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, []),
-                    ]);
-                }
-                else {
-                    node = new N(level_1.RoomType.UPLADDER, d, [
-                        new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, [
-                            new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, [
-                                new N(level_1.RoomType.DOWNLADDER, d, []),
+                switch (game_1.Game.rand(1, 10)) {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                        node = new N(level_1.RoomType.UPLADDER, d, [
+                            new N(level_1.RoomType.DUNGEON, d, [
+                                new N(level_1.RoomType.SPAWNER, d, [
+                                    new N(level_1.RoomType.DOWNLADDER, d, [
+                                        new N(level_1.RoomType.CAVE, d, [
+                                            new N(level_1.RoomType.CAVE, d, []),
+                                            new N(level_1.RoomType.CAVE, d, []),
+                                        ]),
+                                    ]),
+                                    new N(level_1.RoomType.CAVE, d, [new N(level_1.RoomType.CAVE, d, [new N(level_1.RoomType.CAVE, d, [])])]),
+                                    new N(game_1.Game.rand(1, 3) === 1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, []),
+                                    new N(level_1.RoomType.DUNGEON, d, [new N(level_1.RoomType.DOWNLADDER, d, [])]),
+                                ]),
                             ]),
-                            new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, [
-                                new N(level_1.RoomType.SPIKECORRIDOR, d, [new N(level_1.RoomType.TREASURE, d, [])]),
+                            new N(level_1.RoomType.DUNGEON, d, [new N(level_1.RoomType.DUNGEON, d, [])]),
+                        ]);
+                        break;
+                    case 7:
+                    case 8:
+                    case 9:
+                    case 10:
+                        node = new N(level_1.RoomType.UPLADDER, d, [
+                            new N(level_1.RoomType.DUNGEON, d, [
+                                new N(level_1.RoomType.DUNGEON, d, [new N(level_1.RoomType.DOWNLADDER, d, [])]),
+                                new N(level_1.RoomType.BIGDUNGEON, d, [
+                                    new N(level_1.RoomType.SPIKECORRIDOR, d, [new N(level_1.RoomType.TREASURE, d, [])]),
+                                    new N(level_1.RoomType.DUNGEON, d, [
+                                        new N(level_1.RoomType.CAVE, d, []),
+                                        new N(level_1.RoomType.CAVE, d, []),
+                                    ]),
+                                ]),
+                                new N(level_1.RoomType.DUNGEON, d, [
+                                    new N(level_1.RoomType.CAVE, d, [
+                                        new N(level_1.RoomType.CAVE, d, [new N(level_1.RoomType.CAVE, d, [])]),
+                                        new N(level_1.RoomType.CAVE, d, [new N(level_1.RoomType.CAVE, d, [])]),
+                                        new N(level_1.RoomType.CAVE, d, []),
+                                    ]),
+                                ]),
                             ]),
-                            new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, []),
-                        ]),
-                        new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, []),
-                        new N(Math.random() < 0.1 ? level_1.RoomType.TREASURE : level_1.RoomType.DUNGEON, d, []),
-                    ]);
+                        ]);
+                        break;
                 }
             }
             /*  new N(RoomType.DUNGEON, d, [
@@ -3244,24 +3460,26 @@ var goldResource_1 = __webpack_require__(60);
 var emeraldResource_1 = __webpack_require__(62);
 var chasm_1 = __webpack_require__(63);
 var spawner_1 = __webpack_require__(64);
+var shopTable_1 = __webpack_require__(67);
 var RoomType;
 (function (RoomType) {
     RoomType[RoomType["DUNGEON"] = 0] = "DUNGEON";
-    RoomType[RoomType["TREASURE"] = 1] = "TREASURE";
-    RoomType[RoomType["FOUNTAIN"] = 2] = "FOUNTAIN";
-    RoomType[RoomType["COFFIN"] = 3] = "COFFIN";
-    RoomType[RoomType["GRASS"] = 4] = "GRASS";
-    RoomType[RoomType["PUZZLE"] = 5] = "PUZZLE";
-    RoomType[RoomType["KEYROOM"] = 6] = "KEYROOM";
-    RoomType[RoomType["CHESSBOARD"] = 7] = "CHESSBOARD";
-    RoomType[RoomType["MAZE"] = 8] = "MAZE";
-    RoomType[RoomType["CORRIDOR"] = 9] = "CORRIDOR";
-    RoomType[RoomType["SPIKECORRIDOR"] = 10] = "SPIKECORRIDOR";
-    RoomType[RoomType["UPLADDER"] = 11] = "UPLADDER";
-    RoomType[RoomType["DOWNLADDER"] = 12] = "DOWNLADDER";
-    RoomType[RoomType["SHOP"] = 13] = "SHOP";
-    RoomType[RoomType["CAVE"] = 14] = "CAVE";
-    RoomType[RoomType["SPAWNER"] = 15] = "SPAWNER";
+    RoomType[RoomType["BIGDUNGEON"] = 1] = "BIGDUNGEON";
+    RoomType[RoomType["TREASURE"] = 2] = "TREASURE";
+    RoomType[RoomType["FOUNTAIN"] = 3] = "FOUNTAIN";
+    RoomType[RoomType["COFFIN"] = 4] = "COFFIN";
+    RoomType[RoomType["GRASS"] = 5] = "GRASS";
+    RoomType[RoomType["PUZZLE"] = 6] = "PUZZLE";
+    RoomType[RoomType["KEYROOM"] = 7] = "KEYROOM";
+    RoomType[RoomType["CHESSBOARD"] = 8] = "CHESSBOARD";
+    RoomType[RoomType["MAZE"] = 9] = "MAZE";
+    RoomType[RoomType["CORRIDOR"] = 10] = "CORRIDOR";
+    RoomType[RoomType["SPIKECORRIDOR"] = 11] = "SPIKECORRIDOR";
+    RoomType[RoomType["UPLADDER"] = 12] = "UPLADDER";
+    RoomType[RoomType["DOWNLADDER"] = 13] = "DOWNLADDER";
+    RoomType[RoomType["SHOP"] = 14] = "SHOP";
+    RoomType[RoomType["CAVE"] = 15] = "CAVE";
+    RoomType[RoomType["SPAWNER"] = 16] = "SPAWNER";
 })(RoomType = exports.RoomType || (exports.RoomType = {}));
 var TurnState;
 (function (TurnState) {
@@ -3275,8 +3493,6 @@ var Level = /** @class */ (function () {
         var _this = this;
         this.generateDungeon = function () {
             _this.skin = tile_1.SkinType.DUNGEON;
-            if (game_1.Game.rand(1, 2) === 1)
-                _this.skin = tile_1.SkinType.CAVE;
             var factor = game_1.Game.rand(1, 36);
             _this.buildEmptyRoom();
             if (factor < 30)
@@ -3292,7 +3508,24 @@ var Level = /** @class */ (function () {
                 _this.addSpikeTraps(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
             var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1]));
-            //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
+            _this.addEnemies(numEnemies);
+            if (numEnemies > 0)
+                _this.addObstacles(numEnemies / game_1.Game.rand(1, 2));
+            else
+                _this.addObstacles(game_1.Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+        };
+        this.generateBigDungeon = function () {
+            _this.skin = tile_1.SkinType.DUNGEON;
+            _this.buildEmptyRoom();
+            if (game_1.Game.rand(1, 4) === 1)
+                _this.addChasms();
+            _this.fixWalls();
+            if (game_1.Game.rand(1, 4) === 1)
+                _this.addPlants(game_1.Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
+            if (game_1.Game.rand(1, 3) === 1)
+                _this.addSpikeTraps(game_1.Game.randTable([3, 5, 7, 8]));
+            var numEmptyTiles = _this.getEmptyTiles().length;
+            var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0.05, 0.05, 0.06, 0.07, 0.1]));
             _this.addEnemies(numEnemies);
             if (numEnemies > 0)
                 _this.addObstacles(numEnemies / game_1.Game.rand(1, 2));
@@ -3408,11 +3641,7 @@ var Level = /** @class */ (function () {
             var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0.07, 0.08, 0.09, 0.1, 0.15]));
             //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
             _this.addEnemies(numEnemies);
-            if (numEnemies > 0)
-                _this.addObstacles(numEnemies / game_1.Game.rand(1, 2));
-            if (game_1.Game.rand(0, 10) <= _this.depth + 2) {
-                _this.addResources(game_1.Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
-            }
+            _this.addResources(game_1.Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 11, 12]));
         };
         this.generateUpLadder = function () {
             _this.skin = tile_1.SkinType.DUNGEON;
@@ -3430,6 +3659,14 @@ var Level = /** @class */ (function () {
             var cX = Math.floor(_this.roomX + _this.width / 2);
             var cY = Math.floor(_this.roomY + _this.height / 2);
             _this.levelArray[cX][cY] = new downLadder_1.DownLadder(_this, _this.game, cX, cY);
+        };
+        this.generateShop = function () {
+            _this.skin = tile_1.SkinType.DUNGEON;
+            _this.buildEmptyRoom();
+            _this.fixWalls();
+            var cX = Math.floor(_this.roomX + _this.width / 2 - 1);
+            var cY = Math.floor(_this.roomY + _this.height / 2);
+            _this.enemies.push(new shopTable_1.ShopTable(_this, _this.game, cX, cY));
         };
         this.addDoor = function (location, link) {
             var d;
@@ -3691,8 +3928,24 @@ var Level = /** @class */ (function () {
                 }
             }
             _this.game.player.finishTick();
-            _this.turn = TurnState.playerTurn; // now it's the player's turn
+            _this.turn = TurnState.playerTurn;
         };
+        /* TODO fix turn skipping bug
+        
+        computerTurnDelayed = () => {
+          // take computer turn
+          for (const p of this.projectiles) {
+            p.tickDelayAnim();
+          }
+          for (const e of this.enemies) {
+            e.tickDelayAnim();
+          }
+          for (const i of this.items) {
+            i.tickDelayAnim();
+          }
+      
+          this.turn = TurnState.playerTurn; // now it's the player's turn
+        };*/
         this.draw = function () {
             hitWarning_1.HitWarning.updateFrame();
             _this.fadeLighting();
@@ -3721,15 +3974,15 @@ var Level = /** @class */ (function () {
                 var p = _c[_b];
                 p.draw();
             }
-            for (var _d = 0, _e = _this.enemies; _d < _e.length; _d++) {
-                var e = _e[_d];
-                if (e.y <= _this.game.player.y)
-                    e.draw();
-            }
-            for (var _f = 0, _g = _this.items; _f < _g.length; _f++) {
-                var i = _g[_f];
+            for (var _d = 0, _e = _this.items; _d < _e.length; _d++) {
+                var i = _e[_d];
                 if (i.y <= _this.game.player.y)
                     i.draw();
+            }
+            for (var _f = 0, _g = _this.enemies; _f < _g.length; _f++) {
+                var e = _g[_f];
+                if (e.y <= _this.game.player.y)
+                    e.draw();
             }
         };
         this.drawEntitiesInFrontOfPlayer = function () {
@@ -3739,15 +3992,15 @@ var Level = /** @class */ (function () {
                         _this.levelArray[x][y].drawAbovePlayer();
                 }
             }
-            for (var _i = 0, _a = _this.enemies; _i < _a.length; _i++) {
-                var e = _a[_i];
-                if (e.y > _this.game.player.y)
-                    e.draw();
-            }
-            for (var _b = 0, _c = _this.items; _b < _c.length; _b++) {
-                var i = _c[_b];
+            for (var _i = 0, _a = _this.items; _i < _a.length; _i++) {
+                var i = _a[_i];
                 if (i.y > _this.game.player.y)
                     i.draw();
+            }
+            for (var _b = 0, _c = _this.enemies; _b < _c.length; _b++) {
+                var e = _c[_b];
+                if (e.y > _this.game.player.y)
+                    e.draw();
             }
             for (var _d = 0, _e = _this.enemies; _d < _e.length; _d++) {
                 var e = _e[_d];
@@ -3824,6 +4077,9 @@ var Level = /** @class */ (function () {
             case RoomType.DUNGEON:
                 this.generateDungeon();
                 break;
+            case RoomType.BIGDUNGEON:
+                this.generateBigDungeon();
+                break;
             case RoomType.FOUNTAIN:
                 this.generateFountain();
                 break;
@@ -3860,7 +4116,18 @@ var Level = /** @class */ (function () {
                 this.name = "FLOOR " + -this.depth;
                 break;
             case RoomType.SHOP:
-                this.generateDungeon();
+                /* shop rates:
+                 * 10 coal for an gold coin
+                 * 1 gold for 10 coins
+                 * 1 emerald for 100 coins
+                 *
+                 * shop items:
+                 * 1 empty heart   4 ^ (maxHealth + maxHealth ^ 1.05 ^ maxHealth - 2.05) coins
+                 * fill all hearts  1 coin
+                 * better torch    5 ^ (torchLevel + 1.05 ^ torchLevel - 2.05) coins
+                 * weapons
+                 */
+                this.generateShop();
                 break;
             case RoomType.SPAWNER:
                 this.generateSpawner();
@@ -4097,9 +4364,7 @@ var Level = /** @class */ (function () {
             var x = t.x;
             var y = t.y;
             if (this.depth !== 0) {
-                var d = game_1.Game.rand(1, this.depth);
-                if (d > 1)
-                    d = 1;
+                var d = game_1.Game.rand(1, Math.min(3, this.depth));
                 switch (d) {
                     case 1:
                         this.enemies.push(new knightEnemy_1.KnightEnemy(this, this.game, x, y));
@@ -4286,14 +4551,14 @@ var enemy_1 = __webpack_require__(5);
 var game_1 = __webpack_require__(0);
 var astarclass_1 = __webpack_require__(44);
 var hitWarning_1 = __webpack_require__(16);
-var gem_1 = __webpack_require__(6);
 var spiketrap_1 = __webpack_require__(24);
+var coin_1 = __webpack_require__(66);
 var KnightEnemy = /** @class */ (function (_super) {
     __extends(KnightEnemy, _super);
     function KnightEnemy(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.hit = function () {
-            return 1;
+            return 0.5;
         };
         _this.tick = function () {
             if (!_this.dead) {
@@ -4372,7 +4637,7 @@ var KnightEnemy = /** @class */ (function (_super) {
             }
         };
         _this.dropLoot = function () {
-            _this.game.level.items.push(new gem_1.Gem(_this.level, _this.x, _this.y));
+            _this.game.level.items.push(new coin_1.Coin(_this.level, _this.x, _this.y));
         };
         _this.moves = new Array(); // empty move list
         _this.ticks = 0;
@@ -4890,6 +5155,16 @@ var WizardEnemy = /** @class */ (function (_super) {
             return (Math.pow((_this.x - _this.game.player.x), 2) + Math.pow((_this.y - _this.game.player.y), 2) <=
                 Math.pow(_this.ATTACK_RADIUS, 2));
         };
+        _this.shuffle = function (a) {
+            var j, x, i;
+            for (i = a.length - 1; i > 0; i--) {
+                j = Math.floor(Math.random() * (i + 1));
+                x = a[i];
+                a[i] = a[j];
+                a[j] = x;
+            }
+            return a;
+        };
         _this.tick = function () {
             if (!_this.dead) {
                 //  && this.level.visibilityArray[this.x][this.y] > 0
@@ -4933,10 +5208,19 @@ var WizardEnemy = /** @class */ (function (_super) {
                     case WizardState.teleport:
                         var oldX = _this.x;
                         var oldY = _this.y;
-                        while (_this.x === oldX && _this.y === oldY) {
-                            var newPos = game_1.Game.randTable(_this.level.getEmptyTiles());
-                            _this.tryMove(newPos.x, newPos.y);
+                        var min = 100000;
+                        var bestPos = void 0;
+                        var emptyTiles = _this.shuffle(_this.level.getEmptyTiles());
+                        for (var _i = 0, emptyTiles_1 = emptyTiles; _i < emptyTiles_1.length; _i++) {
+                            var t = emptyTiles_1[_i];
+                            var newPos = t;
+                            var dist = Math.abs(newPos.x - _this.game.player.x) + Math.abs(newPos.y - _this.game.player.y);
+                            if (Math.abs(dist - 4) < Math.abs(min - 4)) {
+                                min = dist;
+                                bestPos = newPos;
+                            }
                         }
+                        _this.tryMove(bestPos.x, bestPos.y);
                         _this.drawX = _this.x - oldX;
                         _this.drawY = _this.y - oldY;
                         _this.frame = 0; // trigger teleport animation
@@ -5515,14 +5799,17 @@ var game_1 = __webpack_require__(0);
 var resource_1 = __webpack_require__(18);
 var genericParticle_1 = __webpack_require__(3);
 var coal_1 = __webpack_require__(59);
+var sound_1 = __webpack_require__(15);
 var CoalResource = /** @class */ (function (_super) {
     __extends(CoalResource, _super);
     function CoalResource(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.hurtCallback = function () {
-            genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#000000");
+            genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#ffffff");
+            sound_1.Sound.mine();
         };
         _this.kill = function () {
+            sound_1.Sound.breakRock();
             _this.dead = true;
             _this.game.level.items.push(new coal_1.Coal(_this.level, _this.x, _this.y));
         };
@@ -5571,7 +5858,7 @@ var Coal = /** @class */ (function (_super) {
     __extends(Coal, _super);
     function Coal(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
-        _this.TICKS = 1;
+        _this.TICKS = 0;
         _this.tick = function () {
             if (_this.firstTickCounter < _this.TICKS)
                 _this.firstTickCounter++;
@@ -5628,11 +5915,16 @@ var game_1 = __webpack_require__(0);
 var resource_1 = __webpack_require__(18);
 var genericParticle_1 = __webpack_require__(3);
 var gold_1 = __webpack_require__(61);
+var sound_1 = __webpack_require__(15);
 var GoldResource = /** @class */ (function (_super) {
     __extends(GoldResource, _super);
     function GoldResource(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
+        _this.hurtCallback = function () {
+            sound_1.Sound.mine();
+        };
         _this.kill = function () {
+            sound_1.Sound.breakRock();
             _this.dead = true;
             _this.game.level.items.push(new gold_1.Gold(_this.level, _this.x, _this.y));
             genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#fbf236");
@@ -5682,7 +5974,7 @@ var Gold = /** @class */ (function (_super) {
     __extends(Gold, _super);
     function Gold(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
-        _this.TICKS = 1;
+        _this.TICKS = 0;
         _this.tick = function () {
             if (_this.firstTickCounter < _this.TICKS)
                 _this.firstTickCounter++;
@@ -5739,14 +6031,17 @@ var game_1 = __webpack_require__(0);
 var gem_1 = __webpack_require__(6);
 var resource_1 = __webpack_require__(18);
 var genericParticle_1 = __webpack_require__(3);
+var sound_1 = __webpack_require__(15);
 var EmeraldResource = /** @class */ (function (_super) {
     __extends(EmeraldResource, _super);
     function EmeraldResource(level, game, x, y) {
         var _this = _super.call(this, level, game, x, y) || this;
         _this.hurtCallback = function () {
             genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#fbf236");
+            sound_1.Sound.mine();
         };
         _this.kill = function () {
+            sound_1.Sound.breakRock();
             _this.dead = true;
             _this.game.level.items.push(new gem_1.Gem(_this.level, _this.x, _this.y));
         };
@@ -5922,12 +6217,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var projectile_1 = __webpack_require__(17);
 var game_1 = __webpack_require__(0);
 var genericParticle_1 = __webpack_require__(3);
+var sound_1 = __webpack_require__(15);
 var EnemySpawnAnimation = /** @class */ (function (_super) {
     __extends(EnemySpawnAnimation, _super);
     function EnemySpawnAnimation(level, enemy, x, y, knockbackX, knockbackY) {
         var _this = _super.call(this, x, y) || this;
         _this.ANIM_COUNT = 3;
         _this.tick = function () {
+            sound_1.Sound.enemySpawn();
             _this.dead = true;
             _this.enemy.skipNextTurns = 1;
             _this.level.enemies.push(_this.enemy);
@@ -5965,6 +6262,477 @@ var EnemySpawnAnimation = /** @class */ (function (_super) {
     return EnemySpawnAnimation;
 }(projectile_1.Projectile));
 exports.EnemySpawnAnimation = EnemySpawnAnimation;
+
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var item_1 = __webpack_require__(8);
+var game_1 = __webpack_require__(0);
+var sound_1 = __webpack_require__(15);
+var Coin = /** @class */ (function (_super) {
+    __extends(Coin, _super);
+    function Coin(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.TICKS = 0;
+        _this.tick = function () {
+            if (_this.firstTickCounter < _this.TICKS)
+                _this.firstTickCounter++;
+        };
+        _this.onPickup = function (player) {
+            if (!_this.pickedUp) {
+                sound_1.Sound.pickupCoin();
+                _this.pickedUp = true;
+                player.inventory.addItem(_this);
+            }
+        };
+        _this.getDescription = function () {
+            return "COINS\nA pound of gold coins.";
+        };
+        _this.draw = function () {
+            if (_this.firstTickCounter < _this.TICKS)
+                return;
+            if (_this.pickedUp)
+                return;
+            if (_this.scaleFactor < 1)
+                _this.scaleFactor += 0.04;
+            else
+                _this.scaleFactor = 1;
+            game_1.Game.drawItem(0, 0, 1, 1, _this.x, _this.y - 0.25, 1, 1);
+            _this.frame += (Math.PI * 2) / 60;
+            game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, _this.x + _this.w * (_this.scaleFactor * -0.5 + 0.5), _this.y + Math.sin(_this.frame) * 0.07 - 1.5 + _this.h * (_this.scaleFactor * -0.5 + 0.5), _this.w * _this.scaleFactor, _this.h * _this.scaleFactor);
+        };
+        _this.tileX = 20;
+        _this.tileY = 0;
+        _this.stackable = true;
+        _this.firstTickCounter = 0;
+        _this.scaleFactor = 0.2;
+        return _this;
+    }
+    return Coin;
+}(item_1.Item));
+exports.Coin = Coin;
+
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var enemy_1 = __webpack_require__(5);
+var ShopTable = /** @class */ (function (_super) {
+    __extends(ShopTable, _super);
+    function ShopTable(level, game, x, y) {
+        var _this = _super.call(this, level, game, x, y) || this;
+        _this.interact = function () {
+            _this.game.player.shopScreen.open();
+        };
+        _this.draw = function () {
+            game_1.Game.drawTile(26, 0, 2, 2, _this.x, _this.y - 1, 2, 2, _this.isShaded());
+        };
+        _this.w = 2;
+        _this.destroyable = false;
+        _this.pushable = false;
+        _this.chainPushable = false;
+        _this.interactable = true;
+        return _this;
+    }
+    return ShopTable;
+}(enemy_1.Enemy));
+exports.ShopTable = ShopTable;
+
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var input_1 = __webpack_require__(13);
+var gameConstants_1 = __webpack_require__(2);
+var armor_1 = __webpack_require__(19);
+var shopData_1 = __webpack_require__(69);
+var coal_1 = __webpack_require__(59);
+var gem_1 = __webpack_require__(6);
+var gold_1 = __webpack_require__(61);
+var ShopState;
+(function (ShopState) {
+    ShopState[ShopState["MAINSCREEN"] = 0] = "MAINSCREEN";
+    ShopState[ShopState["BUYING"] = 1] = "BUYING";
+    ShopState[ShopState["SELLING"] = 2] = "SELLING";
+})(ShopState = exports.ShopState || (exports.ShopState = {}));
+var BACK_BUTTON_X = 3;
+var BACK_BUTTON_Y = 3;
+var LEFT_BUTTON_X = 0.5 * (17 - 11);
+var LEFT_BUTTON_Y = 0.5 * (17 - 5);
+var RIGHT_BUTTON_X = 0.5 * (17 - 11) + 0.5 * 11;
+var RIGHT_BUTTON_Y = 0.5 * (17 - 5);
+var ShopScreen = /** @class */ (function () {
+    function ShopScreen(game) {
+        var _this = this;
+        this.tileX = 0;
+        this.tileY = 0;
+        this.open = function () {
+            _this.isOpen = true;
+            _this.game.player.inventory.close();
+        };
+        this.close = function () {
+            _this.isOpen = false;
+        };
+        this.mouseLeftClickListener = function (x, y) {
+            if (!_this.isOpen)
+                return;
+            var tileX = Math.floor(x / gameConstants_1.GameConstants.TILESIZE);
+            var tileY = Math.floor(y / gameConstants_1.GameConstants.TILESIZE);
+            var slotX = Math.floor((x - 51) / 19);
+            var slotY = Math.floor((y - 70) / 19);
+            var i = slotX + slotY * 9;
+            var backButtonLit = tileX >= BACK_BUTTON_X &&
+                tileY >= BACK_BUTTON_Y &&
+                tileX < BACK_BUTTON_X + 3 &&
+                tileY < BACK_BUTTON_Y + 1;
+            switch (_this.shopState) {
+                case ShopState.MAINSCREEN:
+                    var leftButtonLit = tileX >= LEFT_BUTTON_X &&
+                        tileY >= LEFT_BUTTON_Y &&
+                        tileX < LEFT_BUTTON_X + 5 &&
+                        tileY < LEFT_BUTTON_Y + 5;
+                    if (leftButtonLit)
+                        _this.shopState = ShopState.BUYING;
+                    var rightButtonLit = tileX >= RIGHT_BUTTON_X &&
+                        tileY >= RIGHT_BUTTON_Y &&
+                        tileX < RIGHT_BUTTON_X + 5 &&
+                        tileY < RIGHT_BUTTON_Y + 5;
+                    if (rightButtonLit)
+                        _this.shopState = ShopState.SELLING;
+                    if (backButtonLit)
+                        _this.close();
+                    break;
+                case ShopState.BUYING:
+                    if (i >= 0 && i < _this.shopData.buyItems.length) {
+                        if (_this.game.player.inventory.coinCount() >= _this.shopData.buyItems[i].price) {
+                            if (_this.shopData.buyItems[i].item === null) {
+                                switch (_this.shopData.buyItems[i].shopItem) {
+                                    case shopData_1.ShopItems.TORCH:
+                                        _this.game.player.sightRadius += 2;
+                                        _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
+                                        var t = Math.floor(0.5 * _this.game.player.sightRadius);
+                                        _this.shopData.buyItems[i].price = Math.round(Math.pow(5, t + Math.pow(1.05, t) - 2.05));
+                                        break;
+                                    case shopData_1.ShopItems.EMPTYHEART:
+                                        _this.game.player.maxHealth += 1;
+                                        _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
+                                        var h = _this.game.player.maxHealth;
+                                        _this.shopData.buyItems[i].price = Math.round(Math.pow(4, h + Math.pow(1.05, h) - 2.05));
+                                        break;
+                                    case shopData_1.ShopItems.FILLHEARTS:
+                                        _this.game.player.health = _this.game.player.maxHealth;
+                                        _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
+                                        break;
+                                }
+                            }
+                            else {
+                                _this.game.player.inventory.addItem(_this.shopData.buyItems[i].item);
+                                _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
+                            }
+                            if (!_this.shopData.buyItems[i].unlimited) {
+                                _this.shopData.buyItems.splice(i, 1);
+                            }
+                        }
+                    }
+                    if (backButtonLit)
+                        _this.shopState = ShopState.MAINSCREEN;
+                    break;
+                case ShopState.SELLING:
+                    if (i >= 0 && i < _this.game.player.inventory.items.length) {
+                        for (var _i = 0, _a = _this.shopData.sellItems; _i < _a.length; _i++) {
+                            var sellItem = _a[_i];
+                            if (sellItem.item.constructor === _this.game.player.inventory.items[i].constructor) {
+                                console.log(_this.game.player.inventory.items[i].stackCount);
+                                _this.game.player.inventory.addCoins(sellItem.price * _this.game.player.inventory.items[i].stackCount);
+                                _this.game.player.inventory.removeItem(_this.game.player.inventory.items[i]);
+                            }
+                        }
+                    }
+                    if (backButtonLit)
+                        _this.shopState = ShopState.MAINSCREEN;
+                    break;
+            }
+        };
+        this.textWrap = function (text, x, y, maxWidth) {
+            // returns y value for next line
+            var words = text.split(" ");
+            var line = "";
+            while (words.length > 0) {
+                if (game_1.Game.ctx.measureText(line + words[0]).width > maxWidth) {
+                    game_1.Game.ctx.fillText(line, x, y);
+                    line = "";
+                    y += 10;
+                }
+                else {
+                    if (line !== "")
+                        line += " ";
+                    line += words[0];
+                    words.splice(0, 1);
+                }
+            }
+            if (line !== " ") {
+                game_1.Game.ctx.fillText(line, x, y);
+                y += 10;
+            }
+            return y;
+        };
+        this.drawItemSlots = function () {
+            game_1.Game.drawShop(17, 5, 10.625, 9.4375, 0.5 * (17 - 10.625), 4.375, 10.625, 9.4375);
+            if (input_1.Input.mouseX >= 51 && input_1.Input.mouseX <= 221 && input_1.Input.mouseY >= 70 && input_1.Input.mouseY <= 145) {
+                var highlightedSlotX = Math.floor((input_1.Input.mouseX - 51) / 19) * 19 + 51;
+                var highlightedSlotY = Math.floor((input_1.Input.mouseY - 70) / 19) * 19 + 70;
+                game_1.Game.ctx.fillStyle = "#9babd7";
+                game_1.Game.ctx.fillRect(highlightedSlotX, highlightedSlotY, 18, 18);
+            }
+        };
+        this.drawBackButton = function (tileX, tileY) {
+            var backButtonLit = tileX >= BACK_BUTTON_X &&
+                tileY >= BACK_BUTTON_Y &&
+                tileX < BACK_BUTTON_X + 3 &&
+                tileY < BACK_BUTTON_Y + 1;
+            game_1.Game.drawShop(37, backButtonLit ? 1 : 0, 3, 1, BACK_BUTTON_X, BACK_BUTTON_Y, 3, 1);
+        };
+        this.draw = function () {
+            if (_this.isOpen) {
+                game_1.Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
+                game_1.Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
+                game_1.Game.drawShop(0, 0, 17, 17, 0, 0, 17, 17);
+                var tileX = Math.floor(input_1.Input.mouseX / gameConstants_1.GameConstants.TILESIZE);
+                var tileY = Math.floor(input_1.Input.mouseY / gameConstants_1.GameConstants.TILESIZE);
+                var slotX = Math.floor((input_1.Input.mouseX - 51) / 19);
+                var slotY = Math.floor((input_1.Input.mouseY - 70) / 19);
+                var i = slotX + slotY * 9;
+                switch (_this.shopState) {
+                    case ShopState.MAINSCREEN:
+                        _this.drawBackButton(tileX, tileY);
+                        var leftButtonLit = tileX >= LEFT_BUTTON_X &&
+                            tileY >= LEFT_BUTTON_Y &&
+                            tileX < LEFT_BUTTON_X + 5 &&
+                            tileY < LEFT_BUTTON_Y + 5;
+                        game_1.Game.drawShop(17 + (leftButtonLit ? 10 : 0), 0, 5, 5, LEFT_BUTTON_X, LEFT_BUTTON_Y, 5, 5);
+                        var rightButtonLit = tileX >= RIGHT_BUTTON_X &&
+                            tileY >= RIGHT_BUTTON_Y &&
+                            tileX < RIGHT_BUTTON_X + 5 &&
+                            tileY < RIGHT_BUTTON_Y + 5;
+                        game_1.Game.drawShop(22 + (rightButtonLit ? 10 : 0), 0, 5, 5, RIGHT_BUTTON_X, RIGHT_BUTTON_Y, 5, 5);
+                        break;
+                    case ShopState.BUYING:
+                        _this.drawItemSlots();
+                        _this.drawBackButton(tileX, tileY);
+                        for (var i_1 = 0; i_1 < _this.shopData.buyItems.length; i_1++) {
+                            var s = 9;
+                            var x = (52 + 19 * (i_1 % s)) / gameConstants_1.GameConstants.TILESIZE;
+                            var y = (71 + 19 * Math.floor(i_1 / s)) / gameConstants_1.GameConstants.TILESIZE;
+                            if (_this.shopData.buyItems[i_1].item)
+                                _this.shopData.buyItems[i_1].item.drawIcon(x, y);
+                            else {
+                                var xx = 0;
+                                var yy = 0;
+                                switch (_this.shopData.buyItems[i_1].shopItem) {
+                                    case shopData_1.ShopItems.TORCH:
+                                        xx = 21;
+                                        break;
+                                    case shopData_1.ShopItems.EMPTYHEART:
+                                        xx = 7;
+                                        break;
+                                    case shopData_1.ShopItems.FILLHEARTS:
+                                        xx = 8;
+                                        break;
+                                }
+                                game_1.Game.drawItem(xx, yy, 1, 2, x, y - 1, 1, 2);
+                            }
+                        }
+                        if (i >= 0 && i < _this.shopData.buyItems.length) {
+                            game_1.Game.ctx.font = gameConstants_1.GameConstants.SCRIPT_FONT_SIZE + "px Script";
+                            game_1.Game.ctx.fillStyle = "white";
+                            var desc = "";
+                            if (_this.shopData.buyItems[i].item === null) {
+                                switch (_this.shopData.buyItems[i].shopItem) {
+                                    case shopData_1.ShopItems.TORCH:
+                                        desc = "TORCH UPGRADE\n+2 sight radius";
+                                        break;
+                                    case shopData_1.ShopItems.EMPTYHEART:
+                                        desc = "EXTRA LIFE\n+1 total hearts";
+                                        break;
+                                    case shopData_1.ShopItems.FILLHEARTS:
+                                        desc = "RESTORE HEALTH\nFill all hearts";
+                                        break;
+                                }
+                            }
+                            else {
+                                desc = _this.shopData.buyItems[i].item.getDescription();
+                            }
+                            var lines = desc.split("\n");
+                            if (_this.game.player.inventory.coinCount() >= _this.shopData.buyItems[i].price)
+                                lines.push("CLICK TO BUY FOR " +
+                                    _this.shopData.buyItems[i].price +
+                                    (_this.shopData.buyItems[i].price === 1 ? " COIN" : " COINS"));
+                            else
+                                lines.push("COSTS " +
+                                    _this.shopData.buyItems[i].price +
+                                    (_this.shopData.buyItems[i].price === 1 ? " COIN" : " COINS"));
+                            var nextY = 147;
+                            for (var j = 0; j < lines.length; j++) {
+                                nextY = _this.textWrap(lines[j], 55, nextY, 162);
+                            }
+                            game_1.Game.ctx.font = gameConstants_1.GameConstants.FONT_SIZE + "px PixelFont";
+                        }
+                        break;
+                    case ShopState.SELLING:
+                        _this.drawItemSlots();
+                        _this.drawBackButton(tileX, tileY);
+                        for (var i_2 = 0; i_2 < _this.game.player.inventory.items.length; i_2++) {
+                            var s = 9;
+                            var x = (52 + 19 * (i_2 % s)) / gameConstants_1.GameConstants.TILESIZE;
+                            var y = (71 + 19 * Math.floor(i_2 / s)) / gameConstants_1.GameConstants.TILESIZE;
+                            _this.game.player.inventory.items[i_2].drawIcon(x, y);
+                        }
+                        if (i >= 0 && i < _this.game.player.inventory.items.length) {
+                            game_1.Game.ctx.font = gameConstants_1.GameConstants.SCRIPT_FONT_SIZE + "px Script";
+                            game_1.Game.ctx.fillStyle = "white";
+                            var desc = "";
+                            var price = -1;
+                            for (var _i = 0, _a = _this.shopData.sellItems; _i < _a.length; _i++) {
+                                var sellItem = _a[_i];
+                                if (sellItem.item.constructor === _this.game.player.inventory.items[i].constructor) {
+                                    desc = sellItem.description;
+                                    price = sellItem.price;
+                                }
+                            }
+                            var lines = desc.split("\n");
+                            if (price !== -1)
+                                lines.push("CLICK TO SELL FOR " +
+                                    price +
+                                    (price === 1 ? " COIN" : " COINS") +
+                                    (_this.game.player.inventory.items[i].stackCount > 1 ? " EACH" : ""));
+                            var nextY = 147;
+                            for (var j = 0; j < lines.length; j++) {
+                                nextY = _this.textWrap(lines[j], 55, nextY, 162);
+                            }
+                            game_1.Game.ctx.font = gameConstants_1.GameConstants.FONT_SIZE + "px PixelFont";
+                        }
+                        break;
+                }
+            }
+        };
+        this.game = game;
+        this.shopData = new shopData_1.ShopData();
+        var i = new shopData_1.BuyItem();
+        i.item = null;
+        i.shopItem = shopData_1.ShopItems.EMPTYHEART;
+        i.price = 1;
+        i.unlimited = true;
+        this.shopData.buyItems.push(i);
+        i = new shopData_1.BuyItem();
+        i.item = null;
+        i.shopItem = shopData_1.ShopItems.FILLHEARTS;
+        i.price = 1;
+        i.unlimited = true;
+        this.shopData.buyItems.push(i);
+        i = new shopData_1.BuyItem();
+        i.item = null;
+        i.shopItem = shopData_1.ShopItems.TORCH;
+        i.price = 1;
+        i.unlimited = true;
+        this.shopData.buyItems.push(i);
+        i = new shopData_1.BuyItem();
+        i.item = new armor_1.Armor(this.game.level, 0, 0);
+        i.price = 1;
+        i.unlimited = false;
+        this.shopData.buyItems.push(i);
+        var s = new shopData_1.SellItem();
+        s.item = new coal_1.Coal(this.game.level, 0, 0);
+        s.description = s.item.getDescription();
+        s.price = 1;
+        s.item = new gold_1.Gold(this.game.level, 0, 0);
+        s.description = s.item.getDescription();
+        s.price = 10;
+        s.item = new gem_1.Gem(this.game.level, 0, 0);
+        s.description = s.item.getDescription();
+        s.price = 100;
+        this.shopData.sellItems.push(s);
+        this.shopState = ShopState.MAINSCREEN;
+        input_1.Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
+    }
+    return ShopScreen;
+}());
+exports.ShopScreen = ShopScreen;
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var ShopItems;
+(function (ShopItems) {
+    ShopItems[ShopItems["TORCH"] = 0] = "TORCH";
+    ShopItems[ShopItems["EMPTYHEART"] = 1] = "EMPTYHEART";
+    ShopItems[ShopItems["FILLHEARTS"] = 2] = "FILLHEARTS";
+})(ShopItems = exports.ShopItems || (exports.ShopItems = {}));
+var BuyItem = /** @class */ (function () {
+    function BuyItem() {
+    }
+    return BuyItem;
+}());
+exports.BuyItem = BuyItem;
+var SellItem = /** @class */ (function () {
+    function SellItem() {
+    }
+    return SellItem;
+}());
+exports.SellItem = SellItem;
+var ShopData = /** @class */ (function () {
+    function ShopData() {
+        this.buyItems = [];
+        this.sellItems = [];
+    }
+    return ShopData;
+}());
+exports.ShopData = ShopData;
 
 
 /***/ })

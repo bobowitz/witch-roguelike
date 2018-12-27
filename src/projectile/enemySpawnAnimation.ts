@@ -5,6 +5,7 @@ import { Player } from "../player";
 import { Enemy } from "../enemy/enemy";
 import { Level } from "../level";
 import { GenericParticle } from "../particle/genericParticle";
+import { Sound } from "../sound";
 
 export class EnemySpawnAnimation extends Projectile {
   readonly ANIM_COUNT = 3;
@@ -44,6 +45,8 @@ export class EnemySpawnAnimation extends Projectile {
   }
 
   tick = () => {
+    Sound.enemySpawn();
+
     this.dead = true;
     this.enemy.skipNextTurns = 1;
     this.level.enemies.push(this.enemy);

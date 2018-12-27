@@ -13,7 +13,7 @@ export class Heart extends Item {
   }
 
   onPickup = (player: Player) => {
-    player.health += 1;
+    player.health = Math.min(player.maxHealth, player.health + 1);
     Sound.heal();
     this.level.items = this.level.items.filter(x => x !== this); // removes itself from the level
   };

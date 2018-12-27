@@ -48,6 +48,7 @@ export class Map {
     for (const level of this.game.levels) {
       if (this.game.level.depth == level.depth && (level.entered || drawAll)) {
         Game.ctx.fillStyle = "black";
+        if (!level.entered && drawAll) Game.ctx.fillStyle = "#606060";
         Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
         for (const door of level.doors) {
           //Game.ctx.fillStyle = "#0085ff";
@@ -61,6 +62,7 @@ export class Map {
               1
             );
         }
+        Game.ctx.globalAlpha = 1.0;
       }
     }
     Game.ctx.fillStyle = GameConstants.RED;

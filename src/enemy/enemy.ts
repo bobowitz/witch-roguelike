@@ -19,6 +19,8 @@ export class Enemy {
   level: Level;
   x: number;
   y: number;
+  w: number;
+  h: number;
   direction: EnemyDirection;
   drawX: number;
   drawY: number;
@@ -34,6 +36,7 @@ export class Enemy {
   destroyable: boolean; // can the player destroy this enemy?
   pushable: boolean; // can the player push this enemy? (true for crates/barrels, false for regular mobs)
   chainPushable: boolean; // can the player pushing another enemy push this enemy? (default true)
+  interactable: boolean; // can the player interact
   deathParticleColor: string;
   healthBar: HealthBar;
 
@@ -41,6 +44,8 @@ export class Enemy {
     this.level = level;
     this.x = x;
     this.y = y;
+    this.w = 1;
+    this.h = 1;
     this.game = game;
     this.drawX = 0;
     this.drawY = 0;
@@ -54,6 +59,7 @@ export class Enemy {
     this.destroyable = true;
     this.pushable = false;
     this.chainPushable = true;
+    this.interactable = false;
     this.deathParticleColor = "#ff00ff";
     this.healthBar = new HealthBar();
   }
@@ -81,14 +87,14 @@ export class Enemy {
   hurtCallback = () => {};
 
   hurt = (damage: number) => {
-    this.hurtCallback();
     this.healthBar.hurt();
 
     this.health -= damage;
-    if (this.health <= 0) {
-      this.kill();
-    }
+    if (this.health <= 0) this.kill();
+    else this.hurtCallback();
   };
+
+  interact = () => {};
 
   dropLoot = () => {};
 

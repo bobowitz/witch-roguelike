@@ -17,7 +17,7 @@ export class GenericParticle extends Particle {
   delay: number;
 
   static spawnCluster = (level: Level, cx: number, cy: number, color: string) => {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 7; i++) {
       level.particles.push(
         new GenericParticle(
           level,
@@ -61,40 +61,49 @@ export class GenericParticle extends Particle {
     if (delay !== undefined) this.delay = delay;
   }
 
+  render = () => {
+    let scale = GameConstants.TILESIZE;
+    let scaledS = this.s * this.alpha; // using alpha for scaling, not alpha
+    let halfS = 0.5 * scaledS;
+    let oldFillStyle = Game.ctx.fillStyle;
+    Game.ctx.fillStyle = this.color;
+    /* Game.ctx.fillRect(
+      Math.round((this.x - halfS) * scale),
+      Math.round((this.y - this.z - halfS) * scale),
+      Math.round(scaledS * scale),
+      Math.round(scaledS * scale)
+    ); */
+
+    Game.ctx.beginPath();
+    Game.ctx.arc(this.x * scale, (this.y - this.z) * scale, halfS * scale, 0, 2 * Math.PI, false);
+    Game.ctx.fill();
+
+    Game.ctx.fillStyle = oldFillStyle;
+  };
+
   draw = () => {
     this.x += this.dx;
     this.y += this.dy;
     this.z += this.dz;
 
-    this.dx *= 0.93;
-    this.dy *= 0.93;
+    this.dx *= 0.97;
+    this.dy *= 0.97;
     if (this.z <= 0) {
       this.z = 0;
-      this.dz *= -0.6;
+      this.dz *= -0.8;
     }
 
     // apply gravity
     this.dz -= 0.01;
 
-    this.alpha -= 0.025;
-    if (this.alpha <= 0) this.dead = true;
+    if (this.alpha < 0.2) this.alpha -= 0.007;
+    else this.alpha -= 0.02;
+    if (this.alpha <= 0.1) this.dead = true;
 
     if (this.dead) return;
 
     if (this.y >= this.level.game.player.y) {
-      let scale = GameConstants.TILESIZE;
-      let halfS = 0.5 * this.s;
-      let oldFillStyle = Game.ctx.fillStyle;
-      Game.ctx.fillStyle = this.color;
-      Game.ctx.globalAlpha = this.alpha;
-      Game.ctx.fillRect(
-        Math.round((this.x - halfS) * scale),
-        Math.round((this.y - this.z - halfS) * scale),
-        Math.round(halfS * scale),
-        Math.round(halfS * scale)
-      );
-      Game.ctx.globalAlpha = 1.0;
-      Game.ctx.fillStyle = oldFillStyle;
+      this.render();
     }
   };
 
@@ -102,19 +111,7 @@ export class GenericParticle extends Particle {
     if (this.dead) return;
 
     if (this.y < this.level.game.player.y) {
-      let scale = GameConstants.TILESIZE;
-      let halfS = 0.5 * this.s;
-      let oldFillStyle = Game.ctx.fillStyle;
-      Game.ctx.fillStyle = this.color;
-      Game.ctx.globalAlpha = this.alpha;
-      Game.ctx.fillRect(
-        Math.round((this.x - halfS) * scale),
-        Math.round((this.y - this.z - halfS) * scale),
-        Math.round(halfS * scale),
-        Math.round(halfS * scale)
-      );
-      Game.ctx.globalAlpha = 1.0;
-      Game.ctx.fillStyle = oldFillStyle;
+      this.render();
     }
   };
 }

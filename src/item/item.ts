@@ -80,5 +80,29 @@ export class Item {
   };
   drawIcon = (x: number, y: number) => {
     Game.drawItem(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
+
+    let countText = this.stackCount <= 1 ? "" : "" + this.stackCount;
+    let width = Game.ctx.measureText(countText).width;
+    let countX = 16 - width;
+    let countY = 8;
+
+    Game.ctx.fillStyle = "black";
+    for (let xx = -1; xx <= 1; xx++) {
+      for (let yy = -1; yy <= 1; yy++) {
+        Game.ctx.fillStyle = GameConstants.OUTLINE;
+        Game.ctx.fillText(
+          countText,
+          x * GameConstants.TILESIZE + countX + xx,
+          y * GameConstants.TILESIZE + countY + yy
+        );
+      }
+    }
+
+    Game.ctx.fillStyle = "white";
+    Game.ctx.fillText(
+      countText,
+      x * GameConstants.TILESIZE + countX,
+      y * GameConstants.TILESIZE + countY
+    );
   };
 }

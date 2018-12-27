@@ -20,6 +20,7 @@ import { KnightEnemy } from "./enemy/knightEnemy";
 import { HealthBar } from "./healthbar";
 import { EmeraldResource } from "./enemy/emeraldResource";
 import { Gem } from "./item/gem";
+import { ShopScreen } from "./shopScreen";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -46,6 +47,7 @@ export class Player {
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
+  shopScreen: ShopScreen;
   missProb: number;
   sightRadius: number;
   guiHeartFrame: number;
@@ -56,6 +58,8 @@ export class Player {
 
     this.x = x;
     this.y = y;
+    this.w = 1;
+    this.h = 1;
 
     this.direction = PlayerDirection.UP;
 
@@ -77,22 +81,27 @@ export class Player {
     this.guiHeartFrame = 0;
 
     this.inventory = new Inventory(game);
+    this.shopScreen = new ShopScreen(game);
 
     this.missProb = 0.1;
 
-    this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
+    this.sightRadius = 5; // maybe can be manipulated by items? e.g. better torch
 
     this.map = new Map(this.game);
   }
 
   iListener = () => {
     this.inventory.open();
+
+    this.shopScreen.close();
   };
   iUpListener = () => {
-    this.inventory.close();
+    //this.inventory.close();
   };
   leftListener = () => {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
+      if (this.shopScreen.isOpen) this.shopScreen.close();
+
       if (Input.isDown(Input.SPACE)) {
         GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
         this.healthBar.hurt();
@@ -105,6 +114,8 @@ export class Player {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       //if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
       //else
+      if (this.shopScreen.isOpen) this.shopScreen.close();
+
       this.tryMove(this.x + 1, this.y);
       this.direction = PlayerDirection.RIGHT;
     }
@@ -113,6 +124,8 @@ export class Player {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       //if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
       //else
+      if (this.shopScreen.isOpen) this.shopScreen.close();
+
       this.tryMove(this.x, this.y - 1);
       this.direction = PlayerDirection.UP;
     }
@@ -121,6 +134,8 @@ export class Player {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       //if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
       //else
+      if (this.shopScreen.isOpen) this.shopScreen.close();
+
       this.tryMove(this.x, this.y + 1);
       this.direction = PlayerDirection.DOWN;
     }
@@ -177,9 +192,15 @@ export class Player {
     }
   };
 
+  tryCollide = (other: any, newX: number, newY: number) => {
+    if (newX >= other.x + other.w || newX + this.w <= other.x) return false;
+    if (newY >= other.y + other.h || newY + this.h <= other.y) return false;
+    return true;
+  };
+
   tryMove = (x: number, y: number) => {
     for (let e of this.game.level.enemies) {
-      if (e.x === x && e.y === y) {
+      if (this.tryCollide(e, x, y)) {
         if (e.pushable) {
           // pushing a crate or barrel
           let oldEnemyX = e.x;
@@ -218,6 +239,7 @@ export class Player {
           ) {
             if (e.destroyable) {
               e.kill();
+              Sound.hit();
               this.drawX = 0.5 * (this.x - e.x);
               this.drawY = 0.5 * (this.y - e.y);
               this.game.level.particles.push(new SlashParticle(e.x, e.y));
@@ -249,11 +271,15 @@ export class Player {
           if (e.destroyable) {
             // and hurt it
             e.hurt(1);
+            Sound.hit();
             this.drawX = 0.5 * (this.x - e.x);
             this.drawY = 0.5 * (this.y - e.y);
             this.game.level.particles.push(new SlashParticle(e.x, e.y));
             this.game.level.tick();
             this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
+            return;
+          } else if (e.interactable) {
+            e.interact();
             return;
           }
         }
@@ -276,10 +302,12 @@ export class Player {
   };
 
   hurt = (damage: number) => {
-    this.healthBar.hurt();
+    Sound.hurt();
+
     if (this.inventory.getArmor() && this.inventory.getArmor().health > 0) {
       this.inventory.getArmor().hurt(damage);
     } else {
+      this.healthBar.hurt();
       this.flashing = true;
       this.health -= damage;
       if (this.health <= 0) {
@@ -308,7 +336,7 @@ export class Player {
   };
 
   move = (x: number, y: number) => {
-    Sound.footstep();
+    Sound.playerStoneFootstep();
 
     this.drawX = x - this.x;
     this.drawY = y - this.y;
@@ -349,13 +377,6 @@ export class Player {
     this.lastTickHealth = this.health; // update last tick health
     if (totalHealthDiff < 0) {
       this.flashing = true;
-      this.game.level.particles.push(
-        new TextParticle("" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED, 0)
-      );
-    } else if (totalHealthDiff > 0) {
-      this.game.level.particles.push(
-        new TextParticle("+" + totalHealthDiff, this.x + 0.5, this.y - 0.5, GameConstants.RED, 0)
-      );
     }
   };
 
@@ -403,15 +424,26 @@ export class Player {
 
   drawGUI = () => {
     if (!this.dead) {
+      this.shopScreen.draw();
+      this.inventory.draw();
+
       if (this.guiHeartFrame > 0) this.guiHeartFrame++;
       if (this.guiHeartFrame > 5) {
         this.guiHeartFrame = 0;
       }
-      for (let i = 0; i < this.health; i++) {
+      for (let i = 0; i < this.maxHealth; i++) {
         let frame = this.guiHeartFrame > 0 ? 1 : 0;
-        Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
+        if (i >= Math.floor(this.health)) {
+          if (i == Math.floor(this.health) && (this.health * 2) % 2 == 1) {
+            // draw half heart
+
+            Game.drawFX(4, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
+          } else {
+            Game.drawFX(3, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
+          }
+        } else Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
       }
-      if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(this.health);
+      if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(this.maxHealth);
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
@@ -427,7 +459,6 @@ export class Player {
         GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
       );
     }
-    this.inventory.draw();
     if (Input.isDown(Input.N)) {
       this.map.draw(true);
     }

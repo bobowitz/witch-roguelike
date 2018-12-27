@@ -6,7 +6,7 @@ import { TextParticle } from "../particle/textParticle";
 import { GameConstants } from "../gameConstants";
 
 export class Gem extends Item {
-  readonly TICKS = 1;
+  readonly TICKS = 0;
   firstTickCounter: number;
   scaleFactor: number;
 

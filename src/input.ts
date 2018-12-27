@@ -11,7 +11,13 @@ export const Input = {
   leftListener: function() {},
   upListener: function() {},
   downListener: function() {},
-  mouseLeftClickListener: function(x: number, y: number) {},
+
+  mouseLeftClickListeners: [],
+
+  mouseLeftClickListener: function(x: number, y: number) {
+    for (let i = 0; i < Input.mouseLeftClickListeners.length; i++)
+      Input.mouseLeftClickListeners[i](x, y);
+  },
 
   mouseX: 0,
   mouseY: 0,

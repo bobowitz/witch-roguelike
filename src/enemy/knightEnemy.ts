@@ -11,6 +11,7 @@ import { GameConstants } from "../gameConstants";
 import { HitWarning } from "../projectile/hitWarning";
 import { Gem } from "../item/gem";
 import { SpikeTrap } from "../tile/spiketrap";
+import { Coin } from "../item/coin";
 
 export class KnightEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -30,7 +31,7 @@ export class KnightEnemy extends Enemy {
   }
 
   hit = (): number => {
-    return 1;
+    return 0.5;
   };
 
   tick = () => {
@@ -124,6 +125,6 @@ export class KnightEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new Gem(this.level, this.x, this.y));
+    this.game.level.items.push(new Coin(this.level, this.x, this.y));
   };
 }

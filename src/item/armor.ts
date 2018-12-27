@@ -47,14 +47,6 @@ export class Armor extends Equippable {
     if (this.health <= 0) return;
     this.health -= damage;
     this.rechargeTurnCounter = this.RECHARGE_TURNS + 1;
-    this.level.game.level.particles.push(
-      new TextParticle(
-        "" + -damage,
-        this.level.game.player.x + 0.5,
-        this.level.game.player.y + 0.5,
-        GameConstants.ARMOR_GREY
-      )
-    );
   };
 
   drawGUI = (playerHealth: number) => {

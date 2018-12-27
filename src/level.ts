@@ -39,9 +39,11 @@ import { GoldResource } from "./enemy/goldResource";
 import { EmeraldResource } from "./enemy/emeraldResource";
 import { Chasm } from "./tile/chasm";
 import { Spawner } from "./enemy/spawner";
+import { ShopTable } from "./enemy/shopTable";
 
 export enum RoomType {
   DUNGEON,
+  BIGDUNGEON,
   TREASURE,
   FOUNTAIN,
   COFFIN,
@@ -359,8 +361,7 @@ export class Level {
       let x = t.x;
       let y = t.y;
       if (this.depth !== 0) {
-        let d = Game.rand(1, this.depth);
-        if (d > 1) d = 1;
+        let d = Game.rand(1, Math.min(3, this.depth));
         switch (d) {
           case 1:
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
@@ -425,7 +426,6 @@ export class Level {
 
   generateDungeon = () => {
     this.skin = SkinType.DUNGEON;
-    if (Game.rand(1, 2) === 1) this.skin = SkinType.CAVE;
 
     let factor = Game.rand(1, 36);
 
@@ -441,7 +441,23 @@ export class Level {
     let numEnemies = Math.ceil(
       numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1])
     );
-    //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
+    this.addEnemies(numEnemies);
+    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
+    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+  };
+  generateBigDungeon = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
+    if (Game.rand(1, 4) === 1) this.addChasms();
+    this.fixWalls();
+
+    if (Game.rand(1, 4) === 1) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    if (Game.rand(1, 3) === 1) this.addSpikeTraps(Game.randTable([3, 5, 7, 8]));
+    let numEmptyTiles = this.getEmptyTiles().length;
+    let numEnemies = Math.ceil(
+      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0.05, 0.05, 0.06, 0.07, 0.1])
+    );
     this.addEnemies(numEnemies);
     if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
     else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
@@ -602,10 +618,7 @@ export class Level {
     );
     //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
     this.addEnemies(numEnemies);
-    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
-    if (Game.rand(0, 10) <= this.depth + 2) {
-      this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 7, 8]));
-    }
+    this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 11, 12]));
   };
   generateUpLadder = () => {
     this.skin = SkinType.DUNGEON;
@@ -627,6 +640,16 @@ export class Level {
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
     this.levelArray[cX][cY] = new DownLadder(this, this.game, cX, cY);
+  };
+  generateShop = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
+    this.fixWalls();
+
+    let cX = Math.floor(this.roomX + this.width / 2 - 1);
+    let cY = Math.floor(this.roomY + this.height / 2);
+    this.enemies.push(new ShopTable(this, this.game, cX, cY));
   };
 
   constructor(
@@ -681,6 +704,9 @@ export class Level {
       case RoomType.DUNGEON:
         this.generateDungeon();
         break;
+      case RoomType.BIGDUNGEON:
+        this.generateBigDungeon();
+        break;
       case RoomType.FOUNTAIN:
         this.generateFountain();
         break;
@@ -717,7 +743,19 @@ export class Level {
         this.name = "FLOOR " + -this.depth;
         break;
       case RoomType.SHOP:
-        this.generateDungeon();
+        /* shop rates:
+         * 10 coal for an gold coin
+         * 1 gold for 10 coins
+         * 1 emerald for 100 coins
+         *
+         * shop items:
+         * 1 empty heart   4 ^ (maxHealth + maxHealth ^ 1.05 ^ maxHealth - 2.05) coins
+         * fill all hearts  1 coin
+         * better torch    5 ^ (torchLevel + 1.05 ^ torchLevel - 2.05) coins
+         * weapons
+         */
+
+        this.generateShop();
         break;
       case RoomType.SPAWNER:
         this.generateSpawner();
@@ -1020,8 +1058,25 @@ export class Level {
     }
 
     this.game.player.finishTick();
-    this.turn = TurnState.playerTurn; // now it's the player's turn
+    this.turn = TurnState.playerTurn;
   };
+
+  /* TODO fix turn skipping bug
+  
+  computerTurnDelayed = () => {
+    // take computer turn
+    for (const p of this.projectiles) {
+      p.tickDelayAnim();
+    }
+    for (const e of this.enemies) {
+      e.tickDelayAnim();
+    }
+    for (const i of this.items) {
+      i.tickDelayAnim();
+    }
+
+    this.turn = TurnState.playerTurn; // now it's the player's turn
+  };*/
 
   draw = () => {
     HitWarning.updateFrame();
@@ -1054,11 +1109,11 @@ export class Level {
       p.draw();
     }
 
-    for (const e of this.enemies) {
-      if (e.y <= this.game.player.y) e.draw();
-    }
     for (const i of this.items) {
       if (i.y <= this.game.player.y) i.draw();
+    }
+    for (const e of this.enemies) {
+      if (e.y <= this.game.player.y) e.draw();
     }
   };
   drawEntitiesInFrontOfPlayer = () => {
@@ -1068,11 +1123,11 @@ export class Level {
       }
     }
 
-    for (const e of this.enemies) {
-      if (e.y > this.game.player.y) e.draw();
-    }
     for (const i of this.items) {
       if (i.y > this.game.player.y) i.draw();
+    }
+    for (const e of this.enemies) {
+      if (e.y > this.game.player.y) e.draw();
     }
 
     for (const e of this.enemies) {
