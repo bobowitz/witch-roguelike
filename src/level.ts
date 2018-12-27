@@ -107,6 +107,10 @@ export class Level {
     return true;
   }
 
+  tileInside = (tileX: number, tileY: number): boolean => {
+    return this.pointInside(tileX, tileY, this.roomX, this.roomY, this.width, this.height);
+  };
+
   private fixWalls() {
     for (let x = this.roomX; x < this.roomX + this.width; x++) {
       this.levelArray[x][this.roomY + 1] = new Floor(this, x, this.roomY + 1);
@@ -194,7 +198,7 @@ export class Level {
       );
       let blockH = Math.min(blockW + Game.rand(-1, 1), this.height - 3);
 
-      let x = Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 1);
+      let x = Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 2);
       let y = Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2);
 
       for (let xx = x; xx < x + blockW; xx++) {
@@ -902,10 +906,12 @@ export class Level {
   fadeLighting = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.softVisibilityArray[x][y] < this.visibilityArray[x][y])
-          this.softVisibilityArray[x][y] += 0.1;
-        else if (this.softVisibilityArray[x][y] > this.visibilityArray[x][y])
-          this.softVisibilityArray[x][y] -= 0.05;
+        if (Math.abs(this.softVisibilityArray[x][y] - this.visibilityArray[x][y]) >= 0.05) {
+          if (this.softVisibilityArray[x][y] < this.visibilityArray[x][y])
+            this.softVisibilityArray[x][y] += 0.1;
+          else if (this.softVisibilityArray[x][y] > this.visibilityArray[x][y])
+            this.softVisibilityArray[x][y] -= 0.05;
+        }
         if (this.softVisibilityArray[x][y] < 0.1) this.softVisibilityArray[x][y] = 0;
       }
     }
@@ -970,7 +976,7 @@ export class Level {
         if (!hitWall) returnVal = i;
         hitWall = true;
       }
-      this.visibilityArray[Math.floor(px)][Math.floor(py)] = 2; //Math.min(2 - (2 / radius) * i, 2);
+      this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(2 - (2.0 / radius) * i, 2);
 
       px += dx;
       py += dy;
@@ -1135,8 +1141,6 @@ export class Level {
       p.draw();
     }
 
-    let shadingAlpha = Math.min(0.8, 0.2 * this.depth);
-
     // D I T H E R E D     S H A D I N G
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
@@ -1151,9 +1155,20 @@ export class Level {
       if (i.y <= this.game.player.y) i.drawTopLayer();
     }
 
+    let shadingAlpha = Math.max(0.8, Math.min(0.8, this.depth / this.game.player.sightRadius));
+
     // LEVEL SHADING
-    for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
-      for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
+    Game.ctx.globalCompositeOperation = "multiply";
+    Game.ctx.globalAlpha = shadingAlpha;
+    Game.ctx.fillStyle = "#400a0e";
+    Game.ctx.fillRect(
+      -GameConstants.TILESIZE,
+      -GameConstants.TILESIZE,
+      GameConstants.WIDTH + GameConstants.TILESIZE * 2,
+      GameConstants.HEIGHT + GameConstants.TILESIZE * 2
+    );
+    /*for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
         if (this.softVisibilityArray[x][y] > 0 && !(this.levelArray[x][y] instanceof Wall)) {
           if (this.levelArray[x][y] instanceof Door) {
             Game.ctx.globalAlpha = shadingAlpha;
@@ -1207,7 +1222,9 @@ export class Level {
           Game.ctx.globalAlpha = 1.0;
         }
       }
-    }
+    }*/
+    Game.ctx.globalAlpha = 1.0;
+    Game.ctx.globalCompositeOperation = "source-over";
 
     for (const e of this.enemies) {
       e.drawTopLayer(); // health bars

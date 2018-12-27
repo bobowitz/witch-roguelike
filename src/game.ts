@@ -203,7 +203,6 @@ export class Game {
     let maxWidthScale = Math.floor(window.innerWidth / GameConstants.WIDTH);
     let maxHeightScale = Math.floor(window.innerHeight / GameConstants.HEIGHT);
     Game.scale = Math.min(maxWidthScale, maxHeightScale);
-    console.log(Game.scale);
     Game.ctx.canvas.setAttribute("width", `${GameConstants.WIDTH}`);
     Game.ctx.canvas.setAttribute("height", `${GameConstants.HEIGHT}`);
     Game.ctx.canvas.setAttribute(

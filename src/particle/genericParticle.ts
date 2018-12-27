@@ -11,10 +11,44 @@ export class GenericParticle extends Particle {
   s: number;
   dx: number;
   dy: number;
+  targetX: number;
+  targetY: number;
+  targetZ: number;
   dz: number;
   color: string;
   alpha: number;
   delay: number;
+  expirationTimer: number;
+
+  static shotgun = (
+    level: Level,
+    cx: number,
+    cy: number,
+    tx: number,
+    ty: number,
+    color: string
+  ) => {
+    for (let i = 0; i < 4; i++) {
+      level.particles.push(
+        new GenericParticle(
+          level,
+          cx + Math.random() - 0.5,
+          cy + Math.random() - 0.5,
+          0,
+          Math.random() * 0.5 + 0.3,
+          0,
+          0,
+          0,
+          color,
+          0,
+          10000000,
+          tx + Math.random() - 0.5,
+          ty + Math.random() - 0.5,
+          0
+        )
+      );
+    }
+  };
 
   static spawnCluster = (level: Level, cx: number, cy: number, color: string) => {
     for (let i = 0; i < 4; i++) {
@@ -45,7 +79,11 @@ export class GenericParticle extends Particle {
     dy: number,
     dz: number,
     color: string,
-    delay?: number
+    delay?: number,
+    expirationTimer?: number,
+    targetX?: number,
+    targetY?: number,
+    targetZ?: number
   ) {
     super();
     this.level = level;
@@ -59,6 +97,11 @@ export class GenericParticle extends Particle {
     this.color = color;
     this.alpha = 1.0;
     if (delay !== undefined) this.delay = delay;
+    this.targetX = targetX;
+    this.targetY = targetY;
+    this.targetZ = targetZ;
+    this.expirationTimer = 1000000;
+    if (expirationTimer !== undefined) this.expirationTimer = expirationTimer;
   }
 
   render = () => {
@@ -89,9 +132,12 @@ export class GenericParticle extends Particle {
   };
 
   draw = () => {
-    this.x += this.dx;
-    this.y += this.dy;
-    this.z += this.dz;
+    if (this.targetX) this.x += 0.1 * (this.targetX - this.x);
+    else this.x += this.dx;
+    if (this.targetY) this.y += 0.1 * (this.targetY - this.y);
+    else this.y += this.dy;
+    if (this.targetZ) this.z += 0.1 * (this.targetZ - this.z);
+    else this.z += this.dz;
 
     this.dx *= 0.97;
     this.dy *= 0.97;
@@ -106,6 +152,9 @@ export class GenericParticle extends Particle {
     if (this.alpha < 0.2) this.alpha -= 0.007;
     else this.alpha -= 0.02;
     if (this.alpha <= 0.1) this.dead = true;
+
+    this.expirationTimer--;
+    if (this.expirationTimer <= 0) this.dead = true;
 
     if (this.dead) return;
 

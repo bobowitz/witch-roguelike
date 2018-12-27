@@ -25,6 +25,7 @@ import { Coal } from "./item/coal";
 import { Weapon } from "./weapon/weapon";
 import { Dagger } from "./weapon/dagger";
 import { Spear } from "./weapon/spear";
+import { Shotgun } from "./weapon/shotgun";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -97,10 +98,10 @@ export class Player {
 
     this.missProb = 0.1;
 
-    this.sightRadius = 5; // maybe can be manipulated by items? e.g. better torch
+    this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
 
     this.map = new Map(this.game);
-    this.weapon = new Spear(this.game);
+    this.weapon = new Shotgun(this.game);
   }
 
   iListener = () => {
@@ -214,7 +215,6 @@ export class Player {
 
   tryMove = (x: number, y: number) => {
     if (!this.weapon.weaponMove(x, y)) {
-      this.game.level.tick();
       return;
     }
 

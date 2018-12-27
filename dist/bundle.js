@@ -143,7 +143,6 @@ var Game = /** @class */ (function () {
             var maxWidthScale = Math.floor(window.innerWidth / gameConstants_1.GameConstants.WIDTH);
             var maxHeightScale = Math.floor(window.innerHeight / gameConstants_1.GameConstants.HEIGHT);
             Game.scale = Math.min(maxWidthScale, maxHeightScale);
-            console.log(Game.scale);
             Game.ctx.canvas.setAttribute("width", "" + gameConstants_1.GameConstants.WIDTH);
             Game.ctx.canvas.setAttribute("height", "" + gameConstants_1.GameConstants.HEIGHT);
             Game.ctx.canvas.setAttribute("style", "width: " + gameConstants_1.GameConstants.WIDTH * Game.scale + "px; height: " + gameConstants_1.GameConstants.HEIGHT * Game.scale + "px;\n    display: block;\n    margin: 0 auto;\n  \n    image-rendering: optimizeSpeed; /* Older versions of FF          */\n    image-rendering: -moz-crisp-edges; /* FF 6.0+                       */\n    image-rendering: -webkit-optimize-contrast; /* Safari                        */\n    image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */\n    image-rendering: pixelated; /* Awesome future-browsers       */\n  \n    -ms-interpolation-mode: nearest-neighbor;");
@@ -412,7 +411,7 @@ var levelConstants_1 = __webpack_require__(5);
 var GameConstants = /** @class */ (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.4.0";
+    GameConstants.VERSION = "v0.4.1";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -461,7 +460,7 @@ var game_1 = __webpack_require__(0);
 var gameConstants_1 = __webpack_require__(2);
 var GenericParticle = /** @class */ (function (_super) {
     __extends(GenericParticle, _super);
-    function GenericParticle(level, x, y, z, s, dx, dy, dz, color, delay) {
+    function GenericParticle(level, x, y, z, s, dx, dy, dz, color, delay, expirationTimer, targetX, targetY, targetZ) {
         var _this = _super.call(this) || this;
         _this.render = function () {
             var scale = gameConstants_1.GameConstants.TILESIZE;
@@ -481,9 +480,18 @@ var GenericParticle = /** @class */ (function (_super) {
             game_1.Game.ctx.fillStyle = oldFillStyle;
         };
         _this.draw = function () {
-            _this.x += _this.dx;
-            _this.y += _this.dy;
-            _this.z += _this.dz;
+            if (_this.targetX)
+                _this.x += 0.1 * (_this.targetX - _this.x);
+            else
+                _this.x += _this.dx;
+            if (_this.targetY)
+                _this.y += 0.1 * (_this.targetY - _this.y);
+            else
+                _this.y += _this.dy;
+            if (_this.targetZ)
+                _this.z += 0.1 * (_this.targetZ - _this.z);
+            else
+                _this.z += _this.dz;
             _this.dx *= 0.97;
             _this.dy *= 0.97;
             if (_this.z <= 0) {
@@ -497,6 +505,9 @@ var GenericParticle = /** @class */ (function (_super) {
             else
                 _this.alpha -= 0.02;
             if (_this.alpha <= 0.1)
+                _this.dead = true;
+            _this.expirationTimer--;
+            if (_this.expirationTimer <= 0)
                 _this.dead = true;
             if (_this.dead)
                 return;
@@ -523,8 +534,19 @@ var GenericParticle = /** @class */ (function (_super) {
         _this.alpha = 1.0;
         if (delay !== undefined)
             _this.delay = delay;
+        _this.targetX = targetX;
+        _this.targetY = targetY;
+        _this.targetZ = targetZ;
+        _this.expirationTimer = 1000000;
+        if (expirationTimer !== undefined)
+            _this.expirationTimer = expirationTimer;
         return _this;
     }
+    GenericParticle.shotgun = function (level, cx, cy, tx, ty, color) {
+        for (var i = 0; i < 4; i++) {
+            level.particles.push(new GenericParticle(level, cx + Math.random() - 0.5, cy + Math.random() - 0.5, 0, Math.random() * 0.5 + 0.3, 0, 0, 0, color, 0, 10000000, tx + Math.random() - 0.5, ty + Math.random() - 0.5, 0));
+        }
+    };
     GenericParticle.spawnCluster = function (level, cx, cy, color) {
         for (var i = 0; i < 4; i++) {
             level.particles.push(new GenericParticle(level, cx + Math.random() * 0.05 - 0.025, cy + Math.random() * 0.05 - 0.025, Math.random() * 0.5, 0.0625 * (i + 8), 0.025 * (Math.random() * 2 - 1), 0.025 * (Math.random() * 2 - 1), 0.2 * (Math.random() - 1), color, 0));
@@ -2298,7 +2320,7 @@ var SkullEnemy = /** @class */ (function (_super) {
                     _this.skipNextTurns--;
                     return;
                 }
-                if (_this.health === 1) {
+                if (_this.health <= 1) {
                     _this.ticksSinceFirstHit++;
                     if (_this.ticksSinceFirstHit >= _this.REGEN_TICKS) {
                         _this.health = 2;
@@ -2372,7 +2394,7 @@ var SkullEnemy = /** @class */ (function (_super) {
             if (!_this.dead) {
                 _this.tileX = 5;
                 _this.tileY = 8;
-                if (_this.health === 1) {
+                if (_this.health <= 1) {
                     _this.tileX = 3;
                     _this.tileY = 0;
                     if (_this.ticksSinceFirstHit >= 3) {
@@ -2387,7 +2409,7 @@ var SkullEnemy = /** @class */ (function (_super) {
                     _this.frame = 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
-                if (_this.health === 2 && _this.doneMoving() && _this.game.player.doneMoving())
+                if (_this.health > 1 && _this.doneMoving() && _this.game.player.doneMoving())
                     _this.facePlayer();
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
@@ -2441,7 +2463,7 @@ var map_1 = __webpack_require__(40);
 var slashParticle_1 = __webpack_require__(41);
 var healthbar_1 = __webpack_require__(24);
 var shopScreen_1 = __webpack_require__(42);
-var spear_1 = __webpack_require__(72);
+var shotgun_1 = __webpack_require__(73);
 var PlayerDirection;
 (function (PlayerDirection) {
     PlayerDirection[PlayerDirection["DOWN"] = 0] = "DOWN";
@@ -2560,7 +2582,6 @@ var Player = /** @class */ (function () {
         };
         this.tryMove = function (x, y) {
             if (!_this.weapon.weaponMove(x, y)) {
-                _this.game.level.tick();
                 return;
             }
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
@@ -2819,9 +2840,9 @@ var Player = /** @class */ (function () {
         this.inventory = new inventory_1.Inventory(game);
         this.shopScreen = new shopScreen_1.ShopScreen(game);
         this.missProb = 0.1;
-        this.sightRadius = 5; // maybe can be manipulated by items? e.g. better torch
+        this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
         this.map = new map_1.Map(this.game);
-        this.weapon = new spear_1.Spear(this.game);
+        this.weapon = new shotgun_1.Shotgun(this.game);
     }
     return Player;
 }());
@@ -4176,6 +4197,9 @@ var TurnState;
 var Level = /** @class */ (function () {
     function Level(game, x, y, w, h, type, difficulty) {
         var _this = this;
+        this.tileInside = function (tileX, tileY) {
+            return _this.pointInside(tileX, tileY, _this.roomX, _this.roomY, _this.width, _this.height);
+        };
         this.generateDungeon = function () {
             _this.skin = tile_1.SkinType.DUNGEON;
             var factor = game_1.Game.rand(1, 36);
@@ -4466,10 +4490,12 @@ var Level = /** @class */ (function () {
         this.fadeLighting = function () {
             for (var x = 0; x < _this.levelArray.length; x++) {
                 for (var y = 0; y < _this.levelArray[0].length; y++) {
-                    if (_this.softVisibilityArray[x][y] < _this.visibilityArray[x][y])
-                        _this.softVisibilityArray[x][y] += 0.1;
-                    else if (_this.softVisibilityArray[x][y] > _this.visibilityArray[x][y])
-                        _this.softVisibilityArray[x][y] -= 0.05;
+                    if (Math.abs(_this.softVisibilityArray[x][y] - _this.visibilityArray[x][y]) >= 0.05) {
+                        if (_this.softVisibilityArray[x][y] < _this.visibilityArray[x][y])
+                            _this.softVisibilityArray[x][y] += 0.1;
+                        else if (_this.softVisibilityArray[x][y] > _this.visibilityArray[x][y])
+                            _this.softVisibilityArray[x][y] -= 0.05;
+                    }
                     if (_this.softVisibilityArray[x][y] < 0.1)
                         _this.softVisibilityArray[x][y] = 0;
                 }
@@ -4529,7 +4555,7 @@ var Level = /** @class */ (function () {
                         returnVal = i;
                     hitWall = true;
                 }
-                _this.visibilityArray[Math.floor(px)][Math.floor(py)] = 2; //Math.min(2 - (2 / radius) * i, 2);
+                _this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(2 - (2.0 / radius) * i, 2);
                 px += dx;
                 py += dy;
             }
@@ -4692,7 +4718,6 @@ var Level = /** @class */ (function () {
                 var p = _e[_d];
                 p.draw();
             }
-            var shadingAlpha = Math.min(0.8, 0.2 * _this.depth);
             // D I T H E R E D     S H A D I N G
             for (var x = _this.roomX - 1; x < _this.roomX + _this.width + 1; x++) {
                 for (var y = _this.roomY - 1; y < _this.roomY + _this.height + 1; y++) {
@@ -4705,33 +4730,70 @@ var Level = /** @class */ (function () {
                 if (i.y <= _this.game.player.y)
                     i.drawTopLayer();
             }
+            var shadingAlpha = Math.max(0.8, Math.min(0.8, _this.depth / _this.game.player.sightRadius));
             // LEVEL SHADING
-            for (var x = _this.roomX - 1; x < _this.roomX + _this.width + 1; x++) {
-                for (var y = _this.roomY - 1; y < _this.roomY + _this.height + 1; y++) {
-                    if (_this.softVisibilityArray[x][y] > 0 && !(_this.levelArray[x][y] instanceof wall_1.Wall)) {
-                        if (_this.levelArray[x][y] instanceof door_1.Door) {
-                            game_1.Game.ctx.globalAlpha = shadingAlpha;
-                            game_1.Game.ctx.fillStyle = "#400a0e";
-                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                            game_1.Game.ctx.fillStyle = "#000000";
-                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                        }
-                        if (_this.levelArray[x][y] instanceof bottomDoor_1.BottomDoor) {
-                            game_1.Game.ctx.globalAlpha = shadingAlpha;
-                            game_1.Game.ctx.fillStyle = "#400a0e";
-                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y + 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                            game_1.Game.ctx.fillStyle = "#000000";
-                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y + 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                        }
-                        game_1.Game.ctx.globalAlpha = shadingAlpha;
-                        game_1.Game.ctx.fillStyle = "#400a0e";
-                        game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                        game_1.Game.ctx.fillStyle = "#000000";
-                        game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
-                        game_1.Game.ctx.globalAlpha = 1.0;
-                    }
+            game_1.Game.ctx.globalCompositeOperation = "multiply";
+            game_1.Game.ctx.globalAlpha = shadingAlpha;
+            game_1.Game.ctx.fillStyle = "#400a0e";
+            game_1.Game.ctx.fillRect(-gameConstants_1.GameConstants.TILESIZE, -gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.WIDTH + gameConstants_1.GameConstants.TILESIZE * 2, gameConstants_1.GameConstants.HEIGHT + gameConstants_1.GameConstants.TILESIZE * 2);
+            /*for (let x = 0; x < this.levelArray.length; x++) {
+              for (let y = 0; y < this.levelArray[0].length; y++) {
+                if (this.softVisibilityArray[x][y] > 0 && !(this.levelArray[x][y] instanceof Wall)) {
+                  if (this.levelArray[x][y] instanceof Door) {
+                    Game.ctx.globalAlpha = shadingAlpha;
+                    Game.ctx.fillStyle = "#400a0e";
+                    Game.ctx.fillRect(
+                      x * GameConstants.TILESIZE,
+                      (y - 1) * GameConstants.TILESIZE,
+                      GameConstants.TILESIZE,
+                      GameConstants.TILESIZE
+                    );
+                    Game.ctx.fillStyle = "#000000";
+                    Game.ctx.fillRect(
+                      x * GameConstants.TILESIZE,
+                      (y - 1) * GameConstants.TILESIZE,
+                      GameConstants.TILESIZE,
+                      GameConstants.TILESIZE
+                    );
+                  }
+                  if (this.levelArray[x][y] instanceof BottomDoor) {
+                    Game.ctx.globalAlpha = shadingAlpha;
+                    Game.ctx.fillStyle = "#400a0e";
+                    Game.ctx.fillRect(
+                      x * GameConstants.TILESIZE,
+                      (y + 1) * GameConstants.TILESIZE,
+                      GameConstants.TILESIZE,
+                      GameConstants.TILESIZE
+                    );
+                    Game.ctx.fillStyle = "#000000";
+                    Game.ctx.fillRect(
+                      x * GameConstants.TILESIZE,
+                      (y + 1) * GameConstants.TILESIZE,
+                      GameConstants.TILESIZE,
+                      GameConstants.TILESIZE
+                    );
+                  }
+                  Game.ctx.globalAlpha = shadingAlpha;
+                  Game.ctx.fillStyle = "#400a0e";
+                  Game.ctx.fillRect(
+                    x * GameConstants.TILESIZE,
+                    y * GameConstants.TILESIZE,
+                    GameConstants.TILESIZE,
+                    GameConstants.TILESIZE
+                  );
+                  Game.ctx.fillStyle = "#000000";
+                  Game.ctx.fillRect(
+                    x * GameConstants.TILESIZE,
+                    y * GameConstants.TILESIZE,
+                    GameConstants.TILESIZE,
+                    GameConstants.TILESIZE
+                  );
+                  Game.ctx.globalAlpha = 1.0;
                 }
-            }
+              }
+            }*/
+            game_1.Game.ctx.globalAlpha = 1.0;
+            game_1.Game.ctx.globalCompositeOperation = "source-over";
             for (var _h = 0, _j = _this.enemies; _h < _j.length; _h++) {
                 var e = _j[_h];
                 e.drawTopLayer(); // health bars
@@ -4921,7 +4983,7 @@ var Level = /** @class */ (function () {
         for (var i = 0; i < numBlocks; i++) {
             var blockW = Math.min(game_1.Game.randTable([2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 9]), this.width - 2);
             var blockH = Math.min(blockW + game_1.Game.rand(-1, 1), this.height - 3);
-            var x = game_1.Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 1);
+            var x = game_1.Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 2);
             var y = game_1.Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2);
             for (var xx = x; xx < x + blockW; xx++) {
                 for (var yy = y; yy < y + blockH; yy++) {
@@ -6931,7 +6993,8 @@ exports.Weapon = Weapon;
 
 
 /***/ }),
-/* 72 */
+/* 72 */,
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6952,40 +7015,69 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var weapon_1 = __webpack_require__(71);
 var sound_1 = __webpack_require__(6);
-var slashParticle_1 = __webpack_require__(41);
 var crate_1 = __webpack_require__(28);
 var barrel_1 = __webpack_require__(29);
-var Spear = /** @class */ (function (_super) {
-    __extends(Spear, _super);
-    function Spear(game) {
+var genericParticle_1 = __webpack_require__(3);
+var Shotgun = /** @class */ (function (_super) {
+    __extends(Shotgun, _super);
+    function Shotgun(game) {
         var _this = _super.call(this, game) || this;
         _this.weaponMove = function (newX, newY) {
             var newX2 = 2 * newX - _this.game.player.x;
             var newY2 = 2 * newY - _this.game.player.y;
+            var newX3 = 3 * newX - 2 * _this.game.player.x;
+            var newY3 = 3 * newY - 2 * _this.game.player.y;
             var flag = false;
+            var range = 3;
+            if (!_this.game.level.tileInside(newX, newY) || _this.game.level.levelArray[newX][newY].isSolid())
+                return true;
+            else if (!_this.game.level.tileInside(newX2, newY2) ||
+                _this.game.level.levelArray[newX2][newY2].isSolid())
+                range = 1;
+            else if (!_this.game.level.tileInside(newX3, newY3) ||
+                _this.game.level.levelArray[newX3][newY3].isSolid())
+                range = 2;
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
-                if (!(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel) &&
-                    ((e.x === newX && e.y === newY) || (e.x === newX2 && e.y === newY2))) {
-                    e.hurt(1);
-                    flag = true;
+                if (!(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel) && e.destroyable) {
+                    if (e.x === newX && e.y === newY && range >= 1) {
+                        e.hurt(1);
+                        flag = true;
+                    }
+                    else if (e.x === newX2 && e.y === newY2 && range >= 2) {
+                        e.hurt(1);
+                        flag = true;
+                    }
+                    else if (e.x === newX3 && e.y === newY3 && range >= 3) {
+                        e.hurt(0.5);
+                        flag = true;
+                    }
                 }
             }
+            var targetX = newX3;
+            var targetY = newY3;
             if (flag) {
                 sound_1.Sound.hit();
                 _this.game.player.drawX = 0.5 * (_this.game.player.x - newX);
                 _this.game.player.drawY = 0.5 * (_this.game.player.y - newY);
-                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX, newY));
-                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX2, newY2));
+                genericParticle_1.GenericParticle.shotgun(_this.game.level, _this.game.player.x + 0.5, _this.game.player.y, targetX + 0.5, targetY, "black");
+                genericParticle_1.GenericParticle.shotgun(_this.game.level, _this.game.player.x + 0.5, _this.game.player.y, targetX + 0.5, targetY, "white");
+                var gp = new genericParticle_1.GenericParticle(_this.game.level, 0.5 * (newX + _this.game.player.x) + 0.5, 0.5 * (newY + _this.game.player.y) + 0.5, 0, 0.75, 0, 0, 0, "white", 0);
+                gp.expirationTimer = 2;
+                _this.game.level.particles.push(gp);
+                //this.game.level.particles.push(new SlashParticle(newX, newY));
+                //this.game.level.particles.push(new SlashParticle(newX2, newY2));
+                //this.game.level.particles.push(new SlashParticle(newX3, newY3));
+                _this.game.level.tick();
                 _this.game.shakeScreen(10 * _this.game.player.drawX, 10 * _this.game.player.drawY);
             }
             return !flag;
         };
         return _this;
     }
-    return Spear;
+    return Shotgun;
 }(weapon_1.Weapon));
-exports.Spear = Spear;
+exports.Shotgun = Shotgun;
 
 
 /***/ })

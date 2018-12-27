@@ -14,7 +14,12 @@ export class Dagger extends Weapon {
   weaponMove = (newX: number, newY: number): boolean => {
     let flag = false;
     for (let e of this.game.level.enemies) {
-      if (!(e instanceof Crate || e instanceof Barrel) && e.x === newX && e.y === newY) {
+      if (
+        e.destroyable &&
+        !(e instanceof Crate || e instanceof Barrel) &&
+        e.x === newX &&
+        e.y === newY
+      ) {
         e.hurt(1);
         flag = true;
       }

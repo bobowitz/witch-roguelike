@@ -62,7 +62,7 @@ export class SkullEnemy extends Enemy {
         this.skipNextTurns--;
         return;
       }
-      if (this.health === 1) {
+      if (this.health <= 1) {
         this.ticksSinceFirstHit++;
         if (this.ticksSinceFirstHit >= this.REGEN_TICKS) {
           this.health = 2;
@@ -128,7 +128,7 @@ export class SkullEnemy extends Enemy {
     if (!this.dead) {
       this.tileX = 5;
       this.tileY = 8;
-      if (this.health === 1) {
+      if (this.health <= 1) {
         this.tileX = 3;
         this.tileY = 0;
         if (this.ticksSinceFirstHit >= 3) {
@@ -144,8 +144,7 @@ export class SkullEnemy extends Enemy {
 
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      if (this.health === 2 && this.doneMoving() && this.game.player.doneMoving())
-        this.facePlayer();
+      if (this.health > 1 && this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
       Game.drawMob(
