@@ -16,6 +16,7 @@ import { GenericParticle } from "../particle/genericParticle";
 import { Coin } from "../item/coin";
 
 export class SkullEnemy extends Enemy {
+  frame: number;
   ticks: number;
   seenPlayer: boolean;
   ticksSinceFirstHit: number;
@@ -27,10 +28,11 @@ export class SkullEnemy extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
     this.ticks = 0;
+    this.frame = 0;
     this.health = 2;
     this.maxHealth = 2;
-    this.tileX = 2;
-    this.tileY = 0;
+    this.tileX = 5;
+    this.tileY = 8;
     this.seenPlayer = true;
     this.ticksSinceFirstHit = 0;
     this.flashingFrame = 0;
@@ -124,18 +126,21 @@ export class SkullEnemy extends Enemy {
 
   draw = () => {
     if (!this.dead) {
-      this.tileX = 2;
+      this.tileX = 5;
+      this.tileY = 8;
       if (this.health === 1) {
         this.tileX = 3;
+        this.tileY = 0;
         if (this.ticksSinceFirstHit >= 3) {
           this.flashingFrame += 0.1;
           if (Math.floor(this.flashingFrame) % 2 === 0) {
             this.tileX = 2;
-          } else {
-            this.tileX = 3;
           }
         }
       }
+
+      this.frame += 0.1;
+      if (this.frame >= 4) this.frame = 0;
 
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
@@ -144,7 +149,7 @@ export class SkullEnemy extends Enemy {
       if (this.hasShadow)
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
       Game.drawMob(
-        this.tileX,
+        this.tileX + (this.tileX === 5 ? Math.floor(this.frame) : 0),
         this.tileY + this.direction * 2,
         1,
         2,

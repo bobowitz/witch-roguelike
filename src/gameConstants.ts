@@ -1,7 +1,7 @@
 import { LevelConstants } from "./levelConstants";
 
 export class GameConstants {
-  static readonly VERSION = "v0.3.1";
+  static readonly VERSION = "v0.3.2";
 
   static readonly FPS = 60;
 

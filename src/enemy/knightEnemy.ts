@@ -16,16 +16,18 @@ import { Coin } from "../item/coin";
 export class KnightEnemy extends Enemy {
   moves: Array<astar.AStarData>;
   ticks: number;
+  frame: number;
   seenPlayer: boolean;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
     this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
+    this.frame = 0;
     this.health = 2;
     this.maxHealth = 2;
-    this.tileX = 4;
-    this.tileY = 0;
+    this.tileX = 9;
+    this.tileY = 8;
     this.seenPlayer = true;
     this.deathParticleColor = "#ffffff";
   }
@@ -41,10 +43,12 @@ export class KnightEnemy extends Enemy {
         return;
       }
       this.ticks++;
-      this.tileX = 5;
+      this.tileX = 9;
+      this.tileY = 8;
       if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
         if (this.ticks % 2 === 0) {
           this.tileX = 4;
+          this.tileY = 0;
           // visible to player, chase them
 
           // now that we've seen the player, we can keep chasing them even if we lose line of sight
@@ -107,16 +111,19 @@ export class KnightEnemy extends Enemy {
     if (!this.dead) {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
+
+      this.frame += 0.1;
+      if (this.frame >= 4) this.frame = 0;
       if (this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
       Game.drawMob(
-        this.tileX,
+        this.tileX + (this.tileX === 4 ? 0 : Math.floor(this.frame)),
         this.tileY + this.direction * 2,
         1,
         2,
         this.x - this.drawX,
-        this.y - 1.5 - this.drawY,
+        this.y - 1.5 - this.drawY + (this.tileX === 4 ? 0.1875 : 0),
         1,
         2,
         this.isShaded()

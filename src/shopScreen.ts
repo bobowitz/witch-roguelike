@@ -65,9 +65,11 @@ export class ShopScreen {
     s.item = new Coal(this.game.level, 0, 0);
     s.description = s.item.getDescription();
     s.price = 1;
+    this.shopData.sellItems.push(s);
     s.item = new Gold(this.game.level, 0, 0);
     s.description = s.item.getDescription();
     s.price = 10;
+    this.shopData.sellItems.push(s);
     s.item = new Gem(this.game.level, 0, 0);
     s.description = s.item.getDescription();
     s.price = 100;

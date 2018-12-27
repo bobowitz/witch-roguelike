@@ -36,6 +36,7 @@ export class Player {
   h: number;
   drawX: number;
   drawY: number;
+  frame: number;
   direction: PlayerDirection;
   game: Game;
   flashing: boolean;
@@ -60,6 +61,8 @@ export class Player {
     this.y = y;
     this.w = 1;
     this.h = 1;
+
+    this.frame = 0;
 
     this.direction = PlayerDirection.UP;
 
@@ -383,18 +386,20 @@ export class Player {
   };
 
   drawPlayerSprite = () => {
-    Game.drawMob(1, this.direction * 2, 1, 2, this.x - this.drawX, this.y - 1.5 - this.drawY, 1, 2);
+    this.frame += 0.1;
+    if (this.frame >= 4) this.frame = 0;
+    Game.drawMob(
+      1 + Math.floor(this.frame),
+      8 + this.direction * 2,
+      1,
+      2,
+      this.x - this.drawX,
+      this.y - 1.5 - this.drawY,
+      1,
+      2
+    );
     if (this.inventory.getArmor() && this.inventory.getArmor().health > 0) {
-      Game.drawMob(
-        1,
-        8 + this.direction * 2,
-        1,
-        2,
-        this.x - this.drawX,
-        this.y - 1.5 - this.drawY,
-        1,
-        2
-      );
+      // TODO draw armor
     }
   };
 

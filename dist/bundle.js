@@ -390,7 +390,7 @@ var levelConstants_1 = __webpack_require__(5);
 var GameConstants = /** @class */ (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.3.1";
+    GameConstants.VERSION = "v0.3.2";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -2266,36 +2266,39 @@ var SkullEnemy = /** @class */ (function (_super) {
         };
         _this.draw = function () {
             if (!_this.dead) {
-                _this.tileX = 2;
+                _this.tileX = 5;
+                _this.tileY = 8;
                 if (_this.health === 1) {
                     _this.tileX = 3;
+                    _this.tileY = 0;
                     if (_this.ticksSinceFirstHit >= 3) {
                         _this.flashingFrame += 0.1;
                         if (Math.floor(_this.flashingFrame) % 2 === 0) {
                             _this.tileX = 2;
                         }
-                        else {
-                            _this.tileX = 3;
-                        }
                     }
                 }
+                _this.frame += 0.1;
+                if (_this.frame >= 4)
+                    _this.frame = 0;
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
                 if (_this.health === 2 && _this.doneMoving() && _this.game.player.doneMoving())
                     _this.facePlayer();
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
-                game_1.Game.drawMob(_this.tileX, _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
+                game_1.Game.drawMob(_this.tileX + (_this.tileX === 5 ? Math.floor(_this.frame) : 0), _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
             }
         };
         _this.dropLoot = function () {
             _this.game.level.items.push(new coin_1.Coin(_this.level, _this.x, _this.y));
         };
         _this.ticks = 0;
+        _this.frame = 0;
         _this.health = 2;
         _this.maxHealth = 2;
-        _this.tileX = 2;
-        _this.tileY = 0;
+        _this.tileX = 5;
+        _this.tileY = 8;
         _this.seenPlayer = true;
         _this.ticksSinceFirstHit = 0;
         _this.flashingFrame = 0;
@@ -2626,9 +2629,12 @@ var Player = /** @class */ (function () {
             }
         };
         this.drawPlayerSprite = function () {
-            game_1.Game.drawMob(1, _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+            _this.frame += 0.1;
+            if (_this.frame >= 4)
+                _this.frame = 0;
+            game_1.Game.drawMob(1 + Math.floor(_this.frame), 8 + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
             if (_this.inventory.getArmor() && _this.inventory.getArmor().health > 0) {
-                game_1.Game.drawMob(1, 8 + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2);
+                // TODO draw armor
             }
         };
         this.draw = function () {
@@ -2690,6 +2696,7 @@ var Player = /** @class */ (function () {
         this.y = y;
         this.w = 1;
         this.h = 1;
+        this.frame = 0;
         this.direction = PlayerDirection.UP;
         input_1.Input.iListener = this.iListener;
         input_1.Input.iUpListener = this.iUpListener;
@@ -3645,9 +3652,11 @@ var ShopScreen = /** @class */ (function () {
         s.item = new coal_1.Coal(this.game.level, 0, 0);
         s.description = s.item.getDescription();
         s.price = 1;
+        this.shopData.sellItems.push(s);
         s.item = new gold_1.Gold(this.game.level, 0, 0);
         s.description = s.item.getDescription();
         s.price = 10;
+        this.shopData.sellItems.push(s);
         s.item = new gem_1.Gem(this.game.level, 0, 0);
         s.description = s.item.getDescription();
         s.price = 100;
@@ -5138,10 +5147,12 @@ var KnightEnemy = /** @class */ (function (_super) {
                     return;
                 }
                 _this.ticks++;
-                _this.tileX = 5;
+                _this.tileX = 9;
+                _this.tileY = 8;
                 if (_this.seenPlayer || _this.level.softVisibilityArray[_this.x][_this.y] > 0) {
                     if (_this.ticks % 2 === 0) {
                         _this.tileX = 4;
+                        _this.tileY = 0;
                         // visible to player, chase them
                         // now that we've seen the player, we can keep chasing them even if we lose line of sight
                         _this.seenPlayer = true;
@@ -5200,11 +5211,14 @@ var KnightEnemy = /** @class */ (function (_super) {
             if (!_this.dead) {
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
+                _this.frame += 0.1;
+                if (_this.frame >= 4)
+                    _this.frame = 0;
                 if (_this.doneMoving() && _this.game.player.doneMoving())
                     _this.facePlayer();
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, _this.isShaded());
-                game_1.Game.drawMob(_this.tileX, _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, _this.isShaded());
+                game_1.Game.drawMob(_this.tileX + (_this.tileX === 4 ? 0 : Math.floor(_this.frame)), _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY + (_this.tileX === 4 ? 0.1875 : 0), 1, 2, _this.isShaded());
             }
         };
         _this.dropLoot = function () {
@@ -5212,10 +5226,11 @@ var KnightEnemy = /** @class */ (function (_super) {
         };
         _this.moves = new Array(); // empty move list
         _this.ticks = 0;
+        _this.frame = 0;
         _this.health = 2;
         _this.maxHealth = 2;
-        _this.tileX = 4;
-        _this.tileY = 0;
+        _this.tileX = 9;
+        _this.tileY = 8;
         _this.seenPlayer = true;
         _this.deathParticleColor = "#ffffff";
         return _this;
@@ -6682,7 +6697,7 @@ var EnemySpawnAnimation = /** @class */ (function (_super) {
             _this.enemy.skipNextTurns = 1;
             _this.level.enemies.push(_this.enemy);
             if (_this.level.game.player.x === _this.x && _this.level.game.player.y === _this.y) {
-                _this.level.game.player.hurt(1);
+                _this.level.game.player.hurt(0.5);
                 _this.level.game.player.move(_this.knockbackX, _this.knockbackY);
             }
             genericParticle_1.GenericParticle.spawnCluster(_this.level, _this.x + 0.5, _this.y + 0.5, "#ffffff");
