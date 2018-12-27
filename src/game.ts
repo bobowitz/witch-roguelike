@@ -53,7 +53,8 @@ export class Game {
 
   constructor() {
     window.addEventListener("load", () => {
-      Game.ctx = (document.getElementById("gameCanvas") as HTMLCanvasElement).getContext(
+      let canvas = document.getElementById("gameCanvas");
+      Game.ctx = (canvas as HTMLCanvasElement).getContext(
         "2d"
       ) as CanvasRenderingContext2D;
 
@@ -99,6 +100,34 @@ export class Game {
       setInterval(this.run, 1000.0 / GameConstants.FPS);
       this.onResize();
       window.addEventListener("resize", this.onResize);
+
+      document.body.addEventListener(
+        "touchstart",
+        function(e) {
+          if (e.target == canvas) {
+            e.preventDefault();
+          }
+        },
+        false
+      );
+      document.body.addEventListener(
+        "touchend",
+        function(e) {
+          if (e.target == Game.) {
+            e.preventDefault();
+          }
+        },
+        false
+      );
+      document.body.addEventListener(
+        "touchmove",
+        function(e) {
+          if (e.target == canvas) {
+            e.preventDefault();
+          }
+        },
+        false
+      );
     });
   }
 
