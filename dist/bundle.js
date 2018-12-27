@@ -2361,8 +2361,8 @@ var Player = /** @class */ (function () {
                 /*if (Input.isDown(Input.SPACE)) {
                   GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
                   this.healthBar.hurt();
-                  this.game.level.items.push(new Gem(this.game.level, this.x - 1, this.y));
-                } else*/
+                  this.game.level.items.push(new Coal(this.game.level, this.x - 1, this.y));
+                } else */
                 _this.tryMove(_this.x - 1, _this.y);
                 _this.direction = PlayerDirection.LEFT;
             }
@@ -3450,7 +3450,6 @@ var ShopScreen = /** @class */ (function () {
                         for (var _i = 0, _a = _this.shopData.sellItems; _i < _a.length; _i++) {
                             var sellItem = _a[_i];
                             if (sellItem.item.constructor === _this.game.player.inventory.items[i].constructor) {
-                                console.log(_this.game.player.inventory.items[i].stackCount);
                                 _this.game.player.inventory.addCoins(sellItem.price * _this.game.player.inventory.items[i].stackCount);
                                 _this.game.player.inventory.removeItem(_this.game.player.inventory.items[i]);
                             }
@@ -3653,10 +3652,12 @@ var ShopScreen = /** @class */ (function () {
         s.description = s.item.getDescription();
         s.price = 1;
         this.shopData.sellItems.push(s);
+        s = new shopData_1.SellItem();
         s.item = new gold_1.Gold(this.game.level, 0, 0);
         s.description = s.item.getDescription();
         s.price = 10;
         this.shopData.sellItems.push(s);
+        s = new shopData_1.SellItem();
         s.item = new gem_1.Gem(this.game.level, 0, 0);
         s.description = s.item.getDescription();
         s.price = 100;

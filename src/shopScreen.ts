@@ -66,10 +66,12 @@ export class ShopScreen {
     s.description = s.item.getDescription();
     s.price = 1;
     this.shopData.sellItems.push(s);
+    s = new SellItem();
     s.item = new Gold(this.game.level, 0, 0);
     s.description = s.item.getDescription();
     s.price = 10;
     this.shopData.sellItems.push(s);
+    s = new SellItem();
     s.item = new Gem(this.game.level, 0, 0);
     s.description = s.item.getDescription();
     s.price = 100;
@@ -163,7 +165,6 @@ export class ShopScreen {
         if (i >= 0 && i < this.game.player.inventory.items.length) {
           for (const sellItem of this.shopData.sellItems) {
             if (sellItem.item.constructor === this.game.player.inventory.items[i].constructor) {
-              console.log(this.game.player.inventory.items[i].stackCount);
               this.game.player.inventory.addCoins(
                 sellItem.price * this.game.player.inventory.items[i].stackCount
               );
