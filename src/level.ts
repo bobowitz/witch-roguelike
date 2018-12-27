@@ -132,8 +132,8 @@ export class Level {
     // Floor    Floor
     // Wall     Wall
 
-    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
-      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
+      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
         if (this.levelArray[x][y] instanceof Wall) {
           if (
             this.levelArray[x][y + 1] instanceof Floor ||
@@ -157,22 +157,22 @@ export class Level {
 
   private buildEmptyRoom() {
     // fill in outside walls
-    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
-      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
+      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
         this.levelArray[x][y] = new Wall(this, x, y, 1);
       }
     }
     // put in floors
-    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
-      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
+      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
         if (this.pointInside(x, y, this.roomX, this.roomY, this.width, this.height)) {
           this.levelArray[x][y] = new Floor(this, x, y);
         }
       }
     }
     // outer ring walls
-    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
-      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
+      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
         if (
           this.pointInside(x, y, this.roomX - 1, this.roomY - 1, this.width + 2, this.height + 2)
         ) {
@@ -680,22 +680,22 @@ export class Level {
     this.enemies = Array<Enemy>();
 
     this.levelArray = [];
-    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
+    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
       this.levelArray[x] = [];
     }
     this.visibilityArray = [];
     this.softVisibilityArray = [];
-    for (let x = 0; x < LevelConstants.SCREEN_W; x++) {
+    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
       this.visibilityArray[x] = [];
       this.softVisibilityArray[x] = [];
-      for (let y = 0; y < LevelConstants.SCREEN_H; y++) {
+      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
         this.visibilityArray[x][y] = 0;
         this.softVisibilityArray[x][y] = 0;
       }
     }
 
-    this.roomX = Math.floor(LevelConstants.SCREEN_W / 2 - this.width / 2);
-    this.roomY = Math.floor(LevelConstants.SCREEN_H / 2 - this.height / 2);
+    this.roomX = Math.floor(LevelConstants.ROOM_W / 2 - this.width / 2);
+    this.roomY = Math.floor(LevelConstants.ROOM_H / 2 - this.height / 2);
 
     this.upLadder = null;
 
@@ -1130,14 +1130,12 @@ export class Level {
       if (e.y > this.game.player.y) e.draw();
     }
 
-    for (const e of this.enemies) {
-      e.drawTopLayer(); // health bars
-    }
-
     this.particles = this.particles.filter(x => !x.dead);
     for (const p of this.particles) {
       p.draw();
     }
+
+    let shadingAlpha = Math.min(0.8, 0.2 * this.depth);
 
     // D I T H E R E D     S H A D I N G
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
@@ -1151,6 +1149,68 @@ export class Level {
 
     for (const i of this.items) {
       if (i.y <= this.game.player.y) i.drawTopLayer();
+    }
+
+    // LEVEL SHADING
+    for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
+      for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
+        if (this.softVisibilityArray[x][y] > 0 && !(this.levelArray[x][y] instanceof Wall)) {
+          if (this.levelArray[x][y] instanceof Door) {
+            Game.ctx.globalAlpha = shadingAlpha;
+            Game.ctx.fillStyle = "#400a0e";
+            Game.ctx.fillRect(
+              x * GameConstants.TILESIZE,
+              (y - 1) * GameConstants.TILESIZE,
+              GameConstants.TILESIZE,
+              GameConstants.TILESIZE
+            );
+            Game.ctx.fillStyle = "#000000";
+            Game.ctx.fillRect(
+              x * GameConstants.TILESIZE,
+              (y - 1) * GameConstants.TILESIZE,
+              GameConstants.TILESIZE,
+              GameConstants.TILESIZE
+            );
+          }
+          if (this.levelArray[x][y] instanceof BottomDoor) {
+            Game.ctx.globalAlpha = shadingAlpha;
+            Game.ctx.fillStyle = "#400a0e";
+            Game.ctx.fillRect(
+              x * GameConstants.TILESIZE,
+              (y + 1) * GameConstants.TILESIZE,
+              GameConstants.TILESIZE,
+              GameConstants.TILESIZE
+            );
+            Game.ctx.fillStyle = "#000000";
+            Game.ctx.fillRect(
+              x * GameConstants.TILESIZE,
+              (y + 1) * GameConstants.TILESIZE,
+              GameConstants.TILESIZE,
+              GameConstants.TILESIZE
+            );
+          }
+          Game.ctx.globalAlpha = shadingAlpha;
+          Game.ctx.fillStyle = "#400a0e";
+          Game.ctx.fillRect(
+            x * GameConstants.TILESIZE,
+            y * GameConstants.TILESIZE,
+            GameConstants.TILESIZE,
+            GameConstants.TILESIZE
+          );
+          Game.ctx.fillStyle = "#000000";
+          Game.ctx.fillRect(
+            x * GameConstants.TILESIZE,
+            y * GameConstants.TILESIZE,
+            GameConstants.TILESIZE,
+            GameConstants.TILESIZE
+          );
+          Game.ctx.globalAlpha = 1.0;
+        }
+      }
+    }
+
+    for (const e of this.enemies) {
+      e.drawTopLayer(); // health bars
     }
 
     // draw over dithered shading

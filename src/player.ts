@@ -22,6 +22,9 @@ import { EmeraldResource } from "./enemy/emeraldResource";
 import { Gem } from "./item/gem";
 import { ShopScreen } from "./shopScreen";
 import { Coal } from "./item/coal";
+import { Weapon } from "./weapon/weapon";
+import { Dagger } from "./weapon/dagger";
+import { Spear } from "./weapon/spear";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -54,6 +57,7 @@ export class Player {
   sightRadius: number;
   guiHeartFrame: number;
   map: Map;
+  weapon: Weapon;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -96,6 +100,7 @@ export class Player {
     this.sightRadius = 5; // maybe can be manipulated by items? e.g. better torch
 
     this.map = new Map(this.game);
+    this.weapon = new Spear(this.game);
   }
 
   iListener = () => {
@@ -208,6 +213,11 @@ export class Player {
   };
 
   tryMove = (x: number, y: number) => {
+    if (!this.weapon.weaponMove(x, y)) {
+      this.game.level.tick();
+      return;
+    }
+
     for (let e of this.game.level.enemies) {
       if (this.tryCollide(e, x, y)) {
         if (e.pushable) {
@@ -278,18 +288,8 @@ export class Player {
           }
         } else {
           // if we're trying to hit an enemy, check if it's destroyable
-          if (e.destroyable) {
-            // and hurt it
-            e.hurt(1);
-            Sound.hit();
-            this.drawX = 0.5 * (this.x - e.x);
-            this.drawY = 0.5 * (this.y - e.y);
-            this.game.level.particles.push(new SlashParticle(e.x, e.y));
-            this.game.level.tick();
-            this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
-            return;
-          } else if (e.interactable) {
-            e.interact();
+          if (!e.dead) {
+            if (e.interactable) e.interact();
             return;
           }
         }
@@ -449,11 +449,11 @@ export class Player {
           if (i == Math.floor(this.health) && (this.health * 2) % 2 == 1) {
             // draw half heart
 
-            Game.drawFX(4, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
+            Game.drawFX(4, 2, 1, 1, i, LevelConstants.ROOM_H - 1, 1, 1);
           } else {
-            Game.drawFX(3, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
+            Game.drawFX(3, 2, 1, 1, i, LevelConstants.ROOM_H - 1, 1, 1);
           }
-        } else Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
+        } else Game.drawFX(frame, 2, 1, 1, i, LevelConstants.ROOM_H - 1, 1, 1);
       }
       if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(this.maxHealth);
     } else {

@@ -2441,6 +2441,7 @@ var map_1 = __webpack_require__(40);
 var slashParticle_1 = __webpack_require__(41);
 var healthbar_1 = __webpack_require__(24);
 var shopScreen_1 = __webpack_require__(42);
+var spear_1 = __webpack_require__(72);
 var PlayerDirection;
 (function (PlayerDirection) {
     PlayerDirection[PlayerDirection["DOWN"] = 0] = "DOWN";
@@ -2558,6 +2559,10 @@ var Player = /** @class */ (function () {
             return true;
         };
         this.tryMove = function (x, y) {
+            if (!_this.weapon.weaponMove(x, y)) {
+                _this.game.level.tick();
+                return;
+            }
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
                 if (_this.tryCollide(e, x, y)) {
@@ -2632,19 +2637,9 @@ var Player = /** @class */ (function () {
                     }
                     else {
                         // if we're trying to hit an enemy, check if it's destroyable
-                        if (e.destroyable) {
-                            // and hurt it
-                            e.hurt(1);
-                            sound_1.Sound.hit();
-                            _this.drawX = 0.5 * (_this.x - e.x);
-                            _this.drawY = 0.5 * (_this.y - e.y);
-                            _this.game.level.particles.push(new slashParticle_1.SlashParticle(e.x, e.y));
-                            _this.game.level.tick();
-                            _this.game.shakeScreen(10 * _this.drawX, 10 * _this.drawY);
-                            return;
-                        }
-                        else if (e.interactable) {
-                            e.interact();
+                        if (!e.dead) {
+                            if (e.interactable)
+                                e.interact();
                             return;
                         }
                     }
@@ -2772,14 +2767,14 @@ var Player = /** @class */ (function () {
                     if (i >= Math.floor(_this.health)) {
                         if (i == Math.floor(_this.health) && (_this.health * 2) % 2 == 1) {
                             // draw half heart
-                            game_1.Game.drawFX(4, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
+                            game_1.Game.drawFX(4, 2, 1, 1, i, levelConstants_1.LevelConstants.ROOM_H - 1, 1, 1);
                         }
                         else {
-                            game_1.Game.drawFX(3, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
+                            game_1.Game.drawFX(3, 2, 1, 1, i, levelConstants_1.LevelConstants.ROOM_H - 1, 1, 1);
                         }
                     }
                     else
-                        game_1.Game.drawFX(frame, 2, 1, 1, i, levelConstants_1.LevelConstants.SCREEN_H - 1, 1, 1);
+                        game_1.Game.drawFX(frame, 2, 1, 1, i, levelConstants_1.LevelConstants.ROOM_H - 1, 1, 1);
                 }
                 if (_this.inventory.getArmor())
                     _this.inventory.getArmor().drawGUI(_this.maxHealth);
@@ -2826,6 +2821,7 @@ var Player = /** @class */ (function () {
         this.missProb = 0.1;
         this.sightRadius = 5; // maybe can be manipulated by items? e.g. better torch
         this.map = new map_1.Map(this.game);
+        this.weapon = new spear_1.Spear(this.game);
     }
     return Player;
 }());
@@ -4691,15 +4687,12 @@ var Level = /** @class */ (function () {
                 if (e.y > _this.game.player.y)
                     e.draw();
             }
-            for (var _d = 0, _e = _this.enemies; _d < _e.length; _d++) {
-                var e = _e[_d];
-                e.drawTopLayer(); // health bars
-            }
             _this.particles = _this.particles.filter(function (x) { return !x.dead; });
-            for (var _f = 0, _g = _this.particles; _f < _g.length; _f++) {
-                var p = _g[_f];
+            for (var _d = 0, _e = _this.particles; _d < _e.length; _d++) {
+                var p = _e[_d];
                 p.draw();
             }
+            var shadingAlpha = Math.min(0.8, 0.2 * _this.depth);
             // D I T H E R E D     S H A D I N G
             for (var x = _this.roomX - 1; x < _this.roomX + _this.width + 1; x++) {
                 for (var y = _this.roomY - 1; y < _this.roomY + _this.height + 1; y++) {
@@ -4707,10 +4700,41 @@ var Level = /** @class */ (function () {
                     game_1.Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
                 }
             }
-            for (var _h = 0, _j = _this.items; _h < _j.length; _h++) {
-                var i = _j[_h];
+            for (var _f = 0, _g = _this.items; _f < _g.length; _f++) {
+                var i = _g[_f];
                 if (i.y <= _this.game.player.y)
                     i.drawTopLayer();
+            }
+            // LEVEL SHADING
+            for (var x = _this.roomX - 1; x < _this.roomX + _this.width + 1; x++) {
+                for (var y = _this.roomY - 1; y < _this.roomY + _this.height + 1; y++) {
+                    if (_this.softVisibilityArray[x][y] > 0 && !(_this.levelArray[x][y] instanceof wall_1.Wall)) {
+                        if (_this.levelArray[x][y] instanceof door_1.Door) {
+                            game_1.Game.ctx.globalAlpha = shadingAlpha;
+                            game_1.Game.ctx.fillStyle = "#400a0e";
+                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                            game_1.Game.ctx.fillStyle = "#000000";
+                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y - 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                        }
+                        if (_this.levelArray[x][y] instanceof bottomDoor_1.BottomDoor) {
+                            game_1.Game.ctx.globalAlpha = shadingAlpha;
+                            game_1.Game.ctx.fillStyle = "#400a0e";
+                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y + 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                            game_1.Game.ctx.fillStyle = "#000000";
+                            game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, (y + 1) * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                        }
+                        game_1.Game.ctx.globalAlpha = shadingAlpha;
+                        game_1.Game.ctx.fillStyle = "#400a0e";
+                        game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                        game_1.Game.ctx.fillStyle = "#000000";
+                        game_1.Game.ctx.fillRect(x * gameConstants_1.GameConstants.TILESIZE, y * gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE, gameConstants_1.GameConstants.TILESIZE);
+                        game_1.Game.ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+            for (var _h = 0, _j = _this.enemies; _h < _j.length; _h++) {
+                var e = _j[_h];
+                e.drawTopLayer(); // health bars
             }
             // draw over dithered shading
             for (var x = 0; x < _this.levelArray.length; x++) {
@@ -4745,21 +4769,21 @@ var Level = /** @class */ (function () {
         this.doors = Array();
         this.enemies = Array();
         this.levelArray = [];
-        for (var x_2 = 0; x_2 < levelConstants_1.LevelConstants.SCREEN_W; x_2++) {
+        for (var x_2 = 0; x_2 < levelConstants_1.LevelConstants.ROOM_W; x_2++) {
             this.levelArray[x_2] = [];
         }
         this.visibilityArray = [];
         this.softVisibilityArray = [];
-        for (var x_3 = 0; x_3 < levelConstants_1.LevelConstants.SCREEN_W; x_3++) {
+        for (var x_3 = 0; x_3 < levelConstants_1.LevelConstants.ROOM_W; x_3++) {
             this.visibilityArray[x_3] = [];
             this.softVisibilityArray[x_3] = [];
-            for (var y_2 = 0; y_2 < levelConstants_1.LevelConstants.SCREEN_H; y_2++) {
+            for (var y_2 = 0; y_2 < levelConstants_1.LevelConstants.ROOM_H; y_2++) {
                 this.visibilityArray[x_3][y_2] = 0;
                 this.softVisibilityArray[x_3][y_2] = 0;
             }
         }
-        this.roomX = Math.floor(levelConstants_1.LevelConstants.SCREEN_W / 2 - this.width / 2);
-        this.roomY = Math.floor(levelConstants_1.LevelConstants.SCREEN_H / 2 - this.height / 2);
+        this.roomX = Math.floor(levelConstants_1.LevelConstants.ROOM_W / 2 - this.width / 2);
+        this.roomY = Math.floor(levelConstants_1.LevelConstants.ROOM_H / 2 - this.height / 2);
         this.upLadder = null;
         this.name = "";
         switch (this.type) {
@@ -4846,8 +4870,8 @@ var Level = /** @class */ (function () {
         // Wall  -> Floor
         // Floor    Floor
         // Wall     Wall
-        for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
-            for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
+        for (var x = 0; x < levelConstants_1.LevelConstants.ROOM_W; x++) {
+            for (var y = 0; y < levelConstants_1.LevelConstants.ROOM_H; y++) {
                 if (this.levelArray[x][y] instanceof wall_1.Wall) {
                     if (this.levelArray[x][y + 1] instanceof floor_1.Floor ||
                         this.levelArray[x][y + 1] instanceof spawnfloor_1.SpawnFloor) {
@@ -4867,22 +4891,22 @@ var Level = /** @class */ (function () {
     };
     Level.prototype.buildEmptyRoom = function () {
         // fill in outside walls
-        for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
-            for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
+        for (var x = 0; x < levelConstants_1.LevelConstants.ROOM_W; x++) {
+            for (var y = 0; y < levelConstants_1.LevelConstants.ROOM_H; y++) {
                 this.levelArray[x][y] = new wall_1.Wall(this, x, y, 1);
             }
         }
         // put in floors
-        for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
-            for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
+        for (var x = 0; x < levelConstants_1.LevelConstants.ROOM_W; x++) {
+            for (var y = 0; y < levelConstants_1.LevelConstants.ROOM_H; y++) {
                 if (this.pointInside(x, y, this.roomX, this.roomY, this.width, this.height)) {
                     this.levelArray[x][y] = new floor_1.Floor(this, x, y);
                 }
             }
         }
         // outer ring walls
-        for (var x = 0; x < levelConstants_1.LevelConstants.SCREEN_W; x++) {
-            for (var y = 0; y < levelConstants_1.LevelConstants.SCREEN_H; y++) {
+        for (var x = 0; x < levelConstants_1.LevelConstants.ROOM_W; x++) {
+            for (var y = 0; y < levelConstants_1.LevelConstants.ROOM_H; y++) {
                 if (this.pointInside(x, y, this.roomX - 1, this.roomY - 1, this.width + 2, this.height + 2)) {
                     if (!this.pointInside(x, y, this.roomX, this.roomY, this.width, this.height)) {
                         this.levelArray[x][y] = new wall_1.Wall(this, x, y, 0);
@@ -6884,6 +6908,85 @@ var ShopTable = /** @class */ (function (_super) {
     return ShopTable;
 }(enemy_1.Enemy));
 exports.ShopTable = ShopTable;
+
+
+/***/ }),
+/* 70 */,
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Weapon = /** @class */ (function () {
+    function Weapon(game) {
+        this.weaponMove = function (newX, newY) {
+            return true;
+        };
+        this.game = game;
+    }
+    return Weapon;
+}());
+exports.Weapon = Weapon;
+
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var weapon_1 = __webpack_require__(71);
+var sound_1 = __webpack_require__(6);
+var slashParticle_1 = __webpack_require__(41);
+var crate_1 = __webpack_require__(28);
+var barrel_1 = __webpack_require__(29);
+var Spear = /** @class */ (function (_super) {
+    __extends(Spear, _super);
+    function Spear(game) {
+        var _this = _super.call(this, game) || this;
+        _this.weaponMove = function (newX, newY) {
+            var newX2 = 2 * newX - _this.game.player.x;
+            var newY2 = 2 * newY - _this.game.player.y;
+            var flag = false;
+            for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                if (!(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel) &&
+                    ((e.x === newX && e.y === newY) || (e.x === newX2 && e.y === newY2))) {
+                    e.hurt(1);
+                    flag = true;
+                }
+            }
+            if (flag) {
+                sound_1.Sound.hit();
+                _this.game.player.drawX = 0.5 * (_this.game.player.x - newX);
+                _this.game.player.drawY = 0.5 * (_this.game.player.y - newY);
+                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX, newY));
+                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX2, newY2));
+                _this.game.level.tick();
+                _this.game.shakeScreen(10 * _this.game.player.drawX, 10 * _this.game.player.drawY);
+            }
+            return !flag;
+        };
+        return _this;
+    }
+    return Spear;
+}(weapon_1.Weapon));
+exports.Spear = Spear;
 
 
 /***/ })
