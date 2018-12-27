@@ -81,7 +81,6 @@ export class Game {
       Game.mobsetShadow.src = "res/mobsetShadow.png";
 
       Game.scale = 1;
-      this.onResize();
 
       Sound.loadSounds();
       Sound.playMusic(); // loops forever

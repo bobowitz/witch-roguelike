@@ -277,7 +277,6 @@ var Game = /** @class */ (function () {
             Game.mobsetShadow = new Image();
             Game.mobsetShadow.src = "res/mobsetShadow.png";
             Game.scale = 1;
-            _this.onResize();
             sound_1.Sound.loadSounds();
             sound_1.Sound.playMusic(); // loops forever
             _this.player = new player_1.Player(_this, 0, 0);
