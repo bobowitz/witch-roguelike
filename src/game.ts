@@ -98,7 +98,7 @@ export class Game {
       this.onResize();
       window.addEventListener("resize", this.onResize);
 
-      document.body.addEventListener(
+      document.addEventListener(
         "touchstart",
         function(e) {
           if (e.target == canvas) {
@@ -107,7 +107,7 @@ export class Game {
         },
         false
       );
-      document.body.addEventListener(
+      document.addEventListener(
         "touchend",
         function(e) {
           if (e.target == canvas) {
@@ -116,7 +116,7 @@ export class Game {
         },
         false
       );
-      document.body.addEventListener(
+      document.addEventListener(
         "touchmove",
         function(e) {
           if (e.target == canvas) {

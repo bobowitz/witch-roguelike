@@ -289,17 +289,17 @@ var Game = /** @class */ (function () {
             setInterval(_this.run, 1000.0 / gameConstants_1.GameConstants.FPS);
             _this.onResize();
             window.addEventListener("resize", _this.onResize);
-            document.body.addEventListener("touchstart", function (e) {
+            document.addEventListener("touchstart", function (e) {
                 if (e.target == canvas) {
                     e.preventDefault();
                 }
             }, false);
-            document.body.addEventListener("touchend", function (e) {
+            document.addEventListener("touchend", function (e) {
                 if (e.target == canvas) {
                     e.preventDefault();
                 }
             }, false);
-            document.body.addEventListener("touchmove", function (e) {
+            document.addEventListener("touchmove", function (e) {
                 if (e.target == canvas) {
                     e.preventDefault();
                 }
@@ -405,7 +405,7 @@ var levelConstants_1 = __webpack_require__(5);
 var GameConstants = /** @class */ (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.3.3";
+    GameConstants.VERSION = "v0.3.369";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
