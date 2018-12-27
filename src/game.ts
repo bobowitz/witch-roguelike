@@ -29,6 +29,7 @@ export class Game {
   transitioningLadder: any;
   screenShakeX: number;
   screenShakeY: number;
+  static scale;
   static tileset: HTMLImageElement;
   static objset: HTMLImageElement;
   static mobset: HTMLImageElement;
@@ -79,6 +80,9 @@ export class Game {
       Game.objsetShadow.src = "res/objsetShadow.png";
       Game.mobsetShadow = new Image();
       Game.mobsetShadow.src = "res/mobsetShadow.png";
+
+      Game.scale = 1;
+      this.onResize();
 
       Sound.loadSounds();
       Sound.playMusic(); // loops forever
@@ -168,10 +172,11 @@ export class Game {
   onResize = () => {
     let maxWidthScale = Math.floor(window.innerWidth / GameConstants.WIDTH);
     let maxHeightScale = Math.floor(window.innerHeight / GameConstants.HEIGHT);
-    let scale = Math.min(maxWidthScale, maxHeightScale);
+    Game.scale = Math.min(maxWidthScale, maxHeightScale);
+    console.log(Game.scale);
     Game.ctx.canvas.setAttribute(
       "style",
-      `width: ${GameConstants.WIDTH * scale}px; height: ${GameConstants.HEIGHT * scale}px;
+      `width: ${GameConstants.WIDTH * Game.scale}px; height: ${GameConstants.HEIGHT * Game.scale}px;
     display: block;
     margin: 0 auto;
   

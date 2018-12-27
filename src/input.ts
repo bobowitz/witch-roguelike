@@ -1,4 +1,5 @@
 import { GameConstants } from "./gameConstants";
+import { Game } from "./game";
 
 export const Input = {
   _pressed: {},
@@ -88,10 +89,7 @@ export const Input = {
       let rect = window.document.getElementById("gameCanvas").getBoundingClientRect();
       let x = event.clientX - rect.left;
       let y = event.clientY - rect.top;
-      Input.mouseLeftClickListener(
-        Math.floor(x / GameConstants.SCALE),
-        Math.floor(y / GameConstants.SCALE)
-      );
+      Input.mouseLeftClickListener(Math.floor(x / Game.scale), Math.floor(y / Game.scale));
     }
   },
 
@@ -100,8 +98,8 @@ export const Input = {
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
 
-    Input.mouseX = Math.floor(x / GameConstants.SCALE);
-    Input.mouseY = Math.floor(y / GameConstants.SCALE);
+    Input.mouseX = Math.floor(x / Game.scale);
+    Input.mouseY = Math.floor(y / Game.scale);
   },
 };
 window.addEventListener(
