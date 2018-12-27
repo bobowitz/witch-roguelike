@@ -54,9 +54,7 @@ export class Game {
   constructor() {
     window.addEventListener("load", () => {
       let canvas = document.getElementById("gameCanvas");
-      Game.ctx = (canvas as HTMLCanvasElement).getContext(
-        "2d"
-      ) as CanvasRenderingContext2D;
+      Game.ctx = (canvas as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
 
       Game.ctx.font = GameConstants.FONT_SIZE + "px PixelFont";
       Game.ctx.textBaseline = "top";
@@ -113,7 +111,7 @@ export class Game {
       document.body.addEventListener(
         "touchend",
         function(e) {
-          if (e.target == Game.) {
+          if (e.target == canvas) {
             e.preventDefault();
           }
         },
