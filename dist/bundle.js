@@ -2331,10 +2331,8 @@ var levelConstants_1 = __webpack_require__(5);
 var stats_1 = __webpack_require__(37);
 var chest_1 = __webpack_require__(21);
 var map_1 = __webpack_require__(40);
-var genericParticle_1 = __webpack_require__(3);
 var slashParticle_1 = __webpack_require__(41);
 var healthbar_1 = __webpack_require__(24);
-var gem_1 = __webpack_require__(9);
 var shopScreen_1 = __webpack_require__(42);
 var PlayerDirection;
 (function (PlayerDirection) {
@@ -2357,13 +2355,12 @@ var Player = /** @class */ (function () {
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
                 if (_this.shopScreen.isOpen)
                     _this.shopScreen.close();
-                if (input_1.Input.isDown(input_1.Input.SPACE)) {
-                    genericParticle_1.GenericParticle.spawnCluster(_this.game.level, _this.x - 1 + 0.5, _this.y + 0.5, "#ff00ff");
-                    _this.healthBar.hurt();
-                    _this.game.level.items.push(new gem_1.Gem(_this.game.level, _this.x - 1, _this.y));
-                }
-                else
-                    _this.tryMove(_this.x - 1, _this.y);
+                /*if (Input.isDown(Input.SPACE)) {
+                  GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
+                  this.healthBar.hurt();
+                  this.game.level.items.push(new Gem(this.game.level, this.x - 1, this.y));
+                } else*/
+                _this.tryMove(_this.x - 1, _this.y);
                 _this.direction = PlayerDirection.LEFT;
             }
         };

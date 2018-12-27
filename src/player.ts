@@ -102,11 +102,12 @@ export class Player {
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       if (this.shopScreen.isOpen) this.shopScreen.close();
 
-      if (Input.isDown(Input.SPACE)) {
+      /*if (Input.isDown(Input.SPACE)) {
         GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
         this.healthBar.hurt();
         this.game.level.items.push(new Gem(this.game.level, this.x - 1, this.y));
-      } else this.tryMove(this.x - 1, this.y);
+      } else*/
+      this.tryMove(this.x - 1, this.y);
       this.direction = PlayerDirection.LEFT;
     }
   };
