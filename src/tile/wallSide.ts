@@ -9,10 +9,10 @@ export class WallSide extends Tile {
     return true;
   };
   isOpaque = (): boolean => {
-    return true;
+    return false;
   };
 
   draw = () => {
-    Game.drawTile(0, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(0, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
   };
 }

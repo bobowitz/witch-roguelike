@@ -137,7 +137,7 @@ export class WizardEnemy extends Enemy {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
       if (this.hasShadow)
-        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
+        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, "black", this.shadeAmount());
       if (this.frame >= 0) {
         Game.drawMob(
           Math.floor(this.frame) + 6,
@@ -148,7 +148,7 @@ export class WizardEnemy extends Enemy {
           this.y - 1.5,
           1,
           2,
-          this.isShaded()
+          "black", this.shadeAmount()
         );
         this.frame += 0.4;
         if (this.frame > 11) this.frame = -1;
@@ -162,7 +162,7 @@ export class WizardEnemy extends Enemy {
           this.y - 1.5 - this.drawY,
           1,
           2,
-          this.isShaded()
+          "black", this.shadeAmount()
         );
       }
     }

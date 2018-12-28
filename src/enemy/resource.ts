@@ -36,7 +36,7 @@ export class Resource extends Enemy {
         this.y - 1 - this.drawY,
         1,
         2,
-        this.isShaded()
+        "black", this.shadeAmount()
       );
     }
   };

@@ -51,8 +51,8 @@ export class Button extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.isShaded());
-    if (this.pressed) Game.drawTile(18, 0, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
-    else Game.drawTile(17, 0, 1, 1, this.x, this.y, this.w, this.h, this.isShaded());
+    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
+    if (this.pressed) Game.drawTile(18, 0, 1, 1, this.x, this.y, this.w, this.h, "black", this.shadeAmount());
+    else Game.drawTile(17, 0, 1, 1, this.x, this.y, this.w, this.h, "black", this.shadeAmount());
   };
 }

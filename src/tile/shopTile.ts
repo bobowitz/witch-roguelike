@@ -22,6 +22,6 @@ export class ShopTile extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(this.drawX, this.drawY, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(this.drawX, this.drawY, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
   };
 }

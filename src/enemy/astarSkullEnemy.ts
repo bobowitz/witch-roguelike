@@ -61,7 +61,7 @@ export class AStarSkullEnemy extends Enemy {
           this.health = 2;
         }
       } else {
-        if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
+        if (this.seenPlayer || this.level.softVis[this.x][this.y] < 1) {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;
@@ -134,7 +134,18 @@ export class AStarSkullEnemy extends Enemy {
       if (this.health === 2 && this.doneMoving() && this.game.player.doneMoving())
         this.facePlayer();
       if (this.hasShadow)
-        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
+        Game.drawMob(
+          0,
+          0,
+          1,
+          1,
+          this.x - this.drawX,
+          this.y - this.drawY,
+          1,
+          1,
+          "black",
+          this.shadeAmount()
+        );
       Game.drawMob(
         this.tileX,
         this.tileY + this.direction * 2,
@@ -144,7 +155,8 @@ export class AStarSkullEnemy extends Enemy {
         this.y - 1.5 - this.drawY,
         1,
         2,
-        this.isShaded()
+        "black",
+        this.shadeAmount()
       );
     }
   };

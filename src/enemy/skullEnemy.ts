@@ -68,7 +68,7 @@ export class SkullEnemy extends Enemy {
           this.health = 2;
         }
       } else {
-        if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
+        if (this.seenPlayer || this.level.softVis[this.x][this.y] < 1) {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;
@@ -146,7 +146,18 @@ export class SkullEnemy extends Enemy {
       this.drawY += -0.5 * this.drawY;
       if (this.health > 1 && this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
       if (this.hasShadow)
-        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
+        Game.drawMob(
+          0,
+          0,
+          1,
+          1,
+          this.x - this.drawX,
+          this.y - this.drawY,
+          1,
+          1,
+          "black",
+          this.shadeAmount()
+        );
       Game.drawMob(
         this.tileX + (this.tileX === 5 ? Math.floor(this.frame) : 0),
         this.tileY + this.direction * 2,
@@ -156,7 +167,8 @@ export class SkullEnemy extends Enemy {
         this.y - 1.5 - this.drawY,
         1,
         2,
-        this.isShaded()
+        "black",
+        this.shadeAmount()
       );
     }
   };

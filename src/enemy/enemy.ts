@@ -118,8 +118,8 @@ export class Enemy {
     this.level.particles.push(new DeathParticle(this.x, this.y));
   };
 
-  isShaded = () => {
-    return this.level.softVisibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
+  shadeAmount = () => {
+    return this.level.softVis[this.x][this.y];
   };
 
   doneMoving = (): boolean => {
@@ -146,7 +146,7 @@ export class Enemy {
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
       if (this.hasShadow)
-        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
+        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, "black", this.shadeAmount());
       Game.drawMob(
         this.tileX,
         this.tileY + this.direction * 2,
@@ -156,7 +156,7 @@ export class Enemy {
         this.y - 1.5 - this.drawY,
         1,
         2,
-        this.isShaded()
+        "black", this.shadeAmount()
       );
     }
   };

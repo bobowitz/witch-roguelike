@@ -37,10 +37,10 @@ export class Chasm extends Tile {
   };
 
   draw = () => {
-    if (this.topEdge) Game.drawTile(22, 0, 1, 2, this.x, this.y, 1, 2, this.isShaded());
+    if (this.topEdge) Game.drawTile(22, 0, 1, 2, this.x, this.y, 1, 2, "black", this.shadeAmount());
   };
 
   drawUnderPlayer = () => {
-    Game.drawTile(this.tileX, this.tileY, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(this.tileX, this.tileY, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
   };
 }

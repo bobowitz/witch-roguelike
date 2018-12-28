@@ -48,7 +48,7 @@ export class EmeraldResource extends Resource {
         this.y - 1 - this.drawY,
         1,
         2,
-        this.isShaded()
+        "black", this.shadeAmount()
       );
     }
   };

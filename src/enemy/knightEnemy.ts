@@ -45,7 +45,7 @@ export class KnightEnemy extends Enemy {
       this.ticks++;
       this.tileX = 9;
       this.tileY = 8;
-      if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
+      if (this.seenPlayer || this.level.softVis[this.x][this.y] < 1) {
         if (this.ticks % 2 === 0) {
           this.tileX = 4;
           this.tileY = 0;
@@ -116,7 +116,18 @@ export class KnightEnemy extends Enemy {
       if (this.frame >= 4) this.frame = 0;
       if (this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
       if (this.hasShadow)
-        Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1, this.isShaded());
+        Game.drawMob(
+          0,
+          0,
+          1,
+          1,
+          this.x - this.drawX,
+          this.y - this.drawY,
+          1,
+          1,
+          "black",
+          this.shadeAmount()
+        );
       Game.drawMob(
         this.tileX + (this.tileX === 4 ? 0 : Math.floor(this.frame)),
         this.tileY + this.direction * 2,
@@ -126,7 +137,8 @@ export class KnightEnemy extends Enemy {
         this.y - 1.5 - this.drawY + (this.tileX === 4 ? 0.1875 : 0),
         1,
         2,
-        this.isShaded()
+        "black",
+        this.shadeAmount()
       );
     }
   };

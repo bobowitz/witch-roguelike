@@ -20,6 +20,6 @@ export class ShopTable extends Enemy {
   };
 
   draw = () => {
-    Game.drawTile(26, 0, 2, 2, this.x, this.y - 1, 2, 2, this.isShaded());
+    Game.drawTile(26, 0, 2, 2, this.x, this.y - 1, 2, 2, "black", this.shadeAmount());
   };
 }

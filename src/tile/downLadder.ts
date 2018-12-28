@@ -25,7 +25,7 @@ export class DownLadder extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(4, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(4, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
   };
 
   drawAbovePlayer = () => {};

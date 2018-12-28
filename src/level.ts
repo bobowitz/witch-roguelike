@@ -73,8 +73,8 @@ export class Level {
   x: number;
   y: number;
   levelArray: Tile[][];
-  softVisibilityArray: number[][];
-  visibilityArray: number[][]; // visibility is 0, 1, or 2 (0 = black, 2 = fully lit)
+  softVis: number[][]; // this is the one we use for drawing (includes smoothing)
+  vis: number[][]; // visibility is 0, 1, or 2 (0 = black, 2 = fully lit)
   enemies: Array<Enemy>;
   items: Array<Item>;
   doors: Array<any>; // (Door | BottomDoor) just a reference for mapping, still access through levelArray
@@ -687,14 +687,14 @@ export class Level {
     for (let x = 0; x < LevelConstants.ROOM_W; x++) {
       this.levelArray[x] = [];
     }
-    this.visibilityArray = [];
-    this.softVisibilityArray = [];
+    this.vis = [];
+    this.softVis = [];
     for (let x = 0; x < LevelConstants.ROOM_W; x++) {
-      this.visibilityArray[x] = [];
-      this.softVisibilityArray[x] = [];
+      this.vis[x] = [];
+      this.softVis[x] = [];
       for (let y = 0; y < LevelConstants.ROOM_H; y++) {
-        this.visibilityArray[x][y] = 0;
-        this.softVisibilityArray[x][y] = 0;
+        this.vis[x][y] = 1;
+        this.softVis[x][y] = 1;
       }
     }
 
@@ -906,24 +906,22 @@ export class Level {
   fadeLighting = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (Math.abs(this.softVisibilityArray[x][y] - this.visibilityArray[x][y]) >= 0.05) {
-          if (this.softVisibilityArray[x][y] < this.visibilityArray[x][y])
-            this.softVisibilityArray[x][y] += 0.1;
-          else if (this.softVisibilityArray[x][y] > this.visibilityArray[x][y])
-            this.softVisibilityArray[x][y] -= 0.05;
+        if (Math.abs(this.softVis[x][y] - this.vis[x][y]) >= 0.05) {
+          if (this.softVis[x][y] < this.vis[x][y]) this.softVis[x][y] += 0.05;
+          else if (this.softVis[x][y] > this.vis[x][y]) this.softVis[x][y] -= 0.05;
         }
-        if (this.softVisibilityArray[x][y] < 0.1) this.softVisibilityArray[x][y] = 0;
+        //if (this.softVis[x][y] < 0.05) this.softVis[x][y] = 0;
       }
     }
   };
 
   updateLighting = () => {
-    let oldVisibilityArray = [];
+    let oldVis = [];
     for (let x = 0; x < this.levelArray.length; x++) {
-      oldVisibilityArray[x] = [];
+      oldVis[x] = [];
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        oldVisibilityArray[x][y] = this.visibilityArray[x][y];
-        this.visibilityArray[x][y] = 0;
+        oldVis[x][y] = this.vis[x][y];
+        this.vis[x][y] = 1;
         //if (this.visibilityArray[x][y] > LevelConstants.MIN_VISIBILITY)
         //  this.visibilityArray[x][y] = 0;
       }
@@ -932,7 +930,7 @@ export class Level {
       this.castShadowsAtAngle(i, this.game.player.sightRadius - this.depth);
     }
     if (LevelConstants.SMOOTH_LIGHTING)
-      this.visibilityArray = this.blur3x3(this.visibilityArray, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
+      this.vis = this.blur3x3(this.vis, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
 
     /*for (let x = 0; x < this.visibilityArray.length; x++) {
       for (let y = 0; y < this.visibilityArray[0].length; y++) {
@@ -952,9 +950,8 @@ export class Level {
     let px = this.game.player.x + 0.5;
     let py = this.game.player.y + 0.5;
     let returnVal = 0;
-    let i = 0;
     let hitWall = false; // flag for if we already hit a wall. we'll keep scanning and see if there's more walls. if so, light them up!
-    for (; i < radius; i++) {
+    for (let i = 0; i < radius; i++) {
       if (
         Math.floor(px) < 0 ||
         Math.floor(px) >= this.levelArray.length ||
@@ -973,10 +970,11 @@ export class Level {
       }
 
       if (tile.isOpaque()) {
+        return i;
         if (!hitWall) returnVal = i;
         hitWall = true;
       }
-      this.visibilityArray[Math.floor(px)][Math.floor(py)] = Math.min(2 - (2.0 / radius) * i, 2);
+      this.vis[Math.floor(px)][Math.floor(py)] = Math.min(i / radius, 1);
 
       px += dx;
       py += dy;
@@ -1091,7 +1089,7 @@ export class Level {
 
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
-        if (this.softVisibilityArray[x][y] > 0) this.levelArray[x][y].draw();
+        if (this.softVis[x][y] < 1) this.levelArray[x][y].draw();
       }
     }
   };
@@ -1099,7 +1097,7 @@ export class Level {
   drawEntitiesBehindPlayer = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.softVisibilityArray[x][y] > 0) this.levelArray[x][y].drawUnderPlayer();
+        if (this.softVis[x][y] < 1) this.levelArray[x][y].drawUnderPlayer();
       }
     }
 
@@ -1125,7 +1123,7 @@ export class Level {
   drawEntitiesInFrontOfPlayer = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.softVisibilityArray[x][y] > 0) this.levelArray[x][y].drawAbovePlayer();
+        if (this.softVis[x][y] < 1) this.levelArray[x][y].drawAbovePlayer();
       }
     }
 
@@ -1142,22 +1140,19 @@ export class Level {
     }
 
     // D I T H E R E D     S H A D I N G
-    for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
+    /*for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
-        let frame = Math.round(
-          6 * (this.softVisibilityArray[x][y] / LevelConstants.MIN_VISIBILITY)
-        );
+        let frame = Math.round(6 * (this.softVis[x][y] / LevelConstants.MIN_VISIBILITY));
         Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
       }
-    }
+    }*/
 
     for (const i of this.items) {
       if (i.y <= this.game.player.y) i.drawTopLayer();
     }
 
-    let shadingAlpha = Math.max(0.8, Math.min(0.8, this.depth / this.game.player.sightRadius));
-
     // LEVEL SHADING
+    let shadingAlpha = 0; //Math.max(0, Math.min(0.8, this.depth / this.game.player.sightRadius));
     Game.ctx.globalCompositeOperation = "multiply";
     Game.ctx.globalAlpha = shadingAlpha;
     Game.ctx.fillStyle = "#400a0e";
@@ -1167,62 +1162,6 @@ export class Level {
       GameConstants.WIDTH + GameConstants.TILESIZE * 2,
       GameConstants.HEIGHT + GameConstants.TILESIZE * 2
     );
-    /*for (let x = 0; x < this.levelArray.length; x++) {
-      for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.softVisibilityArray[x][y] > 0 && !(this.levelArray[x][y] instanceof Wall)) {
-          if (this.levelArray[x][y] instanceof Door) {
-            Game.ctx.globalAlpha = shadingAlpha;
-            Game.ctx.fillStyle = "#400a0e";
-            Game.ctx.fillRect(
-              x * GameConstants.TILESIZE,
-              (y - 1) * GameConstants.TILESIZE,
-              GameConstants.TILESIZE,
-              GameConstants.TILESIZE
-            );
-            Game.ctx.fillStyle = "#000000";
-            Game.ctx.fillRect(
-              x * GameConstants.TILESIZE,
-              (y - 1) * GameConstants.TILESIZE,
-              GameConstants.TILESIZE,
-              GameConstants.TILESIZE
-            );
-          }
-          if (this.levelArray[x][y] instanceof BottomDoor) {
-            Game.ctx.globalAlpha = shadingAlpha;
-            Game.ctx.fillStyle = "#400a0e";
-            Game.ctx.fillRect(
-              x * GameConstants.TILESIZE,
-              (y + 1) * GameConstants.TILESIZE,
-              GameConstants.TILESIZE,
-              GameConstants.TILESIZE
-            );
-            Game.ctx.fillStyle = "#000000";
-            Game.ctx.fillRect(
-              x * GameConstants.TILESIZE,
-              (y + 1) * GameConstants.TILESIZE,
-              GameConstants.TILESIZE,
-              GameConstants.TILESIZE
-            );
-          }
-          Game.ctx.globalAlpha = shadingAlpha;
-          Game.ctx.fillStyle = "#400a0e";
-          Game.ctx.fillRect(
-            x * GameConstants.TILESIZE,
-            y * GameConstants.TILESIZE,
-            GameConstants.TILESIZE,
-            GameConstants.TILESIZE
-          );
-          Game.ctx.fillStyle = "#000000";
-          Game.ctx.fillRect(
-            x * GameConstants.TILESIZE,
-            y * GameConstants.TILESIZE,
-            GameConstants.TILESIZE,
-            GameConstants.TILESIZE
-          );
-          Game.ctx.globalAlpha = 1.0;
-        }
-      }
-    }*/
     Game.ctx.globalAlpha = 1.0;
     Game.ctx.globalCompositeOperation = "source-over";
 

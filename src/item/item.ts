@@ -19,6 +19,7 @@ export class Item {
   stackCount: number;
   pickedUp: boolean;
   alpha: number;
+  scaleFactor: number;
 
   constructor(level: Level, x: number, y: number) {
     this.level = level;
@@ -34,6 +35,7 @@ export class Item {
     this.stackCount = 1;
     this.pickedUp = false;
     this.alpha = 1;
+    this.scaleFactor = 0.2;
   }
 
   tick = () => {};
@@ -55,8 +57,15 @@ export class Item {
     }
   };
 
+  shadeAmount = () => {
+    return this.level.softVis[this.x][this.y];
+  };
+
   draw = () => {
     if (!this.pickedUp) {
+      if (this.scaleFactor < 1) this.scaleFactor += 0.04;
+      else this.scaleFactor = 1;
+
       Game.drawItem(0, 0, 1, 1, this.x, this.y, 1, 1);
       this.frame += (Math.PI * 2) / 60;
       Game.drawItem(
@@ -64,10 +73,12 @@ export class Item {
         this.tileY,
         1,
         2,
-        this.x,
-        this.y + Math.sin(this.frame) * 0.07 - 1,
-        this.w,
-        this.h
+        this.x + this.w * (this.scaleFactor * -0.5 + 0.5),
+        this.y + Math.sin(this.frame) * 0.07 - 1 + this.h * (this.scaleFactor * -0.5 + 0.5),
+        this.w * this.scaleFactor,
+        this.h * this.scaleFactor,
+        "black",
+        this.shadeAmount()
       );
     }
   };

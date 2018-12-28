@@ -16,6 +16,8 @@ export enum LevelState {
 
 export class Game {
   static ctx: CanvasRenderingContext2D;
+  static shImg: HTMLCanvasElement;
+  static shCtx: CanvasRenderingContext2D;
   prevLevel: Level; // for transitions
   level: Level;
   levels: Array<Level>;
@@ -385,6 +387,177 @@ export class Game {
     Game.ctx.globalAlpha = 1;
   };
 
+  drawSoftVis1x1 = (
+    set: HTMLImageElement,
+    sX: number,
+    sY: number,
+    sW: number,
+    sH: number,
+    dX: number,
+    dY: number,
+    levelX: number,
+    levelY: number
+  ) => {
+    if (Game.shImg === undefined) {
+      Game.shImg = document.createElement("canvas");
+      Game.shCtx = Game.shImg.getContext("2d");
+      Game.shImg.width = GameConstants.TILESIZE * 2;
+      Game.shImg.height = GameConstants.TILESIZE * 2;
+    }
+
+    Game.shCtx.clearRect(0, 0, Game.shImg.width, Game.shImg.height);
+
+    Game.shCtx.globalCompositeOperation = "source-over";
+    Game.shCtx.drawImage(
+      set,
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      0,
+      0,
+      GameConstants.TILESIZE,
+      GameConstants.TILESIZE
+    );
+
+    Game.shCtx.globalCompositeOperation = "multiply";
+    Game.shCtx.fillStyle = "black";
+    for (let xx = 0; xx < 1; xx += 0.25) {
+      for (let yy = 0; yy < 1; yy += 0.25) {
+        Game.shCtx.globalAlpha =
+          (1 - xx) *
+            (1 - yy) *
+            0.25 *
+            (this.level.softVis[levelX][levelY] +
+              this.level.softVis[levelX - 1][levelY] +
+              this.level.softVis[levelX - 1][levelY - 1] +
+              this.level.softVis[levelX][levelY - 1]) +
+          xx *
+            (1 - yy) *
+            0.25 *
+            (this.level.softVis[levelX + 1][levelY] +
+              this.level.softVis[levelX][levelY] +
+              this.level.softVis[levelX][levelY - 1] +
+              this.level.softVis[levelX + 1][levelY - 1]) +
+          (1 - xx) *
+            yy *
+            0.25 *
+            (this.level.softVis[levelX][levelY + 1] +
+              this.level.softVis[levelX - 1][levelY + 1] +
+              this.level.softVis[levelX - 1][levelY] +
+              this.level.softVis[levelX][levelY]) +
+          xx *
+            yy *
+            0.25 *
+            (this.level.softVis[levelX + 1][levelY + 1] +
+              this.level.softVis[levelX][levelY + 1] +
+              this.level.softVis[levelX][levelY] +
+              this.level.softVis[levelX + 1][levelY]);
+        Game.shCtx.fillRect(
+          xx * GameConstants.TILESIZE,
+          yy * GameConstants.TILESIZE,
+          0.25 * GameConstants.TILESIZE,
+          0.25 * GameConstants.TILESIZE
+        );
+      }
+    }
+    Game.shCtx.globalAlpha = 1.0;
+
+    Game.shCtx.globalCompositeOperation = "destination-in";
+    Game.shCtx.drawImage(
+      set,
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      0,
+      0,
+      GameConstants.TILESIZE,
+      GameConstants.TILESIZE
+    );
+
+    Game.ctx.drawImage(
+      Game.shImg,
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE)
+    );
+  };
+
+  static drawHelper = (
+    set: HTMLImageElement,
+    sX: number,
+    sY: number,
+    sW: number,
+    sH: number,
+    dX: number,
+    dY: number,
+    dW: number,
+    dH: number,
+    shadeColor = "black",
+    shadeOpacity = 0
+  ) => {
+    if (shadeOpacity > 0) {
+      if (Game.shImg === undefined) {
+        Game.shImg = document.createElement("canvas");
+        Game.shCtx = Game.shImg.getContext("2d");
+        Game.shImg.width = GameConstants.TILESIZE * 2;
+        Game.shImg.height = GameConstants.TILESIZE * 2;
+      }
+
+      Game.shCtx.clearRect(0, 0, Game.shImg.width, Game.shImg.height);
+
+      Game.shCtx.globalCompositeOperation = "source-over";
+      Game.shCtx.drawImage(
+        set,
+        Math.round(sX * GameConstants.TILESIZE),
+        Math.round(sY * GameConstants.TILESIZE),
+        Math.round(sW * GameConstants.TILESIZE),
+        Math.round(sH * GameConstants.TILESIZE),
+        0,
+        0,
+        Math.round(dW * GameConstants.TILESIZE),
+        Math.round(dH * GameConstants.TILESIZE)
+      );
+
+      Game.shCtx.globalCompositeOperation = "multiply";
+      Game.shCtx.globalAlpha = shadeOpacity;
+      Game.shCtx.fillStyle = shadeColor;
+      Game.shCtx.fillRect(0, 0, Game.shImg.width, Game.shImg.height);
+      Game.shCtx.globalAlpha = 1.0;
+
+      Game.shCtx.globalCompositeOperation = "destination-in";
+      Game.shCtx.drawImage(
+        set,
+        Math.round(sX * GameConstants.TILESIZE),
+        Math.round(sY * GameConstants.TILESIZE),
+        Math.round(sW * GameConstants.TILESIZE),
+        Math.round(sH * GameConstants.TILESIZE),
+        0,
+        0,
+        Math.round(dW * GameConstants.TILESIZE),
+        Math.round(dH * GameConstants.TILESIZE)
+      );
+
+      Game.ctx.drawImage(
+        Game.shImg,
+        Math.round(dX * GameConstants.TILESIZE),
+        Math.round(dY * GameConstants.TILESIZE)
+      );
+    } else {
+      Game.ctx.drawImage(
+        set,
+        Math.round(sX * GameConstants.TILESIZE),
+        Math.round(sY * GameConstants.TILESIZE),
+        Math.round(sW * GameConstants.TILESIZE),
+        Math.round(sH * GameConstants.TILESIZE),
+        Math.round(dX * GameConstants.TILESIZE),
+        Math.round(dY * GameConstants.TILESIZE),
+        Math.round(dW * GameConstants.TILESIZE),
+        Math.round(dH * GameConstants.TILESIZE)
+      );
+    }
+  };
+
   static drawTile = (
     sX: number,
     sY: number,
@@ -394,21 +567,10 @@ export class Game {
     dY: number,
     dW: number,
     dH: number,
-    shaded = false
+    shadeColor = "black",
+    shadeOpacity = 0
   ) => {
-    let set = Game.tileset;
-    //if (shaded) set = Game.tilesetShadow;
-    Game.ctx.drawImage(
-      set,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE),
-      Math.round(dW * GameConstants.TILESIZE),
-      Math.round(dH * GameConstants.TILESIZE)
-    );
+    Game.drawHelper(Game.tileset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
   };
 
   static drawObj = (
@@ -420,21 +582,10 @@ export class Game {
     dY: number,
     dW: number,
     dH: number,
-    shaded = false
+    shadeColor = "black",
+    shadeOpacity = 0
   ) => {
-    let set = Game.objset;
-    //if (shaded) set = Game.objsetShadow;
-    Game.ctx.drawImage(
-      set,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE),
-      Math.round(dW * GameConstants.TILESIZE),
-      Math.round(dH * GameConstants.TILESIZE)
-    );
+    Game.drawHelper(Game.objset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
   };
 
   static drawMob = (
@@ -446,21 +597,10 @@ export class Game {
     dY: number,
     dW: number,
     dH: number,
-    shaded = false
+    shadeColor = "black",
+    shadeOpacity = 0
   ) => {
-    let set = Game.mobset;
-    //if (shaded) set = Game.mobsetShadow;
-    Game.ctx.drawImage(
-      set,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE),
-      Math.round(dW * GameConstants.TILESIZE),
-      Math.round(dH * GameConstants.TILESIZE)
-    );
+    Game.drawHelper(Game.mobset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
   };
 
   static drawShop = (
@@ -494,19 +634,11 @@ export class Game {
     dX: number,
     dY: number,
     dW: number,
-    dH: number
+    dH: number,
+    shadeColor = "black",
+    shadeOpacity = 0
   ) => {
-    Game.ctx.drawImage(
-      Game.itemset,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE),
-      Math.round(dW * GameConstants.TILESIZE),
-      Math.round(dH * GameConstants.TILESIZE)
-    );
+    Game.drawHelper(Game.itemset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
   };
 
   static drawFX = (
@@ -517,19 +649,11 @@ export class Game {
     dX: number,
     dY: number,
     dW: number,
-    dH: number
+    dH: number,
+    shadeColor = "black",
+    shadeOpacity = 0
   ) => {
-    Game.ctx.drawImage(
-      Game.fxset,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE),
-      Math.round(dW * GameConstants.TILESIZE),
-      Math.round(dH * GameConstants.TILESIZE)
-    );
+    Game.drawHelper(Game.fxset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
   };
 }
 

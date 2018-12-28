@@ -21,8 +21,8 @@ export class Tile {
     this.y = y;
   }
 
-  isShaded = () => {
-    return this.level.softVisibilityArray[this.x][this.y] <= LevelConstants.SHADED_TILE_CUTOFF;
+  shadeAmount = () => {
+    return this.level.softVis[this.x][this.y];
   };
 
   isSolid = (): boolean => {

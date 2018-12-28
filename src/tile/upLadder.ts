@@ -20,9 +20,9 @@ export class UpLadder extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
-    Game.drawTile(29, 0, 1, 1, this.x, this.y - 1, 1, 1, this.isShaded());
-    Game.drawTile(29, 1, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
+    Game.drawTile(29, 0, 1, 1, this.x, this.y - 1, 1, 1, "black", this.shadeAmount());
+    Game.drawTile(29, 1, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
   };
 
   drawAbovePlayer = () => {};

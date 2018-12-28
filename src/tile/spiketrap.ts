@@ -46,7 +46,7 @@ export class SpikeTrap extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
   };
 
   t = 0;
@@ -63,7 +63,7 @@ export class SpikeTrap extends Tile {
     if (this.tickCount === 1 || (this.tickCount === 0 && frames[Math.floor(this.frame)] === 0)) {
       f = 5;
     }
-    Game.drawObj(f, 0, 1, 2, this.x + rumbleOffsetX, this.y - 1, 1, 2, this.isShaded());
+    Game.drawObj(f, 0, 1, 2, this.x + rumbleOffsetX, this.y - 1, 1, 2, "black", this.shadeAmount());
     if (this.on && this.frame < frames.length - 1) {
       if (frames[Math.floor(this.frame)] < 3) this.frame += 0.4;
       else this.frame += 0.2;

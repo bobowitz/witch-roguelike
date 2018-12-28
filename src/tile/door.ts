@@ -27,13 +27,15 @@ export class Door extends Tile {
   };
 
   draw = () => {
-    if (this.opened) Game.drawTile(6, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
-    else Game.drawTile(3, this.skin, 1, 1, this.x, this.y, 1, 1, this.isShaded());
+    if (this.opened)
+      Game.drawTile(6, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
+    else Game.drawTile(3, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
   };
 
   drawAbovePlayer = () => {
-    if (!this.opened) Game.drawTile(13, 0, 1, 1, this.x, this.y - 1, 1, 1, this.isShaded());
-    else Game.drawTile(14, 0, 1, 1, this.x, this.y - 1, 1, 1, this.isShaded());
+    if (!this.opened)
+      Game.drawTile(13, 0, 1, 1, this.x, this.y - 1, 1, 1, "black", this.shadeAmount());
+    else Game.drawTile(14, 0, 1, 1, this.x, this.y - 1, 1, 1, "black", this.shadeAmount());
   };
 
   drawAboveShading = () => {

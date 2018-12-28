@@ -40,7 +40,7 @@ export class Spawner extends Enemy {
         return;
       }
       this.tileX = 6;
-      if (this.seenPlayer || this.level.softVisibilityArray[this.x][this.y] > 0) {
+      if (this.seenPlayer || this.level.softVis[this.x][this.y] > 0) {
         if (this.ticks % 4 === 0) {
           this.tileX = 7;
 

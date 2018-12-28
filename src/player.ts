@@ -101,7 +101,7 @@ export class Player {
     this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
 
     this.map = new Map(this.game);
-    this.weapon = new Shotgun(this.game);
+    this.weapon = new Spear(this.game);
   }
 
   iListener = () => {
