@@ -142,8 +142,6 @@ export class SkullEnemy extends Enemy {
       this.frame += 0.1;
       if (this.frame >= 4) this.frame = 0;
 
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
       if (this.health > 1 && this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(
@@ -170,6 +168,9 @@ export class SkullEnemy extends Enemy {
         "black",
         this.shadeAmount()
       );
+
+      this.drawX += -0.5 * this.drawX;
+      this.drawY += -0.5 * this.drawY;
     }
   };
 

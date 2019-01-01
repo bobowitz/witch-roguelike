@@ -141,6 +141,11 @@ var Game = /** @class */ (function () {
             var maxWidthScale = Math.floor(window.innerWidth / gameConstants_1.GameConstants.DEFAULTWIDTH);
             var maxHeightScale = Math.floor(window.innerHeight / gameConstants_1.GameConstants.DEFAULTHEIGHT);
             Game.scale = Math.min(maxWidthScale, maxHeightScale);
+            if (Game.scale === 0) {
+                maxWidthScale = window.innerWidth / gameConstants_1.GameConstants.DEFAULTWIDTH;
+                maxHeightScale = window.innerHeight / gameConstants_1.GameConstants.DEFAULTHEIGHT;
+            }
+            Game.scale = Math.min(maxWidthScale, maxHeightScale);
             levelConstants_1.LevelConstants.SCREEN_W = Math.floor(window.innerWidth / Game.scale / gameConstants_1.GameConstants.TILESIZE);
             levelConstants_1.LevelConstants.SCREEN_H = Math.floor(window.innerHeight / Game.scale / gameConstants_1.GameConstants.TILESIZE);
             gameConstants_1.GameConstants.WIDTH = levelConstants_1.LevelConstants.SCREEN_W * gameConstants_1.GameConstants.TILESIZE;
@@ -812,11 +817,11 @@ var Enemy = /** @class */ (function () {
         };
         this.draw = function () {
             if (!_this.dead) {
-                _this.drawX += -0.5 * _this.drawX;
-                _this.drawY += -0.5 * _this.drawY;
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, "black", _this.shadeAmount());
                 game_1.Game.drawMob(_this.tileX, _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, "black", _this.shadeAmount());
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
             }
         };
         this.tick = function () { };
@@ -959,7 +964,7 @@ var GenericParticle = /** @class */ (function (_super) {
     }
     GenericParticle.shotgun = function (level, cx, cy, tx, ty, color) {
         for (var i = 0; i < 4; i++) {
-            level.particles.push(new GenericParticle(level, cx + Math.random() - 0.5, cy + Math.random() - 0.5, 0, Math.random() * 0.5 + 0.3, 0, 0, 0, color, 0, 10000000, tx + Math.random() - 0.5, ty + Math.random() - 0.5, 0));
+            level.particles.push(new GenericParticle(level, cx, cy, 0, Math.random() * 0.5 + 0.3, 0, 0, 0, color, 0, 10000000, tx + Math.random() - 0.5, ty + Math.random() - 0.5, 0));
         }
     };
     GenericParticle.spawnCluster = function (level, cx, cy, color) {
@@ -1708,9 +1713,9 @@ var Crate = /** @class */ (function (_super) {
         _this.draw = function () {
             // not inherited because it doesn't have the 0.5 offset
             if (!_this.dead) {
+                game_1.Game.drawObj(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2, "black", _this.shadeAmount());
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
-                game_1.Game.drawObj(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2, "black", _this.shadeAmount());
             }
         };
         _this.drawTopLayer = function () { };
@@ -1765,9 +1770,9 @@ var Barrel = /** @class */ (function (_super) {
         _this.draw = function () {
             // not inherited because it doesn't have the 0.5 offset
             if (!_this.dead) {
+                game_1.Game.drawObj(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2, "black", _this.shadeAmount());
                 _this.drawX += -0.5 * _this.drawX;
                 _this.drawY += -0.5 * _this.drawY;
-                game_1.Game.drawObj(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1 - _this.drawY, 1, 2, "black", _this.shadeAmount());
             }
         };
         _this.drawTopLayer = function () { };
@@ -2518,13 +2523,13 @@ var SkullEnemy = /** @class */ (function (_super) {
                 _this.frame += 0.1;
                 if (_this.frame >= 4)
                     _this.frame = 0;
-                _this.drawX += -0.5 * _this.drawX;
-                _this.drawY += -0.5 * _this.drawY;
                 if (_this.health > 1 && _this.doneMoving() && _this.game.player.doneMoving())
                     _this.facePlayer();
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, "black", _this.shadeAmount());
                 game_1.Game.drawMob(_this.tileX + (_this.tileX === 5 ? Math.floor(_this.frame) : 0), _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, "black", _this.shadeAmount());
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
             }
         };
         _this.dropLoot = function () {
@@ -2874,9 +2879,9 @@ var Player = /** @class */ (function () {
                 game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1);
                 if (!_this.flashing || Math.floor(_this.flashingFrame) % 2 === 0) {
                     _this.drawPlayerSprite();
-                    _this.drawX += -0.5 * _this.drawX;
-                    _this.drawY += -0.5 * _this.drawY;
                 }
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
             }
         };
         this.heartbeat = function () {
@@ -3935,13 +3940,18 @@ var Spear = /** @class */ (function (_super) {
             var enemyHitCandidates = [];
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
                 var e = _a[_i];
-                if (e.destroyable && !(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel)) {
+                if (e.destroyable) {
                     if (e.x === newX && e.y === newY) {
-                        e.hurt(1);
-                        flag = true;
+                        if (e instanceof crate_1.Crate || e instanceof barrel_1.Barrel)
+                            return true;
+                        else {
+                            e.hurt(1);
+                            flag = true;
+                        }
                     }
                     if (e.x === newX2 && e.y === newY2 && !_this.game.level.levelArray[newX][newY].isSolid()) {
-                        enemyHitCandidates.push(e);
+                        if (!(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel))
+                            enemyHitCandidates.push(e);
                     }
                 }
             }
@@ -5515,8 +5525,6 @@ var KnightEnemy = /** @class */ (function (_super) {
         };
         _this.draw = function () {
             if (!_this.dead) {
-                _this.drawX += -0.5 * _this.drawX;
-                _this.drawY += -0.5 * _this.drawY;
                 _this.frame += 0.1;
                 if (_this.frame >= 4)
                     _this.frame = 0;
@@ -5525,6 +5533,8 @@ var KnightEnemy = /** @class */ (function (_super) {
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, "black", _this.shadeAmount());
                 game_1.Game.drawMob(_this.tileX + (_this.tileX === 4 ? 0 : Math.floor(_this.frame)), _this.tileY + _this.direction * 2, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY + (_this.tileX === 4 ? 0.1875 : 0), 1, 2, "black", _this.shadeAmount());
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
             }
         };
         _this.dropLoot = function () {
@@ -6132,8 +6142,6 @@ var WizardEnemy = /** @class */ (function (_super) {
         };
         _this.draw = function () {
             if (!_this.dead) {
-                _this.drawX += -0.5 * _this.drawX;
-                _this.drawY += -0.5 * _this.drawY;
                 if (_this.hasShadow)
                     game_1.Game.drawMob(0, 0, 1, 1, _this.x - _this.drawX, _this.y - _this.drawY, 1, 1, "black", _this.shadeAmount());
                 if (_this.frame >= 0) {
@@ -6145,6 +6153,8 @@ var WizardEnemy = /** @class */ (function (_super) {
                 else {
                     game_1.Game.drawMob(_this.tileX, _this.tileY, 1, 2, _this.x - _this.drawX, _this.y - 1.5 - _this.drawY, 1, 2, "black", _this.shadeAmount());
                 }
+                _this.drawX += -0.5 * _this.drawX;
+                _this.drawY += -0.5 * _this.drawY;
             }
         };
         _this.kill = function () {

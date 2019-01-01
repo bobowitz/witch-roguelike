@@ -32,8 +32,8 @@ export class GenericParticle extends Particle {
       level.particles.push(
         new GenericParticle(
           level,
-          cx + Math.random() - 0.5,
-          cy + Math.random() - 0.5,
+          cx,
+          cy,
           0,
           Math.random() * 0.5 + 0.3,
           0,

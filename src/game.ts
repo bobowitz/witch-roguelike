@@ -205,6 +205,11 @@ export class Game {
     let maxWidthScale = Math.floor(window.innerWidth / GameConstants.DEFAULTWIDTH);
     let maxHeightScale = Math.floor(window.innerHeight / GameConstants.DEFAULTHEIGHT);
     Game.scale = Math.min(maxWidthScale, maxHeightScale);
+    if (Game.scale === 0) {
+      maxWidthScale = window.innerWidth / GameConstants.DEFAULTWIDTH;
+      maxHeightScale = window.innerHeight / GameConstants.DEFAULTHEIGHT;
+    }
+    Game.scale = Math.min(maxWidthScale, maxHeightScale);
 
     LevelConstants.SCREEN_W = Math.floor(window.innerWidth / Game.scale / GameConstants.TILESIZE);
     LevelConstants.SCREEN_H = Math.floor(window.innerHeight / Game.scale / GameConstants.TILESIZE);

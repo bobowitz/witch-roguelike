@@ -29,8 +29,6 @@ export class Crate extends Enemy {
   draw = () => {
     // not inherited because it doesn't have the 0.5 offset
     if (!this.dead) {
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
       Game.drawObj(
         this.tileX,
         this.tileY,
@@ -40,8 +38,11 @@ export class Crate extends Enemy {
         this.y - 1 - this.drawY,
         1,
         2,
-        "black", this.shadeAmount()
+        "black",
+        this.shadeAmount()
       );
+      this.drawX += -0.5 * this.drawX;
+      this.drawY += -0.5 * this.drawY;
     }
   };
 

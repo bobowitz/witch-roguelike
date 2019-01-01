@@ -66,21 +66,21 @@ export class Shotgun extends Weapon {
         this.game.player.y,
         targetX + 0.5,
         targetY,
-        "white"
+        "#ffddff"
       );
       let gp = new GenericParticle(
         this.game.level,
         0.5 * (newX + this.game.player.x) + 0.5,
-        0.5 * (newY + this.game.player.y) + 0.5,
+        0.5 * (newY + this.game.player.y),
         0,
-        0.75,
+        1,
         0,
         0,
         0,
         "white",
         0
       );
-      gp.expirationTimer = 2;
+      gp.expirationTimer = 10;
       this.game.level.particles.push(gp);
       //this.game.level.particles.push(new SlashParticle(newX, newY));
       //this.game.level.particles.push(new SlashParticle(newX2, newY2));

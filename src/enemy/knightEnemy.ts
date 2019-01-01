@@ -109,9 +109,6 @@ export class KnightEnemy extends Enemy {
 
   draw = () => {
     if (!this.dead) {
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
-
       this.frame += 0.1;
       if (this.frame >= 4) this.frame = 0;
       if (this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
@@ -140,6 +137,9 @@ export class KnightEnemy extends Enemy {
         "black",
         this.shadeAmount()
       );
+
+      this.drawX += -0.5 * this.drawX;
+      this.drawY += -0.5 * this.drawY;
     }
   };
 

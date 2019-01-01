@@ -414,9 +414,9 @@ export class Player {
       Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
         this.drawPlayerSprite();
-        this.drawX += -0.5 * this.drawX;
-        this.drawY += -0.5 * this.drawY;
       }
+      this.drawX += -0.5 * this.drawX;
+      this.drawY += -0.5 * this.drawY;
     }
   };
 

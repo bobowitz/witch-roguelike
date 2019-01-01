@@ -17,13 +17,16 @@ export class Spear extends Weapon {
     let flag = false;
     let enemyHitCandidates = [];
     for (let e of this.game.level.enemies) {
-      if (e.destroyable && !(e instanceof Crate || e instanceof Barrel)) {
+      if (e.destroyable) {
         if (e.x === newX && e.y === newY) {
-          e.hurt(1);
-          flag = true;
+          if (e instanceof Crate || e instanceof Barrel) return true;
+          else {
+            e.hurt(1);
+            flag = true;
+          }
         }
         if (e.x === newX2 && e.y === newY2 && !this.game.level.levelArray[newX][newY].isSolid()) {
-          enemyHitCandidates.push(e);
+          if (!(e instanceof Crate || e instanceof Barrel)) enemyHitCandidates.push(e);
         }
       }
     }
