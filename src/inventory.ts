@@ -139,8 +139,8 @@ export class Inventory {
   };
 
   draw = () => {
-    let coinX = 15.5;
-    let coinY = 15.5;
+    let coinX = LevelConstants.SCREEN_W - 1.5;
+    let coinY = LevelConstants.SCREEN_H - 1.5;
 
     Game.drawItem(20, 0, 1, 2, coinX, coinY - 1, 1, 2);
 

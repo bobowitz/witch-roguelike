@@ -7,6 +7,7 @@ import { LevelConstants } from "./levelConstants";
 import { LevelGenerator } from "./levelGenerator";
 import { BottomDoor } from "./tile/bottomDoor";
 import { Input } from "./input";
+import { DownLadder } from "./tile/downLadder";
 
 export enum LevelState {
   IN_LEVEL,
@@ -94,6 +95,9 @@ export class Game {
       this.level = this.levels[0];
       this.level.enterLevel();
 
+      this.screenShakeX = 0;
+      this.screenShakeY = 0;
+
       this.levelState = LevelState.IN_LEVEL;
 
       setInterval(this.run, 1000.0 / GameConstants.FPS);
@@ -143,10 +147,6 @@ export class Game {
   changeLevelThroughLadder = (ladder: any) => {
     this.levelState = LevelState.TRANSITIONING_LADDER;
     this.transitionStartTime = Date.now();
-
-    this.prevLevel = this.level;
-    this.level.exitLevel();
-    this.level = ladder.level;
     this.transitioningLadder = ladder;
   };
 
@@ -202,9 +202,14 @@ export class Game {
   };
 
   onResize = () => {
-    let maxWidthScale = Math.floor(window.innerWidth / GameConstants.WIDTH);
-    let maxHeightScale = Math.floor(window.innerHeight / GameConstants.HEIGHT);
+    let maxWidthScale = Math.floor(window.innerWidth / GameConstants.DEFAULTWIDTH);
+    let maxHeightScale = Math.floor(window.innerHeight / GameConstants.DEFAULTHEIGHT);
     Game.scale = Math.min(maxWidthScale, maxHeightScale);
+
+    LevelConstants.SCREEN_W = Math.floor(window.innerWidth / Game.scale / GameConstants.TILESIZE);
+    LevelConstants.SCREEN_H = Math.floor(window.innerHeight / Game.scale / GameConstants.TILESIZE);
+    GameConstants.WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;
+    GameConstants.HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
     Game.ctx.canvas.setAttribute("width", `${GameConstants.WIDTH}`);
     Game.ctx.canvas.setAttribute("height", `${GameConstants.HEIGHT}`);
     Game.ctx.canvas.setAttribute(
@@ -253,6 +258,14 @@ export class Game {
       let playerOffsetX = levelOffsetX - this.transitionX;
       let playerOffsetY = levelOffsetY - this.transitionY;
 
+      let playerCX = (this.player.x - this.player.drawX + 0.5) * GameConstants.TILESIZE;
+      let playerCY = (this.player.y - this.player.drawY + 0.5) * GameConstants.TILESIZE;
+
+      Game.ctx.translate(
+        -Math.round(playerCX + playerOffsetX - 0.5 * GameConstants.WIDTH),
+        -Math.round(playerCY + playerOffsetY - 0.5 * GameConstants.HEIGHT)
+      );
+
       let extraTileLerp = Math.floor(
         this.lerp(
           (Date.now() - this.transitionStartTime) / LevelConstants.LEVEL_TRANSITION_TIME,
@@ -279,8 +292,6 @@ export class Game {
       Game.ctx.translate(levelOffsetX, levelOffsetY);
       this.prevLevel.draw();
       this.prevLevel.drawEntitiesBehindPlayer();
-      Game.ctx.translate(-levelOffsetX, -levelOffsetY);
-      Game.ctx.translate(levelOffsetX, levelOffsetY);
       this.prevLevel.drawEntitiesInFrontOfPlayer();
       for (
         let x = this.prevLevel.roomX - 1;
@@ -312,8 +323,26 @@ export class Game {
       this.player.draw();
       Game.ctx.translate(-playerOffsetX, -playerOffsetY);
 
+      Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
+      this.level.drawShade();
+      this.level.drawOverShade();
+      Game.ctx.translate(-newLevelOffsetX, -newLevelOffsetY);
+
+      Game.ctx.translate(
+        Math.round(playerCX + playerOffsetX - 0.5 * GameConstants.WIDTH),
+        Math.round(playerCY + playerOffsetY - 0.5 * GameConstants.HEIGHT)
+      );
+
       this.player.drawGUI();
     } else if (this.levelState === LevelState.TRANSITIONING_LADDER) {
+      let playerCX = (this.player.x - this.player.drawX + 0.5) * GameConstants.TILESIZE;
+      let playerCY = (this.player.y - this.player.drawY + 0.5) * GameConstants.TILESIZE;
+
+      Game.ctx.translate(
+        -Math.round(playerCX - 0.5 * GameConstants.WIDTH),
+        -Math.round(playerCY - 0.5 * GameConstants.HEIGHT)
+      );
+
       let deadFrames = 6;
       let ditherFrame = Math.floor(
         ((7 * 2 + deadFrames) * (Date.now() - this.transitionStartTime)) /
@@ -321,27 +350,26 @@ export class Game {
       );
 
       if (ditherFrame < 7) {
-        this.prevLevel.draw();
-        this.prevLevel.drawEntitiesBehindPlayer();
+        this.level.draw();
+        this.level.drawEntitiesBehindPlayer();
         this.player.draw();
-        this.prevLevel.drawEntitiesInFrontOfPlayer();
+        this.level.drawEntitiesInFrontOfPlayer();
+        this.level.drawShade();
+        this.level.drawOverShade();
 
-        for (
-          let x = this.prevLevel.roomX - 1;
-          x <= this.prevLevel.roomX + this.prevLevel.width;
-          x++
-        ) {
-          for (
-            let y = this.prevLevel.roomY - 1;
-            y <= this.prevLevel.roomY + this.prevLevel.height;
-            y++
-          ) {
+        for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
+          for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
             Game.drawFX(7 - ditherFrame, 10, 1, 1, x, y, 1, 1);
           }
         }
       } else if (ditherFrame >= 7 + deadFrames) {
         if (this.transitioningLadder) {
-          this.level.enterLevelThroughLadder(this.transitioningLadder);
+          this.prevLevel = this.level;
+          this.level.exitLevel();
+          if (this.transitioningLadder instanceof DownLadder) this.transitioningLadder.generate();
+          this.level = this.transitioningLadder.linkedLadder.level;
+
+          this.level.enterLevelThroughLadder(this.transitioningLadder.linkedLadder);
           this.transitioningLadder = null;
         }
 
@@ -349,28 +377,62 @@ export class Game {
         this.level.drawEntitiesBehindPlayer();
         this.player.draw();
         this.level.drawEntitiesInFrontOfPlayer();
+        this.level.drawShade();
+        this.level.drawOverShade();
         for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
           for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
             Game.drawFX(ditherFrame - (7 + deadFrames), 10, 1, 1, x, y, 1, 1);
           }
         }
       }
+      Game.ctx.translate(
+        Math.round(playerCX - 0.5 * GameConstants.WIDTH),
+        Math.round(playerCY - 0.5 * GameConstants.HEIGHT)
+      );
+
       this.player.drawGUI();
     } else {
       this.screenShakeX *= -0.8;
       this.screenShakeY *= -0.8;
 
-      Game.ctx.translate(Math.round(this.screenShakeX), Math.round(this.screenShakeY));
+      let playerDrawX = this.player.drawX;
+      let playerDrawY = this.player.drawY;
+
+      Game.ctx.translate(
+        -Math.round(
+          (this.player.x - playerDrawX + 0.5) * GameConstants.TILESIZE -
+            0.5 * GameConstants.WIDTH -
+            this.screenShakeX
+        ),
+        -Math.round(
+          (this.player.y - playerDrawY + 0.5) * GameConstants.TILESIZE -
+            0.5 * GameConstants.HEIGHT -
+            this.screenShakeY
+        )
+      );
 
       this.level.draw();
       this.level.drawEntitiesBehindPlayer();
       this.player.draw();
       this.level.drawEntitiesInFrontOfPlayer();
+      this.level.drawShade();
+      this.level.drawOverShade();
+      this.player.drawTopLayer();
 
-      Game.ctx.translate(-Math.round(this.screenShakeX), -Math.round(this.screenShakeY));
+      Game.ctx.translate(
+        Math.round(
+          (this.player.x - playerDrawX + 0.5) * GameConstants.TILESIZE -
+            0.5 * GameConstants.WIDTH -
+            this.screenShakeX
+        ),
+        Math.round(
+          (this.player.y - playerDrawY + 0.5) * GameConstants.TILESIZE -
+            0.5 * GameConstants.HEIGHT -
+            this.screenShakeY
+        )
+      );
 
       this.level.drawTopLayer();
-      this.player.drawTopLayer();
       this.player.drawGUI();
     }
 
@@ -570,7 +632,32 @@ export class Game {
     shadeColor = "black",
     shadeOpacity = 0
   ) => {
-    Game.drawHelper(Game.tileset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
+    //Game.drawHelper(Game.tileset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
+
+    Game.ctx.drawImage(
+      Game.tileset,
+      Math.round(sX * GameConstants.TILESIZE),
+      Math.round(sY * GameConstants.TILESIZE),
+      Math.round(sW * GameConstants.TILESIZE),
+      Math.round(sH * GameConstants.TILESIZE),
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
+    );
+
+    Game.ctx.globalCompositeOperation = "multiply";
+    Game.ctx.globalAlpha = shadeOpacity;
+    Game.ctx.fillStyle = shadeColor;
+    Game.ctx.fillRect(
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
+    );
+    Game.ctx.globalAlpha = 1.0;
+
+    Game.ctx.globalCompositeOperation = "source-over";
   };
 
   static drawObj = (

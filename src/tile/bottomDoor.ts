@@ -23,6 +23,21 @@ export class BottomDoor extends Tile {
     this.game.changeLevelThroughDoor(this.linkedDoor);
   };
 
+  drawAbovePlayer = () => {
+    /*Game.drawTile(
+      14,
+      0,
+      1,
+      1,
+      this.x,
+      this.y - 1,
+      1,
+      1,
+      "black",
+      this.level.softVis[this.x][this.y - 1]
+    ); */
+  };
+
   drawAboveShading = () => {
     Game.drawFX(2, 2, 1, 1, this.x, this.y - 1.25 + 0.125 * Math.sin(0.006 * Date.now()), 1, 1);
   };

@@ -12,6 +12,8 @@ export class GameConstants {
 
   static readonly KEY_REPEAT_TIME = 300; // milliseconds
 
+  static readonly DEFAULTWIDTH = 8.5 * GameConstants.TILESIZE;
+  static readonly DEFAULTHEIGHT = 8.5 * GameConstants.TILESIZE;
   static WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;
   static HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
   static scrolling = true;

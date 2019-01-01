@@ -413,9 +413,9 @@ export class Player {
     if (!this.dead) {
       Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
+        this.drawPlayerSprite();
         this.drawX += -0.5 * this.drawX;
         this.drawY += -0.5 * this.drawY;
-        this.drawPlayerSprite();
       }
     }
   };
@@ -449,11 +449,11 @@ export class Player {
           if (i == Math.floor(this.health) && (this.health * 2) % 2 == 1) {
             // draw half heart
 
-            Game.drawFX(4, 2, 1, 1, i, LevelConstants.ROOM_H - 1, 1, 1);
+            Game.drawFX(4, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
           } else {
-            Game.drawFX(3, 2, 1, 1, i, LevelConstants.ROOM_H - 1, 1, 1);
+            Game.drawFX(3, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
           }
-        } else Game.drawFX(frame, 2, 1, 1, i, LevelConstants.ROOM_H - 1, 1, 1);
+        } else Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
       }
       if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(this.maxHealth);
     } else {

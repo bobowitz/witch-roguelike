@@ -1013,6 +1013,10 @@ export class Level {
     this.enemies = this.enemies.filter(e => !e.dead);
     this.updateLighting();
 
+    for (const p of this.projectiles) {
+      p.tick();
+    }
+
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
         this.levelArray[x][y].tick();
@@ -1033,9 +1037,6 @@ export class Level {
 
   computerTurn = () => {
     // take computer turn
-    for (const p of this.projectiles) {
-      p.tick();
-    }
     for (const e of this.enemies) {
       e.tick();
     }
@@ -1150,21 +1151,24 @@ export class Level {
     for (const i of this.items) {
       if (i.y <= this.game.player.y) i.drawTopLayer();
     }
+  };
 
-    // LEVEL SHADING
-    let shadingAlpha = 0; //Math.max(0, Math.min(0.8, this.depth / this.game.player.sightRadius));
+  drawShade = () => {
+    let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / this.game.player.sightRadius));
     Game.ctx.globalCompositeOperation = "multiply";
     Game.ctx.globalAlpha = shadingAlpha;
     Game.ctx.fillStyle = "#400a0e";
     Game.ctx.fillRect(
-      -GameConstants.TILESIZE,
-      -GameConstants.TILESIZE,
-      GameConstants.WIDTH + GameConstants.TILESIZE * 2,
-      GameConstants.HEIGHT + GameConstants.TILESIZE * 2
+      (this.roomX - LevelConstants.SCREEN_W) * GameConstants.TILESIZE,
+      (this.roomY - LevelConstants.SCREEN_H) * GameConstants.TILESIZE,
+      (this.width + 2 * LevelConstants.SCREEN_W) * GameConstants.TILESIZE,
+      (this.height + 2 * LevelConstants.SCREEN_H) * GameConstants.TILESIZE
     );
     Game.ctx.globalAlpha = 1.0;
     Game.ctx.globalCompositeOperation = "source-over";
+  };
 
+  drawOverShade = () => {
     for (const e of this.enemies) {
       e.drawTopLayer(); // health bars
     }
@@ -1188,7 +1192,7 @@ export class Level {
     Game.ctx.fillText(
       this.name,
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
-      (this.roomY - 1) * GameConstants.TILESIZE - (GameConstants.FONT_SIZE - 1)
+      1
     );
     Game.ctx.font = old;
   };

@@ -34,7 +34,7 @@ export class Map {
       startLevel.x + Math.floor(startLevel.width / 2),
       startLevel.y + Math.floor(startLevel.height / 2)
     );
-    Game.ctx.scale(SCALE, SCALE);
+    Game.ctx.scale(Game.scale, Game.scale);
     Game.ctx.translate(
       -(startLevel.x + Math.floor(startLevel.width / 2)),
       -(startLevel.y + Math.floor(startLevel.height / 2))
