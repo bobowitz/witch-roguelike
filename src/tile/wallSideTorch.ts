@@ -9,7 +9,7 @@ export class WallSideTorch extends Tile {
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
     this.level.lightSources.push(new LightSource(this.x + 0.5, this.y + 0.5, 3));
-    this.frame = 0;
+    this.frame = Math.random() * 12;
   }
 
   isSolid = (): boolean => {
@@ -23,7 +23,7 @@ export class WallSideTorch extends Tile {
   };
 
   draw = () => {
-    this.frame += 0.5;
+    this.frame += 0.3;
     if (this.frame >= 12) this.frame = 0;
 
     Game.drawTile(0, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());

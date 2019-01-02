@@ -538,7 +538,7 @@ var levelConstants_1 = __webpack_require__(6);
 var GameConstants = /** @class */ (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.4.2";
+    GameConstants.VERSION = "v0.4.3";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -3200,7 +3200,7 @@ var Inventory = /** @class */ (function () {
         this.items = new Array();
         this.equipped = new Array();
         input_1.Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-        this.coins = 10000000;
+        this.coins = 0;
     }
     return Inventory;
 }());
@@ -7173,14 +7173,14 @@ var WallSideTorch = /** @class */ (function (_super) {
             return false;
         };
         _this.draw = function () {
-            _this.frame += 0.5;
+            _this.frame += 0.3;
             if (_this.frame >= 12)
                 _this.frame = 0;
             game_1.Game.drawTile(0, _this.skin, 1, 1, _this.x, _this.y, 1, 1, "black", _this.shadeAmount());
             game_1.Game.drawFX(Math.floor(_this.frame), 32, 1, 2, _this.x, _this.y - 1, 1, 2);
         };
         _this.level.lightSources.push(new lightSource_1.LightSource(_this.x + 0.5, _this.y + 0.5, 3));
-        _this.frame = 0;
+        _this.frame = Math.random() * 12;
         return _this;
     }
     return WallSideTorch;
