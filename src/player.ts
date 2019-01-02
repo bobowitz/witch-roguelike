@@ -415,8 +415,6 @@ export class Player {
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
         this.drawPlayerSprite();
       }
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
     }
   };
 
@@ -474,5 +472,10 @@ export class Player {
     if (Input.isDown(Input.M)) {
       this.map.draw();
     }
+  };
+
+  updateDrawXY = () => {
+    this.drawX += -0.5 * this.drawX;
+    this.drawY += -0.5 * this.drawY;
   };
 }

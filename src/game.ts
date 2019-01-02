@@ -339,6 +339,7 @@ export class Game {
       );
 
       this.player.drawGUI();
+      this.player.updateDrawXY();
     } else if (this.levelState === LevelState.TRANSITIONING_LADDER) {
       let playerCX = (this.player.x - this.player.drawX + 0.5) * GameConstants.TILESIZE;
       let playerCY = (this.player.y - this.player.drawY + 0.5) * GameConstants.TILESIZE;
@@ -396,6 +397,7 @@ export class Game {
       );
 
       this.player.drawGUI();
+      this.player.updateDrawXY();
     } else {
       this.screenShakeX *= -0.8;
       this.screenShakeY *= -0.8;
@@ -439,6 +441,7 @@ export class Game {
 
       this.level.drawTopLayer();
       this.player.drawGUI();
+      this.player.updateDrawXY();
     }
 
     // game version

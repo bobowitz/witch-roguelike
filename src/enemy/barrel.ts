@@ -40,10 +40,11 @@ export class Barrel extends Enemy {
         "black",
         this.shadeAmount()
       );
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
     }
   };
 
-  drawTopLayer = () => {};
+  drawTopLayer = () => {
+    this.drawX += -0.5 * this.drawX;
+    this.drawY += -0.5 * this.drawY;
+  };
 }

@@ -17,4 +17,5 @@ export class Projectile {
 
   tick = () => {};
   draw = () => {};
+  drawTopLayer = () => {};
 }

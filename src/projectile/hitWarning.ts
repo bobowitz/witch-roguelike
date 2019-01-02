@@ -17,7 +17,7 @@ export class HitWarning extends Projectile {
   };
 
   static updateFrame = () => {
-    HitWarning.frame += 0.25;
+    HitWarning.frame += 0.125;
     if (HitWarning.frame >= 4) HitWarning.frame = 0;
   };
 
@@ -27,5 +27,13 @@ export class HitWarning extends Projectile {
       (this.y === this.game.player.y && Math.abs(this.x - this.game.player.x) <= 1)
     )
       Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
+  };
+
+  drawTopLayer = () => {
+    if (
+      (this.x === this.game.player.x && Math.abs(this.y - this.game.player.y) <= 1) ||
+      (this.y === this.game.player.y && Math.abs(this.x - this.game.player.x) <= 1)
+    )
+      Game.drawFX(18 + Math.floor(HitWarning.frame), 5, 1, 1, this.x, this.y, 1, 1);
   };
 }

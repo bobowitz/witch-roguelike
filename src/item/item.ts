@@ -10,6 +10,7 @@ export class Item {
   y: number;
   w: number;
   h: number;
+  offsetY: number;
   tileX: number;
   tileY: number;
   frame: number;
@@ -36,6 +37,7 @@ export class Item {
     this.pickedUp = false;
     this.alpha = 1;
     this.scaleFactor = 0.2;
+    this.offsetY = -0.25;
   }
 
   tick = () => {};
@@ -74,7 +76,11 @@ export class Item {
         1,
         2,
         this.x + this.w * (this.scaleFactor * -0.5 + 0.5),
-        this.y + Math.sin(this.frame) * 0.07 - 1 + this.h * (this.scaleFactor * -0.5 + 0.5),
+        this.y +
+          Math.sin(this.frame) * 0.07 -
+          1 +
+          this.offsetY +
+          this.h * (this.scaleFactor * -0.5 + 0.5),
         this.w * this.scaleFactor,
         this.h * this.scaleFactor,
         "black",

@@ -168,9 +168,6 @@ export class SkullEnemy extends Enemy {
         "black",
         this.shadeAmount()
       );
-
-      this.drawX += -0.5 * this.drawX;
-      this.drawY += -0.5 * this.drawY;
     }
   };
 

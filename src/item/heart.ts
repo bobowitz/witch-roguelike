@@ -10,6 +10,7 @@ export class Heart extends Item {
 
     this.tileX = 8;
     this.tileY = 0;
+    this.offsetY = 0;
   }
 
   onPickup = (player: Player) => {

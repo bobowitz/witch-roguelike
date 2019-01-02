@@ -40,6 +40,9 @@ import { EmeraldResource } from "./enemy/emeraldResource";
 import { Chasm } from "./tile/chasm";
 import { Spawner } from "./enemy/spawner";
 import { ShopTable } from "./enemy/shopTable";
+import { WallSideTorch } from "./tile/wallSideTorch";
+import { LightSource } from "./lightSource";
+import { ChargeEnemy } from "./enemy/chargeEnemy";
 
 export enum RoomType {
   DUNGEON,
@@ -93,6 +96,7 @@ export class Level {
   skin: SkinType;
   entered: boolean; // has the player entered this level
   upLadder: UpLadder;
+  lightSources: Array<LightSource>;
 
   private pointInside(
     x: number,
@@ -287,6 +291,25 @@ export class Level {
     }
   }
 
+  private addTorches(numTorches: number) {
+    let walls = [];
+    for (let xx = 0; xx < this.levelArray.length; xx++) {
+      for (let yy = 0; yy < this.levelArray[0].length; yy++) {
+        if (this.levelArray[xx][yy] instanceof WallSide) {
+          walls.push(this.levelArray[xx][yy]);
+        }
+      }
+    }
+    for (let i = 0; i < numTorches; i++) {
+      let t, x, y;
+      if (walls.length == 0) return;
+      t = walls.splice(Game.rand(0, walls.length - 1), 1)[0];
+      x = t.x;
+      y = t.y;
+      this.levelArray[x][y] = new WallSideTorch(this, x, y);
+    }
+  }
+
   private addChasms() {
     // add chasms
     let w = Game.rand(2, 4);
@@ -376,6 +399,9 @@ export class Level {
           case 3:
             this.enemies.push(new WizardEnemy(this, this.game, x, y));
             break;
+          case 4:
+            this.enemies.push(new ChargeEnemy(this, this.game, x, y));
+            break;
         }
       }
     }
@@ -438,6 +464,7 @@ export class Level {
     if (factor < 26) this.addFingers();
     if (factor % 4 === 0) this.addChasms();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
@@ -455,6 +482,7 @@ export class Level {
     this.buildEmptyRoom();
     if (Game.rand(1, 4) === 1) this.addChasms();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     if (Game.rand(1, 4) === 1) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
     if (Game.rand(1, 3) === 1) this.addSpikeTraps(Game.randTable([3, 5, 7, 8]));
@@ -471,6 +499,7 @@ export class Level {
 
     this.buildEmptyRoom();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     this.enemies.push(
       new Spawner(
@@ -486,6 +515,7 @@ export class Level {
 
     this.buildEmptyRoom();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     this.items.push(
       new GoldenKey(
@@ -500,6 +530,7 @@ export class Level {
 
     this.buildEmptyRoom();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     let centerX = Math.floor(this.roomX + this.width / 2);
     let centerY = Math.floor(this.roomY + this.height / 2);
@@ -520,6 +551,7 @@ export class Level {
 
     this.buildEmptyRoom();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     this.placeCoffin(
       Math.floor(this.roomX + this.width / 2 - 2),
@@ -584,9 +616,8 @@ export class Level {
       }
     }
 
-    this.addEnemies(5);
-
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
   };
   generateTreasure = () => {
     this.skin = SkinType.DUNGEON;
@@ -594,6 +625,7 @@ export class Level {
     this.buildEmptyRoom();
     this.addWallBlocks();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 1, 1, 2, 2, 3, 4]));
 
     this.addChests(Game.randTable([3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 6]));
     this.addPlants(Game.randTable([0, 1, 2, 4, 5, 6]));
@@ -614,6 +646,7 @@ export class Level {
     if (factor < 26) this.addFingers();
     if (factor % 4 === 0) this.addChasms();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
@@ -629,6 +662,7 @@ export class Level {
 
     this.buildEmptyRoom();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2]));
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
@@ -640,6 +674,7 @@ export class Level {
 
     this.buildEmptyRoom();
     this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2]));
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
@@ -650,6 +685,7 @@ export class Level {
 
     this.buildEmptyRoom();
     this.fixWalls();
+    this.addTorches(2);
 
     let cX = Math.floor(this.roomX + this.width / 2 - 1);
     let cY = Math.floor(this.roomY + this.height / 2);
@@ -682,6 +718,7 @@ export class Level {
     this.particles = Array<Particle>();
     this.doors = Array<Door>();
     this.enemies = Array<Enemy>();
+    this.lightSources = Array<LightSource>();
 
     this.levelArray = [];
     for (let x = 0; x < LevelConstants.ROOM_W; x++) {
@@ -906,9 +943,9 @@ export class Level {
   fadeLighting = () => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (Math.abs(this.softVis[x][y] - this.vis[x][y]) >= 0.05) {
-          if (this.softVis[x][y] < this.vis[x][y]) this.softVis[x][y] += 0.05;
-          else if (this.softVis[x][y] > this.vis[x][y]) this.softVis[x][y] -= 0.05;
+        if (Math.abs(this.softVis[x][y] - this.vis[x][y]) >= 0.02) {
+          if (this.softVis[x][y] < this.vis[x][y]) this.softVis[x][y] += 0.02;
+          else if (this.softVis[x][y] > this.vis[x][y]) this.softVis[x][y] -= 0.02;
         }
         //if (this.softVis[x][y] < 0.05) this.softVis[x][y] = 0;
       }
@@ -927,7 +964,17 @@ export class Level {
       }
     }
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
-      this.castShadowsAtAngle(i, this.game.player.sightRadius - this.depth);
+      this.castShadowsAtAngle(
+        i,
+        this.game.player.x + 0.5,
+        this.game.player.y + 0.5,
+        this.game.player.sightRadius - this.depth
+      );
+    }
+    for (const l of this.lightSources) {
+      for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
+        this.castShadowsAtAngle(i, l.x, l.y, l.r);
+      }
     }
     if (LevelConstants.SMOOTH_LIGHTING)
       this.vis = this.blur3x3(this.vis, [[1, 2, 1], [2, 8, 2], [1, 2, 1]]);
@@ -944,13 +991,9 @@ export class Level {
     }*/
   };
 
-  castShadowsAtAngle = (angle: number, radius: number) => {
+  castShadowsAtAngle = (angle: number, px: number, py: number, radius: number) => {
     let dx = Math.cos((angle * Math.PI) / 180);
     let dy = Math.sin((angle * Math.PI) / 180);
-    let px = this.game.player.x + 0.5;
-    let py = this.game.player.y + 0.5;
-    let returnVal = 0;
-    let hitWall = false; // flag for if we already hit a wall. we'll keep scanning and see if there's more walls. if so, light them up!
     for (let i = 0; i < radius; i++) {
       if (
         Math.floor(px) < 0 ||
@@ -960,26 +1003,18 @@ export class Level {
       )
         return; // we're outside the level
       let tile = this.levelArray[Math.floor(px)][Math.floor(py)];
-      if (tile instanceof Wall && tile.type === 1) {
-        return returnVal;
+      if (tile.isOpaque() || (tile instanceof Wall && tile.type === 1)) {
+        return;
       }
 
-      if (!(tile instanceof Wall) && hitWall) {
-        // fun's over, we hit something that wasn't a wall
-        return returnVal;
-      }
-
-      if (tile.isOpaque()) {
-        return i;
-        if (!hitWall) returnVal = i;
-        hitWall = true;
-      }
-      this.vis[Math.floor(px)][Math.floor(py)] = Math.min(i / radius, 1);
+      this.vis[Math.floor(px)][Math.floor(py)] = Math.min(
+        this.vis[Math.floor(px)][Math.floor(py)],
+        Math.min(i / radius, 1)
+      );
 
       px += dx;
       py += dy;
     }
-    return returnVal;
   };
 
   blur3x3 = (array: Array<Array<number>>, weights: Array<Array<number>>): Array<Array<number>> => {
@@ -1171,6 +1206,10 @@ export class Level {
   drawOverShade = () => {
     for (const e of this.enemies) {
       e.drawTopLayer(); // health bars
+    }
+
+    for (const p of this.projectiles) {
+      p.drawTopLayer();
     }
 
     // draw over dithered shading
