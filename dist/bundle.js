@@ -998,7 +998,7 @@ var LevelConstants = /** @class */ (function () {
     LevelConstants.SCREEN_H = 1;
     LevelConstants.ROOM_W = 17;
     LevelConstants.ROOM_H = 17;
-    LevelConstants.COMPUTER_TURN_DELAY = 250; // milliseconds
+    LevelConstants.COMPUTER_TURN_DELAY = 350; // milliseconds
     LevelConstants.TURN_TIME = 1000; // milliseconds
     LevelConstants.LEVEL_TRANSITION_TIME = 300; // milliseconds
     LevelConstants.LEVEL_TRANSITION_TIME_LADDER = 1000; // milliseconds
@@ -2706,6 +2706,9 @@ var Player = /** @class */ (function () {
             return true;
         };
         this.tryMove = function (x, y) {
+            _this.game.level.catchUp();
+            if (_this.dead)
+                return;
             if (!_this.weapon.weaponMove(x, y)) {
                 return;
             }
@@ -4775,9 +4778,11 @@ var Level = /** @class */ (function () {
             }
             return blurredArray;
         };
-        this.tick = function () {
+        this.catchUp = function () {
             if (_this.turn === TurnState.computerTurn)
                 _this.computerTurn(); // player skipped computer's turn, catch up
+        };
+        this.tick = function () {
             _this.enemies = _this.enemies.filter(function (e) { return !e.dead; });
             _this.updateLighting();
             for (var _i = 0, _a = _this.projectiles; _i < _a.length; _i++) {

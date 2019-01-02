@@ -214,6 +214,9 @@ export class Player {
   };
 
   tryMove = (x: number, y: number) => {
+    this.game.level.catchUp();
+    if (this.dead) return;
+
     if (!this.weapon.weaponMove(x, y)) {
       return;
     }

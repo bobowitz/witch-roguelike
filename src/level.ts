@@ -1042,9 +1042,11 @@ export class Level {
     return blurredArray;
   };
 
-  tick = () => {
+  catchUp = () => {
     if (this.turn === TurnState.computerTurn) this.computerTurn(); // player skipped computer's turn, catch up
+  };
 
+  tick = () => {
     this.enemies = this.enemies.filter(e => !e.dead);
     this.updateLighting();
 
