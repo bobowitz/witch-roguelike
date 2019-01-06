@@ -1040,7 +1040,7 @@ var Item = /** @class */ (function () {
             sound_1.Sound.genericPickup();
         };
         this.onPickup = function (player) {
-            if (!_this.pickedUp) {
+            if (!_this.pickedUp && !player.inventory.isFull()) {
                 _this.pickupSound();
                 _this.pickedUp = true;
                 player.inventory.addItem(_this);
@@ -1075,12 +1075,15 @@ var Item = /** @class */ (function () {
                 game_1.Game.ctx.globalAlpha = 1.0;
             }
         };
-        this.drawIcon = function (x, y) {
+        this.drawIcon = function (x, y, opacity) {
+            if (opacity === void 0) { opacity = 1; }
+            game_1.Game.ctx.globalAlpha = opacity;
             game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
+            game_1.Game.ctx.globalAlpha = 1;
             var countText = _this.stackCount <= 1 ? "" : "" + _this.stackCount;
             var width = game_1.Game.ctx.measureText(countText).width;
-            var countX = 16 - width;
-            var countY = 8;
+            var countX = 17 - width;
+            var countY = 4;
             game_1.Game.ctx.fillStyle = "black";
             for (var xx = -1; xx <= 1; xx++) {
                 for (var yy = -1; yy <= 1; yy++) {
@@ -1212,10 +1215,7 @@ var Coin = /** @class */ (function (_super) {
     __extends(Coin, _super);
     function Coin(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
-        _this.getDescription = function () {
-            return "COINS\nA pound of gold coins.";
-        };
-        _this.tileX = 20;
+        _this.tileX = 19;
         _this.tileY = 0;
         _this.stackable = true;
         return _this;
@@ -2240,7 +2240,7 @@ var goldResource_1 = __webpack_require__(59);
 var emeraldResource_1 = __webpack_require__(60);
 var chasm_1 = __webpack_require__(61);
 var spawner_1 = __webpack_require__(62);
-var shopTable_1 = __webpack_require__(64);
+var vendingMachine_1 = __webpack_require__(73);
 var wallSideTorch_1 = __webpack_require__(65);
 var chargeEnemy_1 = __webpack_require__(67);
 var RoomType;
@@ -2462,7 +2462,7 @@ var Level = /** @class */ (function () {
             _this.addTorches(2);
             var cX = Math.floor(_this.roomX + _this.width / 2 - 1);
             var cY = Math.floor(_this.roomY + _this.height / 2);
-            _this.enemies.push(new shopTable_1.ShopTable(_this, _this.game, cX, cY));
+            _this.enemies.push(new vendingMachine_1.VendingMachine(_this, _this.game, cX, cY));
         };
         this.addDoor = function (location, link) {
             var d;
@@ -3719,8 +3719,6 @@ var chest_1 = __webpack_require__(23);
 var map_1 = __webpack_require__(41);
 var slashParticle_1 = __webpack_require__(33);
 var healthbar_1 = __webpack_require__(26);
-var shopScreen_1 = __webpack_require__(68);
-var spear_1 = __webpack_require__(70);
 var PlayerDirection;
 (function (PlayerDirection) {
     PlayerDirection[PlayerDirection["DOWN"] = 0] = "DOWN";
@@ -3735,16 +3733,11 @@ var Player = /** @class */ (function () {
             _this.inventory.open();
         };
         this.iListener = function () {
-            _this.shopScreen.close(); // in case the shop is open
             _this.inventory.open();
         };
         this.leftListener = function () {
             if (_this.inventory.isOpen) {
                 _this.inventory.left();
-                return;
-            }
-            if (_this.shopScreen.isOpen) {
-                _this.shopScreen.left();
                 return;
             }
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
@@ -3762,10 +3755,6 @@ var Player = /** @class */ (function () {
                 _this.inventory.right();
                 return;
             }
-            if (_this.shopScreen.isOpen) {
-                _this.shopScreen.right();
-                return;
-            }
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
                 _this.tryMove(_this.x + 1, _this.y);
                 _this.direction = PlayerDirection.RIGHT;
@@ -3774,10 +3763,6 @@ var Player = /** @class */ (function () {
         this.upListener = function () {
             if (_this.inventory.isOpen) {
                 _this.inventory.up();
-                return;
-            }
-            if (_this.shopScreen.isOpen) {
-                _this.shopScreen.up();
                 return;
             }
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
@@ -3790,10 +3775,6 @@ var Player = /** @class */ (function () {
                 _this.inventory.down();
                 return;
             }
-            if (_this.shopScreen.isOpen) {
-                _this.shopScreen.down();
-                return;
-            }
             if (!_this.dead && _this.game.levelState === game_1.LevelState.IN_LEVEL) {
                 _this.tryMove(_this.x, _this.y + 1);
                 _this.direction = PlayerDirection.DOWN;
@@ -3804,9 +3785,8 @@ var Player = /** @class */ (function () {
                 _this.inventory.space();
                 return;
             }
-            if (_this.shopScreen.isOpen) {
-                _this.shopScreen.space();
-                return;
+            if (_this.openVendingMachine) {
+                _this.openVendingMachine.space();
             }
         };
         this.hit = function () {
@@ -3870,7 +3850,7 @@ var Player = /** @class */ (function () {
             _this.game.level.catchUp();
             if (_this.dead)
                 return;
-            if (!_this.weapon.weaponMove(x, y)) {
+            if (_this.inventory.hasWeapon() && !_this.inventory.getWeapon().weaponMove(x, y)) {
                 return;
             }
             for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
@@ -3885,7 +3865,7 @@ var Player = /** @class */ (function () {
                         var nextX = x + dx;
                         var nextY = y + dy;
                         var foundEnd = false; // end of the train of whatever we're pushing
-                        var enemyEnd = false; // end of the train is a solid enemy (none currently exist)
+                        var enemyEnd = false; // end of the train is a solid enemy (i.e. potted plant)
                         var pushedEnemies = [];
                         while (true) {
                             foundEnd = true;
@@ -4003,6 +3983,8 @@ var Player = /** @class */ (function () {
         };
         this.move = function (x, y) {
             sound_1.Sound.playerStoneFootstep();
+            if (_this.openVendingMachine)
+                _this.openVendingMachine.close();
             _this.drawX = x - _this.x;
             _this.drawY = y - _this.y;
             _this.x = x;
@@ -4063,7 +4045,6 @@ var Player = /** @class */ (function () {
         };
         this.drawGUI = function () {
             if (!_this.dead) {
-                _this.shopScreen.draw();
                 _this.inventory.draw();
                 if (_this.guiHeartFrame > 0)
                     _this.guiHeartFrame++;
@@ -4090,9 +4071,9 @@ var Player = /** @class */ (function () {
             else {
                 game_1.Game.ctx.fillStyle = levelConstants_1.LevelConstants.LEVEL_TEXT_COLOR;
                 var gameOverString = "Game Over.";
-                game_1.Game.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2);
+                game_1.Game.ctx.fillText(gameOverString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(gameOverString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2);
                 var refreshString = "[refresh to restart]";
-                game_1.Game.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + gameConstants_1.GameConstants.FONT_SIZE);
+                game_1.Game.ctx.fillText(refreshString, gameConstants_1.GameConstants.WIDTH / 2 - game_1.Game.ctx.measureText(refreshString).width / 2, gameConstants_1.GameConstants.HEIGHT / 2 + gameConstants_1.GameConstants.FONT_SIZE);
             }
             if (input_1.Input.isDown(input_1.Input.M) || input_1.Input.isTapHold) {
                 _this.map.draw();
@@ -4129,11 +4110,9 @@ var Player = /** @class */ (function () {
         this.lastTickHealth = this.health;
         this.guiHeartFrame = 0;
         this.inventory = new inventory_1.Inventory(game);
-        this.shopScreen = new shopScreen_1.ShopScreen(game);
         this.missProb = 0.1;
         this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
         this.map = new map_1.Map(this.game);
-        this.weapon = new spear_1.Spear(this.game);
     }
     return Player;
 }());
@@ -4189,11 +4168,14 @@ exports.Trapdoor = Trapdoor;
 Object.defineProperty(exports, "__esModule", { value: true });
 var levelConstants_1 = __webpack_require__(6);
 var game_1 = __webpack_require__(0);
-var key_1 = __webpack_require__(17);
 var gameConstants_1 = __webpack_require__(2);
 var equippable_1 = __webpack_require__(14);
 var armor_1 = __webpack_require__(18);
 var coin_1 = __webpack_require__(10);
+var gem_1 = __webpack_require__(11);
+var coal_1 = __webpack_require__(31);
+var weapon_1 = __webpack_require__(71);
+var dagger_1 = __webpack_require__(74);
 var OPEN_TIME = 100; // milliseconds
 var FILL_COLOR = "#5a595b";
 var OUTLINE_COLOR = "#292c36";
@@ -4239,6 +4221,12 @@ var Inventory = /** @class */ (function () {
             if (_this.items[i] instanceof equippable_1.Equippable) {
                 var e = _this.items[i];
                 e.equipped = !e.equipped; // toggle
+                if (e instanceof weapon_1.Weapon) {
+                    if (e.equipped)
+                        _this.weapon = e;
+                    else
+                        _this.weapon = null;
+                }
                 if (e.equipped) {
                     for (var _i = 0, _a = _this.items; _i < _a.length; _i++) {
                         var i_1 = _a[_i];
@@ -4259,11 +4247,37 @@ var Inventory = /** @class */ (function () {
             }
             return null;
         };
+        this.hasItemCount = function (item) {
+            if (item instanceof coin_1.Coin)
+                return _this.coinCount() >= item.stackCount;
+            for (var _i = 0, _a = _this.items; _i < _a.length; _i++) {
+                var i = _a[_i];
+                if (i.constructor === item.constructor && i.stackCount >= item.stackCount)
+                    return true;
+            }
+            return false;
+        };
+        this.subtractItemCount = function (item) {
+            if (item instanceof coin_1.Coin) {
+                _this.subtractCoins(item.stackCount);
+                return;
+            }
+            for (var _i = 0, _a = _this.items; _i < _a.length; _i++) {
+                var i = _a[_i];
+                if (i.constructor === item.constructor) {
+                    i.stackCount -= item.stackCount;
+                    if (i.stackCount <= 0)
+                        _this.items.splice(_this.items.indexOf(i), 1);
+                }
+            }
+        };
         this.coinCount = function () {
             return _this.coins;
         };
         this.subtractCoins = function (n) {
             _this.coins -= n;
+            if (_this.coins < 0)
+                _this.coins = 0;
         };
         this.addCoins = function (n) {
             _this.coins += n;
@@ -4305,6 +4319,12 @@ var Inventory = /** @class */ (function () {
             }
             return null;
         };
+        this.hasWeapon = function () {
+            return _this.weapon !== null;
+        };
+        this.getWeapon = function () {
+            return _this.weapon;
+        };
         this.tick = function () {
             for (var _i = 0, _a = _this.items; _i < _a.length; _i++) {
                 var i = _a[_i];
@@ -4340,8 +4360,8 @@ var Inventory = /** @class */ (function () {
             game_1.Game.drawItem(19, 0, 1, 2, coinX, coinY - 1, 1, 2);
             var countText = "" + _this.coins;
             var width = game_1.Game.ctx.measureText(countText).width;
-            var countX = 16 - width;
-            var countY = 2;
+            var countX = 4 - width;
+            var countY = -1;
             game_1.Game.ctx.fillStyle = "black";
             for (var xx = -1; xx <= 1; xx++) {
                 for (var yy = -1; yy <= 1; yy++) {
@@ -4473,16 +4493,16 @@ var Inventory = /** @class */ (function () {
             this.equipAnimAmount[i] = 0;
         }
         //Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-        this.coins = 0;
+        this.coins = 100;
         this.openTime = Date.now();
-        this.items.push(new key_1.Key(this.game.level, 0, 0));
-        this.items.push(new key_1.Key(this.game.level, 0, 0));
-        this.items.push(new key_1.Key(this.game.level, 0, 0));
-        this.items.push(new key_1.Key(this.game.level, 0, 0));
-        this.items.push(new armor_1.Armor(this.game.level, 0, 0));
-        this.items.push(new armor_1.Armor(this.game.level, 0, 0));
-        this.items.push(new armor_1.Armor(this.game.level, 0, 0));
-        this.items.push(new armor_1.Armor(this.game.level, 0, 0));
+        this.weapon = null;
+        this.addItem(new dagger_1.Dagger({ game: this.game }, 0, 0));
+        this.addItem(new coal_1.Coal(this.game.level, 0, 0));
+        this.addItem(new coal_1.Coal(this.game.level, 0, 0));
+        this.addItem(new coal_1.Coal(this.game.level, 0, 0));
+        this.addItem(new gem_1.Gem(this.game.level, 0, 0));
+        this.addItem(new gem_1.Gem(this.game.level, 0, 0));
+        this.addItem(new gem_1.Gem(this.game.level, 0, 0));
     }
     return Inventory;
 }());
@@ -6458,50 +6478,7 @@ exports.EnemySpawnAnimation = EnemySpawnAnimation;
 
 
 /***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var enemy_1 = __webpack_require__(3);
-var ShopTable = /** @class */ (function (_super) {
-    __extends(ShopTable, _super);
-    function ShopTable(level, game, x, y) {
-        var _this = _super.call(this, level, game, x, y) || this;
-        _this.interact = function () {
-            _this.game.player.shopScreen.open();
-        };
-        _this.draw = function () {
-            game_1.Game.drawTile(26, 0, 2, 2, _this.x, _this.y - 1, 2, 2, "black", _this.shadeAmount());
-        };
-        _this.w = 2;
-        _this.destroyable = false;
-        _this.pushable = false;
-        _this.chainPushable = false;
-        _this.interactable = true;
-        return _this;
-    }
-    return ShopTable;
-}(enemy_1.Enemy));
-exports.ShopTable = ShopTable;
-
-
-/***/ }),
+/* 64 */,
 /* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6726,375 +6703,10 @@ exports.ChargeEnemy = ChargeEnemy;
 
 
 /***/ }),
-/* 68 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(0);
-var input_1 = __webpack_require__(16);
-var gameConstants_1 = __webpack_require__(2);
-var armor_1 = __webpack_require__(18);
-var shopData_1 = __webpack_require__(69);
-var coal_1 = __webpack_require__(31);
-var gem_1 = __webpack_require__(11);
-var gold_1 = __webpack_require__(32);
-var ShopState;
-(function (ShopState) {
-    ShopState[ShopState["MAINSCREEN"] = 0] = "MAINSCREEN";
-    ShopState[ShopState["BUYING"] = 1] = "BUYING";
-    ShopState[ShopState["SELLING"] = 2] = "SELLING";
-})(ShopState = exports.ShopState || (exports.ShopState = {}));
-var BACK_BUTTON_X = 3;
-var BACK_BUTTON_Y = 3;
-var LEFT_BUTTON_X = 0.5 * (17 - 11);
-var LEFT_BUTTON_Y = 0.5 * (17 - 5);
-var RIGHT_BUTTON_X = 0.5 * (17 - 11) + 0.5 * 11;
-var RIGHT_BUTTON_Y = 0.5 * (17 - 5);
-var ShopScreen = /** @class */ (function () {
-    function ShopScreen(game) {
-        var _this = this;
-        this.tileX = 0;
-        this.tileY = 0;
-        this.open = function () {
-            _this.isOpen = true;
-            _this.game.player.inventory.close();
-        };
-        this.close = function () {
-            _this.isOpen = false;
-        };
-        this.left = function () { };
-        this.right = function () { };
-        this.up = function () { };
-        this.down = function () { };
-        this.space = function () { };
-        this.mouseLeftClickListener = function (x, y) {
-            if (!_this.isOpen)
-                return;
-            var tileX = Math.floor(x / gameConstants_1.GameConstants.TILESIZE);
-            var tileY = Math.floor(y / gameConstants_1.GameConstants.TILESIZE);
-            var slotX = Math.floor((x - 51) / 19);
-            var slotY = Math.floor((y - 70) / 19);
-            var i = slotX + slotY * 9;
-            var backButtonLit = tileX >= BACK_BUTTON_X &&
-                tileY >= BACK_BUTTON_Y &&
-                tileX < BACK_BUTTON_X + 3 &&
-                tileY < BACK_BUTTON_Y + 1;
-            switch (_this.shopState) {
-                case ShopState.MAINSCREEN:
-                    var leftButtonLit = tileX >= LEFT_BUTTON_X &&
-                        tileY >= LEFT_BUTTON_Y &&
-                        tileX < LEFT_BUTTON_X + 5 &&
-                        tileY < LEFT_BUTTON_Y + 5;
-                    if (leftButtonLit)
-                        _this.shopState = ShopState.BUYING;
-                    var rightButtonLit = tileX >= RIGHT_BUTTON_X &&
-                        tileY >= RIGHT_BUTTON_Y &&
-                        tileX < RIGHT_BUTTON_X + 5 &&
-                        tileY < RIGHT_BUTTON_Y + 5;
-                    if (rightButtonLit)
-                        _this.shopState = ShopState.SELLING;
-                    if (backButtonLit)
-                        _this.close();
-                    break;
-                case ShopState.BUYING:
-                    if (i >= 0 && i < _this.shopData.buyItems.length) {
-                        if (_this.game.player.inventory.coinCount() >= _this.shopData.buyItems[i].price) {
-                            if (_this.shopData.buyItems[i].item === null) {
-                                switch (_this.shopData.buyItems[i].shopItem) {
-                                    case shopData_1.ShopItems.TORCH:
-                                        _this.game.player.sightRadius += 2;
-                                        _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
-                                        var t = Math.floor(0.5 * _this.game.player.sightRadius);
-                                        _this.shopData.buyItems[i].price = Math.round(Math.pow(5, t + Math.pow(1.05, t) - 2.05));
-                                        break;
-                                    case shopData_1.ShopItems.EMPTYHEART:
-                                        _this.game.player.maxHealth += 1;
-                                        _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
-                                        var h = _this.game.player.maxHealth;
-                                        _this.shopData.buyItems[i].price = Math.round(Math.pow(4, h + Math.pow(1.05, h) - 2.05));
-                                        break;
-                                    case shopData_1.ShopItems.FILLHEARTS:
-                                        _this.game.player.health = _this.game.player.maxHealth;
-                                        _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
-                                        break;
-                                }
-                            }
-                            else {
-                                _this.game.player.inventory.addItem(_this.shopData.buyItems[i].item);
-                                _this.game.player.inventory.subtractCoins(_this.shopData.buyItems[i].price);
-                            }
-                            if (!_this.shopData.buyItems[i].unlimited) {
-                                _this.shopData.buyItems.splice(i, 1);
-                            }
-                        }
-                    }
-                    if (backButtonLit)
-                        _this.shopState = ShopState.MAINSCREEN;
-                    break;
-                case ShopState.SELLING:
-                    if (i >= 0 && i < _this.game.player.inventory.items.length) {
-                        for (var _i = 0, _a = _this.shopData.sellItems; _i < _a.length; _i++) {
-                            var sellItem = _a[_i];
-                            if (sellItem.item.constructor === _this.game.player.inventory.items[i].constructor) {
-                                _this.game.player.inventory.addCoins(sellItem.price * _this.game.player.inventory.items[i].stackCount);
-                                _this.game.player.inventory.removeItem(_this.game.player.inventory.items[i]);
-                            }
-                        }
-                    }
-                    if (backButtonLit)
-                        _this.shopState = ShopState.MAINSCREEN;
-                    break;
-            }
-        };
-        this.textWrap = function (text, x, y, maxWidth) {
-            // returns y value for next line
-            var words = text.split(" ");
-            var line = "";
-            while (words.length > 0) {
-                if (game_1.Game.ctx.measureText(line + words[0]).width > maxWidth) {
-                    game_1.Game.fillText(line, x, y);
-                    line = "";
-                    y += 10;
-                }
-                else {
-                    if (line !== "")
-                        line += " ";
-                    line += words[0];
-                    words.splice(0, 1);
-                }
-            }
-            if (line !== " ") {
-                game_1.Game.fillText(line, x, y);
-                y += 10;
-            }
-            return y;
-        };
-        this.drawItemSlots = function () {
-            game_1.Game.drawShop(17, 5, 10.625, 9.4375, 0.5 * (17 - 10.625), 4.375, 10.625, 9.4375);
-            if (input_1.Input.mouseX >= 51 && input_1.Input.mouseX <= 221 && input_1.Input.mouseY >= 70 && input_1.Input.mouseY <= 145) {
-                var highlightedSlotX = Math.floor((input_1.Input.mouseX - 51) / 19) * 19 + 51;
-                var highlightedSlotY = Math.floor((input_1.Input.mouseY - 70) / 19) * 19 + 70;
-                game_1.Game.ctx.fillStyle = "#9babd7";
-                game_1.Game.ctx.fillRect(highlightedSlotX, highlightedSlotY, 18, 18);
-            }
-        };
-        this.drawBackButton = function (tileX, tileY) {
-            var backButtonLit = tileX >= BACK_BUTTON_X &&
-                tileY >= BACK_BUTTON_Y &&
-                tileX < BACK_BUTTON_X + 3 &&
-                tileY < BACK_BUTTON_Y + 1;
-            game_1.Game.drawShop(37, backButtonLit ? 1 : 0, 3, 1, BACK_BUTTON_X, BACK_BUTTON_Y, 3, 1);
-        };
-        this.draw = function () {
-            if (_this.isOpen) {
-                game_1.Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
-                game_1.Game.ctx.fillRect(0, 0, gameConstants_1.GameConstants.WIDTH, gameConstants_1.GameConstants.HEIGHT);
-                game_1.Game.drawShop(0, 0, 17, 17, 0, 0, 17, 17);
-                var tileX = Math.floor(input_1.Input.mouseX / gameConstants_1.GameConstants.TILESIZE);
-                var tileY = Math.floor(input_1.Input.mouseY / gameConstants_1.GameConstants.TILESIZE);
-                var slotX = Math.floor((input_1.Input.mouseX - 51) / 19);
-                var slotY = Math.floor((input_1.Input.mouseY - 70) / 19);
-                var i = slotX + slotY * 9;
-                switch (_this.shopState) {
-                    case ShopState.MAINSCREEN:
-                        _this.drawBackButton(tileX, tileY);
-                        var leftButtonLit = tileX >= LEFT_BUTTON_X &&
-                            tileY >= LEFT_BUTTON_Y &&
-                            tileX < LEFT_BUTTON_X + 5 &&
-                            tileY < LEFT_BUTTON_Y + 5;
-                        game_1.Game.drawShop(17 + (leftButtonLit ? 10 : 0), 0, 5, 5, LEFT_BUTTON_X, LEFT_BUTTON_Y, 5, 5);
-                        var rightButtonLit = tileX >= RIGHT_BUTTON_X &&
-                            tileY >= RIGHT_BUTTON_Y &&
-                            tileX < RIGHT_BUTTON_X + 5 &&
-                            tileY < RIGHT_BUTTON_Y + 5;
-                        game_1.Game.drawShop(22 + (rightButtonLit ? 10 : 0), 0, 5, 5, RIGHT_BUTTON_X, RIGHT_BUTTON_Y, 5, 5);
-                        break;
-                    case ShopState.BUYING:
-                        _this.drawItemSlots();
-                        _this.drawBackButton(tileX, tileY);
-                        for (var i_1 = 0; i_1 < _this.shopData.buyItems.length; i_1++) {
-                            var s = 9;
-                            var x = (52 + 19 * (i_1 % s)) / gameConstants_1.GameConstants.TILESIZE;
-                            var y = (71 + 19 * Math.floor(i_1 / s)) / gameConstants_1.GameConstants.TILESIZE;
-                            if (_this.shopData.buyItems[i_1].item)
-                                _this.shopData.buyItems[i_1].item.drawIcon(x, y);
-                            else {
-                                var xx = 0;
-                                var yy = 0;
-                                switch (_this.shopData.buyItems[i_1].shopItem) {
-                                    case shopData_1.ShopItems.TORCH:
-                                        xx = 21;
-                                        break;
-                                    case shopData_1.ShopItems.EMPTYHEART:
-                                        xx = 7;
-                                        break;
-                                    case shopData_1.ShopItems.FILLHEARTS:
-                                        xx = 8;
-                                        break;
-                                }
-                                game_1.Game.drawItem(xx, yy, 1, 2, x, y - 1, 1, 2);
-                            }
-                        }
-                        if (i >= 0 && i < _this.shopData.buyItems.length) {
-                            game_1.Game.ctx.font = gameConstants_1.GameConstants.SCRIPT_FONT_SIZE + "px Script";
-                            game_1.Game.ctx.fillStyle = "white";
-                            var desc = "";
-                            if (_this.shopData.buyItems[i].item === null) {
-                                switch (_this.shopData.buyItems[i].shopItem) {
-                                    case shopData_1.ShopItems.TORCH:
-                                        desc = "TORCH UPGRADE\n+2 sight radius";
-                                        break;
-                                    case shopData_1.ShopItems.EMPTYHEART:
-                                        desc = "EXTRA LIFE\n+1 total hearts";
-                                        break;
-                                    case shopData_1.ShopItems.FILLHEARTS:
-                                        desc = "RESTORE HEALTH\nFill all hearts";
-                                        break;
-                                }
-                            }
-                            else {
-                                desc = _this.shopData.buyItems[i].item.getDescription();
-                            }
-                            var lines = desc.split("\n");
-                            if (_this.game.player.inventory.coinCount() >= _this.shopData.buyItems[i].price)
-                                lines.push("CLICK TO BUY FOR " +
-                                    _this.shopData.buyItems[i].price +
-                                    (_this.shopData.buyItems[i].price === 1 ? " COIN" : " COINS"));
-                            else
-                                lines.push("COSTS " +
-                                    _this.shopData.buyItems[i].price +
-                                    (_this.shopData.buyItems[i].price === 1 ? " COIN" : " COINS"));
-                            var nextY = 147;
-                            for (var j = 0; j < lines.length; j++) {
-                                nextY = _this.textWrap(lines[j], 55, nextY, 162);
-                            }
-                            game_1.Game.ctx.font = gameConstants_1.GameConstants.FONT_SIZE + "px PixelFont";
-                        }
-                        break;
-                    case ShopState.SELLING:
-                        _this.drawItemSlots();
-                        _this.drawBackButton(tileX, tileY);
-                        for (var i_2 = 0; i_2 < _this.game.player.inventory.items.length; i_2++) {
-                            var s = 9;
-                            var x = (52 + 19 * (i_2 % s)) / gameConstants_1.GameConstants.TILESIZE;
-                            var y = (71 + 19 * Math.floor(i_2 / s)) / gameConstants_1.GameConstants.TILESIZE;
-                            _this.game.player.inventory.items[i_2].drawIcon(x, y);
-                        }
-                        if (i >= 0 && i < _this.game.player.inventory.items.length) {
-                            game_1.Game.ctx.font = gameConstants_1.GameConstants.SCRIPT_FONT_SIZE + "px Script";
-                            game_1.Game.ctx.fillStyle = "white";
-                            var desc = "";
-                            var price = -1;
-                            for (var _i = 0, _a = _this.shopData.sellItems; _i < _a.length; _i++) {
-                                var sellItem = _a[_i];
-                                if (sellItem.item.constructor === _this.game.player.inventory.items[i].constructor) {
-                                    desc = sellItem.description;
-                                    price = sellItem.price;
-                                }
-                            }
-                            var lines = desc.split("\n");
-                            if (price !== -1)
-                                lines.push("CLICK TO SELL FOR " +
-                                    price +
-                                    (price === 1 ? " COIN" : " COINS") +
-                                    (_this.game.player.inventory.items[i].stackCount > 1 ? " EACH" : ""));
-                            var nextY = 147;
-                            for (var j = 0; j < lines.length; j++) {
-                                nextY = _this.textWrap(lines[j], 55, nextY, 162);
-                            }
-                            game_1.Game.ctx.font = gameConstants_1.GameConstants.FONT_SIZE + "px PixelFont";
-                        }
-                        break;
-                }
-            }
-        };
-        this.game = game;
-        this.shopData = new shopData_1.ShopData();
-        var i = new shopData_1.BuyItem();
-        i.item = null;
-        i.shopItem = shopData_1.ShopItems.EMPTYHEART;
-        i.price = 1;
-        i.unlimited = true;
-        this.shopData.buyItems.push(i);
-        i = new shopData_1.BuyItem();
-        i.item = null;
-        i.shopItem = shopData_1.ShopItems.FILLHEARTS;
-        i.price = 1;
-        i.unlimited = true;
-        this.shopData.buyItems.push(i);
-        i = new shopData_1.BuyItem();
-        i.item = null;
-        i.shopItem = shopData_1.ShopItems.TORCH;
-        i.price = 1;
-        i.unlimited = true;
-        this.shopData.buyItems.push(i);
-        i = new shopData_1.BuyItem();
-        i.item = new armor_1.Armor(this.game.level, 0, 0);
-        i.price = 1;
-        i.unlimited = false;
-        this.shopData.buyItems.push(i);
-        var s = new shopData_1.SellItem();
-        s.item = new coal_1.Coal(this.game.level, 0, 0);
-        s.description = s.item.getDescription();
-        s.price = 1;
-        this.shopData.sellItems.push(s);
-        s = new shopData_1.SellItem();
-        s.item = new gold_1.Gold(this.game.level, 0, 0);
-        s.description = s.item.getDescription();
-        s.price = 10;
-        this.shopData.sellItems.push(s);
-        s = new shopData_1.SellItem();
-        s.item = new gem_1.Gem(this.game.level, 0, 0);
-        s.description = s.item.getDescription();
-        s.price = 100;
-        this.shopData.sellItems.push(s);
-        this.shopState = ShopState.MAINSCREEN;
-        input_1.Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-    }
-    return ShopScreen;
-}());
-exports.ShopScreen = ShopScreen;
-
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ShopItems;
-(function (ShopItems) {
-    ShopItems[ShopItems["TORCH"] = 0] = "TORCH";
-    ShopItems[ShopItems["EMPTYHEART"] = 1] = "EMPTYHEART";
-    ShopItems[ShopItems["FILLHEARTS"] = 2] = "FILLHEARTS";
-})(ShopItems = exports.ShopItems || (exports.ShopItems = {}));
-var BuyItem = /** @class */ (function () {
-    function BuyItem() {
-    }
-    return BuyItem;
-}());
-exports.BuyItem = BuyItem;
-var SellItem = /** @class */ (function () {
-    function SellItem() {
-    }
-    return SellItem;
-}());
-exports.SellItem = SellItem;
-var ShopData = /** @class */ (function () {
-    function ShopData() {
-        this.buyItems = [];
-        this.sellItems = [];
-    }
-    return ShopData;
-}());
-exports.ShopData = ShopData;
-
-
-/***/ }),
-/* 70 */
+/* 68 */,
+/* 69 */,
+/* 70 */,
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7113,84 +6725,25 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var weapon_1 = __webpack_require__(71);
-var sound_1 = __webpack_require__(5);
-var slashParticle_1 = __webpack_require__(33);
-var crate_1 = __webpack_require__(20);
-var barrel_1 = __webpack_require__(21);
-var Spear = /** @class */ (function (_super) {
-    __extends(Spear, _super);
-    function Spear(game) {
-        var _this = _super.call(this, game) || this;
-        _this.weaponMove = function (newX, newY) {
-            var newX2 = 2 * newX - _this.game.player.x;
-            var newY2 = 2 * newY - _this.game.player.y;
-            var flag = false;
-            var enemyHitCandidates = [];
-            for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
-                var e = _a[_i];
-                if (e.destroyable) {
-                    if (e.x === newX && e.y === newY) {
-                        if (e instanceof crate_1.Crate || e instanceof barrel_1.Barrel)
-                            return true;
-                        else {
-                            e.hurt(1);
-                            flag = true;
-                        }
-                    }
-                    if (e.x === newX2 && e.y === newY2 && !_this.game.level.levelArray[newX][newY].isSolid()) {
-                        if (!(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel))
-                            enemyHitCandidates.push(e);
-                    }
-                }
-            }
-            if (!flag && enemyHitCandidates.length > 0) {
-                for (var _b = 0, enemyHitCandidates_1 = enemyHitCandidates; _b < enemyHitCandidates_1.length; _b++) {
-                    var e = enemyHitCandidates_1[_b];
-                    e.hurt(1);
-                }
-                sound_1.Sound.hit();
-                _this.game.player.drawX = 0.5 * (_this.game.player.x - newX);
-                _this.game.player.drawY = 0.5 * (_this.game.player.y - newY);
-                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX, newY));
-                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX2, newY2));
-                _this.game.level.tick();
-                _this.game.shakeScreen(10 * _this.game.player.drawX, 10 * _this.game.player.drawY);
+var equippable_1 = __webpack_require__(14);
+var Weapon = /** @class */ (function (_super) {
+    __extends(Weapon, _super);
+    function Weapon(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.coEquippable = function (other) {
+            if (other instanceof Weapon)
                 return false;
-            }
-            if (flag) {
-                sound_1.Sound.hit();
-                _this.game.player.drawX = 0.5 * (_this.game.player.x - newX);
-                _this.game.player.drawY = 0.5 * (_this.game.player.y - newY);
-                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX, newY));
-                _this.game.level.tick();
-                _this.game.shakeScreen(10 * _this.game.player.drawX, 10 * _this.game.player.drawY);
-            }
-            return !flag;
-        };
-        return _this;
-    }
-    return Spear;
-}(weapon_1.Weapon));
-exports.Spear = Spear;
-
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Weapon = /** @class */ (function () {
-    function Weapon(game) {
-        this.weaponMove = function (newX, newY) {
             return true;
         };
-        this.game = game;
+        _this.weaponMove = function (newX, newY) {
+            return true;
+        };
+        if (level)
+            _this.game = level.game;
+        return _this;
     }
     return Weapon;
-}());
+}(equippable_1.Equippable));
 exports.Weapon = Weapon;
 
 
@@ -7389,7 +6942,7 @@ var LevelGenerator = /** @class */ (function () {
             var d = depth;
             var node;
             if (d == 0) {
-                node = new N(level_1.RoomType.DUNGEON, d, [
+                node = new N(level_1.RoomType.SHOP, d, [
                     new N(level_1.RoomType.DOWNLADDER, d, []),
                     new N(level_1.RoomType.SHOP, d, []),
                 ]);
@@ -7489,6 +7042,317 @@ var LevelGenerator = /** @class */ (function () {
     return LevelGenerator;
 }());
 exports.LevelGenerator = LevelGenerator;
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(0);
+var enemy_1 = __webpack_require__(3);
+var coin_1 = __webpack_require__(10);
+var coal_1 = __webpack_require__(31);
+var gem_1 = __webpack_require__(11);
+var gameConstants_1 = __webpack_require__(2);
+var shotgun_1 = __webpack_require__(75);
+var OPEN_TIME = 150;
+var FILL_COLOR = "#5a595b";
+var OUTLINE_COLOR = "#292c36";
+var FULL_OUTLINE = "white";
+var VendingMachine = /** @class */ (function (_super) {
+    __extends(VendingMachine, _super);
+    function VendingMachine(level, game, x, y) {
+        var _this = _super.call(this, level, game, x, y) || this;
+        _this.open = false;
+        _this.openTime = 0;
+        _this.isInf = false;
+        _this.quantity = 1;
+        _this.buyAnimAmount = 0;
+        _this.interact = function () {
+            if (_this.isInf || _this.quantity > 0) {
+                _this.open = true;
+                _this.openTime = Date.now();
+                _this.game.player.openVendingMachine = _this;
+            }
+        };
+        _this.close = function () {
+            _this.open = false;
+            _this.game.player.openVendingMachine = null;
+        };
+        _this.space = function () {
+            if (_this.open) {
+                // check if player can pay
+                for (var _i = 0, _a = _this.costItems; _i < _a.length; _i++) {
+                    var i_1 = _a[_i];
+                    if (!_this.game.player.inventory.hasItemCount(i_1))
+                        return;
+                }
+                for (var _b = 0, _c = _this.costItems; _b < _c.length; _b++) {
+                    var i_2 = _c[_b];
+                    _this.game.player.inventory.subtractItemCount(i_2);
+                }
+                var xs = [_this.x - 1, _this.x + 1, _this.x];
+                var ys = [_this.y, _this.y, _this.y + 1];
+                var i = 0;
+                do {
+                    i = game_1.Game.rand(0, xs.length - 1);
+                } while (xs[i] === _this.game.player.x && ys[i] === _this.game.player.y);
+                var newItem = new _this.item.constructor();
+                newItem = newItem.constructor(_this.level, xs[i], ys[i]);
+                _this.level.items.push(newItem);
+                console.log(newItem);
+                if (!_this.isInf) {
+                    _this.quantity--;
+                    if (_this.quantity <= 0)
+                        _this.close();
+                }
+                _this.buyAnimAmount = 0.99;
+                _this.game.shakeScreen(0, 4);
+            }
+        };
+        _this.draw = function () {
+            var tileX = 19;
+            if (!_this.isInf && _this.quantity === 0)
+                tileX = 20;
+            game_1.Game.drawObj(tileX, 0, 1, 2, _this.x, _this.y - 1, 1, 2, "black", _this.shadeAmount());
+        };
+        _this.drawTopLayer = function () {
+            if (_this.open) {
+                var s = Math.min(18, (18 * (Date.now() - _this.openTime)) / OPEN_TIME); // size of box
+                var b = 2; // border
+                var g = -2; // gap
+                var hg = 3; // highlighted growth
+                var ob = 1; // outer border
+                var width = (_this.costItems.length + 2) * (s + 2 * b + g) - g;
+                var height = s + 2 * b + g - g;
+                var cx = (_this.x + 0.5) * gameConstants_1.GameConstants.TILESIZE;
+                var cy = (_this.y - 1.5) * gameConstants_1.GameConstants.TILESIZE;
+                game_1.Game.ctx.fillStyle = FULL_OUTLINE;
+                game_1.Game.ctx.fillRect(Math.round(cx - 0.5 * width) - ob, Math.round(cy - 0.5 * height) - ob, Math.round(width + 2 * ob), Math.round(height + 2 * ob));
+                for (var x = 0; x < _this.costItems.length + 2; x++) {
+                    game_1.Game.ctx.fillStyle = OUTLINE_COLOR;
+                    game_1.Game.ctx.fillRect(Math.round(cx - 0.5 * width + x * (s + 2 * b + g)), Math.round(cy - 0.5 * height), Math.round(s + 2 * b), Math.round(s + 2 * b));
+                    if (x !== _this.costItems.length) {
+                        game_1.Game.ctx.fillStyle = FILL_COLOR;
+                        game_1.Game.ctx.fillRect(Math.round(cx - 0.5 * width + x * (s + 2 * b + g) + b), Math.round(cy - 0.5 * height + b), Math.round(s), Math.round(s));
+                    }
+                }
+                if (Date.now() - _this.openTime >= OPEN_TIME) {
+                    for (var i = 0; i < _this.costItems.length + 2; i++) {
+                        var drawX = Math.round(cx -
+                            0.5 * width +
+                            i * (s + 2 * b + g) +
+                            b +
+                            Math.floor(0.5 * s) -
+                            0.5 * gameConstants_1.GameConstants.TILESIZE);
+                        var drawY = Math.round(cy - 0.5 * height + b + Math.floor(0.5 * s) - 0.5 * gameConstants_1.GameConstants.TILESIZE);
+                        var drawXScaled = drawX / gameConstants_1.GameConstants.TILESIZE;
+                        var drawYScaled = drawY / gameConstants_1.GameConstants.TILESIZE;
+                        if (i < _this.costItems.length) {
+                            var a = 1;
+                            if (!_this.game.player.inventory.hasItemCount(_this.costItems[i]))
+                                a = 0.15;
+                            _this.costItems[i].drawIcon(drawXScaled, drawYScaled, a);
+                        }
+                        else if (i === _this.costItems.length) {
+                            game_1.Game.drawFX(0, 1, 1, 1, drawXScaled, drawYScaled, 1, 1);
+                        }
+                        else if (i === _this.costItems.length + 1) {
+                            _this.item.drawIcon(drawXScaled, drawYScaled);
+                        }
+                    }
+                }
+                _this.buyAnimAmount *= _this.buyAnimAmount;
+                game_1.Game.ctx.globalAlpha = _this.buyAnimAmount;
+                game_1.Game.ctx.fillStyle = FULL_OUTLINE;
+                game_1.Game.ctx.fillRect(Math.round(cx - 0.5 * width) - ob, Math.round(cy - 0.5 * height) - ob, Math.round(width + 2 * ob), Math.round(height + 2 * ob));
+                game_1.Game.ctx.globalAlpha = 1.0;
+            }
+        };
+        _this.destroyable = false;
+        _this.pushable = false;
+        _this.chainPushable = false;
+        _this.interactable = true;
+        var c = new coin_1.Coin(level, 0, 0);
+        c.stackCount = 5;
+        _this.costItems = [c, new coal_1.Coal(level, 0, 0), new gem_1.Gem(level, 0, 0)];
+        _this.item = new shotgun_1.Shotgun(level, 0, 0);
+        return _this;
+    }
+    return VendingMachine;
+}(enemy_1.Enemy));
+exports.VendingMachine = VendingMachine;
+
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var weapon_1 = __webpack_require__(71);
+var sound_1 = __webpack_require__(5);
+var slashParticle_1 = __webpack_require__(33);
+var crate_1 = __webpack_require__(20);
+var barrel_1 = __webpack_require__(21);
+var Dagger = /** @class */ (function (_super) {
+    __extends(Dagger, _super);
+    function Dagger(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.weaponMove = function (newX, newY) {
+            var flag = false;
+            for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                if (e.destroyable &&
+                    !(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel) &&
+                    e.x === newX &&
+                    e.y === newY) {
+                    e.hurt(1);
+                    flag = true;
+                }
+            }
+            if (flag) {
+                sound_1.Sound.hit();
+                _this.game.player.drawX = 0.5 * (_this.game.player.x - newX);
+                _this.game.player.drawY = 0.5 * (_this.game.player.y - newY);
+                _this.game.level.particles.push(new slashParticle_1.SlashParticle(newX, newY));
+                _this.game.level.tick();
+                _this.game.shakeScreen(10 * _this.game.player.drawX, 10 * _this.game.player.drawY);
+            }
+            return !flag;
+        };
+        _this.getDescription = function () {
+            return "DAGGER\nDamage 1";
+        };
+        _this.tileX = 22;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Dagger;
+}(weapon_1.Weapon));
+exports.Dagger = Dagger;
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var weapon_1 = __webpack_require__(71);
+var sound_1 = __webpack_require__(5);
+var crate_1 = __webpack_require__(20);
+var barrel_1 = __webpack_require__(21);
+var genericParticle_1 = __webpack_require__(4);
+var Shotgun = /** @class */ (function (_super) {
+    __extends(Shotgun, _super);
+    function Shotgun(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.weaponMove = function (newX, newY) {
+            var newX2 = 2 * newX - _this.game.player.x;
+            var newY2 = 2 * newY - _this.game.player.y;
+            var newX3 = 3 * newX - 2 * _this.game.player.x;
+            var newY3 = 3 * newY - 2 * _this.game.player.y;
+            var flag = false;
+            var range = 3;
+            if (!_this.game.level.tileInside(newX, newY) || _this.game.level.levelArray[newX][newY].isSolid())
+                return true;
+            else if (!_this.game.level.tileInside(newX2, newY2) ||
+                _this.game.level.levelArray[newX2][newY2].isSolid())
+                range = 1;
+            else if (!_this.game.level.tileInside(newX3, newY3) ||
+                _this.game.level.levelArray[newX3][newY3].isSolid())
+                range = 2;
+            for (var _i = 0, _a = _this.game.level.enemies; _i < _a.length; _i++) {
+                var e = _a[_i];
+                if (!(e instanceof crate_1.Crate || e instanceof barrel_1.Barrel) && e.destroyable) {
+                    if (e.x === newX && e.y === newY && range >= 1) {
+                        e.hurt(1);
+                        flag = true;
+                    }
+                    else if (e.x === newX2 && e.y === newY2 && range >= 2) {
+                        e.hurt(1);
+                        flag = true;
+                    }
+                    else if (e.x === newX3 && e.y === newY3 && range >= 3) {
+                        e.hurt(0.5);
+                        flag = true;
+                    }
+                }
+            }
+            var targetX = newX3;
+            var targetY = newY3;
+            if (flag) {
+                sound_1.Sound.hit();
+                _this.game.player.drawX = 0.5 * (_this.game.player.x - newX);
+                _this.game.player.drawY = 0.5 * (_this.game.player.y - newY);
+                genericParticle_1.GenericParticle.shotgun(_this.game.level, _this.game.player.x + 0.5, _this.game.player.y, targetX + 0.5, targetY, "black");
+                genericParticle_1.GenericParticle.shotgun(_this.game.level, _this.game.player.x + 0.5, _this.game.player.y, targetX + 0.5, targetY, "#ffddff");
+                var gp = new genericParticle_1.GenericParticle(_this.game.level, 0.5 * (newX + _this.game.player.x) + 0.5, 0.5 * (newY + _this.game.player.y), 0, 1, 0, 0, 0, "white", 0);
+                gp.expirationTimer = 10;
+                _this.game.level.particles.push(gp);
+                //this.game.level.particles.push(new SlashParticle(newX, newY));
+                //this.game.level.particles.push(new SlashParticle(newX2, newY2));
+                //this.game.level.particles.push(new SlashParticle(newX3, newY3));
+                _this.game.level.tick();
+                _this.game.shakeScreen(10 * _this.game.player.drawX, 10 * _this.game.player.drawY);
+            }
+            return !flag;
+        };
+        _this.getDescription = function () {
+            return "SHOTGUN\nRange 3, penetration";
+        };
+        _this.tileX = 26;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Shotgun;
+}(weapon_1.Weapon));
+exports.Shotgun = Shotgun;
 
 
 /***/ })

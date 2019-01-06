@@ -52,7 +52,7 @@ export class Item {
   };
 
   onPickup = (player: Player) => {
-    if (!this.pickedUp) {
+    if (!this.pickedUp && !player.inventory.isFull()) {
       this.pickupSound();
       this.pickedUp = true;
       player.inventory.addItem(this);
@@ -101,13 +101,15 @@ export class Item {
       Game.ctx.globalAlpha = 1.0;
     }
   };
-  drawIcon = (x: number, y: number) => {
+  drawIcon = (x: number, y: number, opacity = 1) => {
+    Game.ctx.globalAlpha = opacity;
     Game.drawItem(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
+    Game.ctx.globalAlpha = 1;
 
     let countText = this.stackCount <= 1 ? "" : "" + this.stackCount;
     let width = Game.ctx.measureText(countText).width;
-    let countX = 16 - width;
-    let countY = 8;
+    let countX = 17 - width;
+    let countY = 4;
 
     Game.ctx.fillStyle = "black";
     for (let xx = -1; xx <= 1; xx++) {

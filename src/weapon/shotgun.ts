@@ -6,11 +6,13 @@ import { SlashParticle } from "../particle/slashParticle";
 import { Crate } from "../enemy/crate";
 import { Barrel } from "../enemy/barrel";
 import { GenericParticle } from "../particle/genericParticle";
-import { ShopTable } from "../enemy/shopTable";
 
 export class Shotgun extends Weapon {
-  constructor(game: Game) {
-    super(game);
+  constructor(level: Level, x: number, y: number) {
+    super(level, x, y);
+
+    this.tileX = 26;
+    this.tileY = 0;
   }
 
   weaponMove = (newX: number, newY: number): boolean => {
@@ -89,5 +91,9 @@ export class Shotgun extends Weapon {
       this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
     }
     return !flag;
+  };
+
+  getDescription = (): string => {
+    return "SHOTGUN\nRange 3, penetration";
   };
 }

@@ -7,8 +7,11 @@ import { Crate } from "../enemy/crate";
 import { Barrel } from "../enemy/barrel";
 
 export class Dagger extends Weapon {
-  constructor(game: Game) {
-    super(game);
+  constructor(level: Level, x: number, y: number) {
+    super(level, x, y);
+
+    this.tileX = 22;
+    this.tileY = 0;
   }
 
   weaponMove = (newX: number, newY: number): boolean => {
@@ -33,5 +36,9 @@ export class Dagger extends Weapon {
       this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
     }
     return !flag;
+  };
+
+  getDescription = (): string => {
+    return "DAGGER\nDamage 1";
   };
 }

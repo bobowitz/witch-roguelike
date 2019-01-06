@@ -12,20 +12,9 @@ import { DashParticle } from "./particle/dashParticle";
 import { LevelConstants } from "./levelConstants";
 import { Chest } from "./enemy/chest";
 import { Map } from "./map";
-import { GenericParticle } from "./particle/genericParticle";
 import { SlashParticle } from "./particle/slashParticle";
-import { SkullEnemy } from "./enemy/skullEnemy";
-import { KnightEnemy } from "./enemy/knightEnemy";
 import { HealthBar } from "./healthbar";
-import { EmeraldResource } from "./enemy/emeraldResource";
-import { Gem } from "./item/gem";
-import { ShopScreen } from "./shopScreen";
-import { Coal } from "./item/coal";
-import { Weapon } from "./weapon/weapon";
-import { Dagger } from "./weapon/dagger";
-import { Spear } from "./weapon/spear";
-import { Shotgun } from "./weapon/shotgun";
-import { TurnState } from "./level";
+import { VendingMachine } from "./enemy/vendingMachine";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -52,12 +41,11 @@ export class Player {
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
-  shopScreen: ShopScreen;
   missProb: number;
   sightRadius: number;
   guiHeartFrame: number;
   map: Map;
-  weapon: Weapon;
+  openVendingMachine: VendingMachine;
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
@@ -93,30 +81,23 @@ export class Player {
     this.guiHeartFrame = 0;
 
     this.inventory = new Inventory(game);
-    this.shopScreen = new ShopScreen(game);
 
     this.missProb = 0.1;
 
     this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
 
     this.map = new Map(this.game);
-    this.weapon = new Spear(this.game);
   }
 
   tapListener = () => {
     this.inventory.open();
   };
   iListener = () => {
-    this.shopScreen.close(); // in case the shop is open
     this.inventory.open();
   };
   leftListener = () => {
     if (this.inventory.isOpen) {
       this.inventory.left();
-      return;
-    }
-    if (this.shopScreen.isOpen) {
-      this.shopScreen.left();
       return;
     }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
@@ -134,10 +115,6 @@ export class Player {
       this.inventory.right();
       return;
     }
-    if (this.shopScreen.isOpen) {
-      this.shopScreen.right();
-      return;
-    }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       this.tryMove(this.x + 1, this.y);
       this.direction = PlayerDirection.RIGHT;
@@ -146,10 +123,6 @@ export class Player {
   upListener = () => {
     if (this.inventory.isOpen) {
       this.inventory.up();
-      return;
-    }
-    if (this.shopScreen.isOpen) {
-      this.shopScreen.up();
       return;
     }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
@@ -162,10 +135,6 @@ export class Player {
       this.inventory.down();
       return;
     }
-    if (this.shopScreen.isOpen) {
-      this.shopScreen.down();
-      return;
-    }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
       this.tryMove(this.x, this.y + 1);
       this.direction = PlayerDirection.DOWN;
@@ -176,9 +145,8 @@ export class Player {
       this.inventory.space();
       return;
     }
-    if (this.shopScreen.isOpen) {
-      this.shopScreen.space();
-      return;
+    if (this.openVendingMachine) {
+      this.openVendingMachine.space();
     }
   };
 
@@ -245,7 +213,7 @@ export class Player {
 
     if (this.dead) return;
 
-    if (!this.weapon.weaponMove(x, y)) {
+    if (this.inventory.hasWeapon() && !this.inventory.getWeapon().weaponMove(x, y)) {
       return;
     }
 
@@ -260,7 +228,7 @@ export class Player {
           let nextX = x + dx;
           let nextY = y + dy;
           let foundEnd = false; // end of the train of whatever we're pushing
-          let enemyEnd = false; // end of the train is a solid enemy (none currently exist)
+          let enemyEnd = false; // end of the train is a solid enemy (i.e. potted plant)
           let pushedEnemies = [];
           while (true) {
             foundEnd = true;
@@ -379,6 +347,8 @@ export class Player {
   move = (x: number, y: number) => {
     Sound.playerStoneFootstep();
 
+    if (this.openVendingMachine) this.openVendingMachine.close();
+
     this.drawX = x - this.x;
     this.drawY = y - this.y;
     this.x = x;
@@ -465,7 +435,6 @@ export class Player {
 
   drawGUI = () => {
     if (!this.dead) {
-      this.shopScreen.draw();
       this.inventory.draw();
 
       if (this.guiHeartFrame > 0) this.guiHeartFrame++;
@@ -488,13 +457,13 @@ export class Player {
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
-      Game.fillText(
+      Game.ctx.fillText(
         gameOverString,
         GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
         GameConstants.HEIGHT / 2
       );
       let refreshString = "[refresh to restart]";
-      Game.fillText(
+      Game.ctx.fillText(
         refreshString,
         GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
         GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE

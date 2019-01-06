@@ -86,6 +86,7 @@ export class Game {
       Sound.playMusic(); // loops forever
 
       this.player = new Player(this, 0, 0);
+
       this.levels = Array<Level>();
       this.levelgen = new LevelGenerator();
       this.levelgen.generate(this, 0);

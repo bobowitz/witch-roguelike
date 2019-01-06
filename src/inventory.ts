@@ -11,6 +11,9 @@ import { Coin } from "./item/coin";
 import { Gold } from "./item/gold";
 import { Gem } from "./item/gem";
 import { Coal } from "./item/coal";
+import { Weapon } from "./weapon/weapon";
+import { Dagger } from "./weapon/dagger";
+import { Level } from "./level";
 
 let OPEN_TIME = 100; // milliseconds
 let FILL_COLOR = "#5a595b";
@@ -30,6 +33,7 @@ export class Inventory {
   openTime: number;
   coins: number;
   equipAnimAmount: Array<number>;
+  weapon: Weapon;
 
   constructor(game: Game) {
     this.game = game;
@@ -40,16 +44,19 @@ export class Inventory {
       this.equipAnimAmount[i] = 0;
     }
     //Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-    this.coins = 0;
+    this.coins = 100;
     this.openTime = Date.now();
-    this.items.push(new Key(this.game.level, 0, 0));
-    this.items.push(new Key(this.game.level, 0, 0));
-    this.items.push(new Key(this.game.level, 0, 0));
-    this.items.push(new Key(this.game.level, 0, 0));
-    this.items.push(new Armor(this.game.level, 0, 0));
-    this.items.push(new Armor(this.game.level, 0, 0));
-    this.items.push(new Armor(this.game.level, 0, 0));
-    this.items.push(new Armor(this.game.level, 0, 0));
+
+    this.weapon = null;
+
+    this.addItem(new Dagger({ game: this.game } as Level, 0, 0));
+
+    this.addItem(new Coal(this.game.level, 0, 0));
+    this.addItem(new Coal(this.game.level, 0, 0));
+    this.addItem(new Coal(this.game.level, 0, 0));
+    this.addItem(new Gem(this.game.level, 0, 0));
+    this.addItem(new Gem(this.game.level, 0, 0));
+    this.addItem(new Gem(this.game.level, 0, 0));
   }
 
   open = () => {
@@ -83,6 +90,10 @@ export class Inventory {
     if (this.items[i] instanceof Equippable) {
       let e = this.items[i] as Equippable;
       e.equipped = !e.equipped; // toggle
+      if (e instanceof Weapon) {
+        if (e.equipped) this.weapon = e;
+        else this.weapon = null;
+      }
       if (e.equipped) {
         for (const i of this.items) {
           if (i instanceof Equippable && i !== e && !e.coEquippable(i)) {
@@ -105,12 +116,34 @@ export class Inventory {
     return null;
   };
 
+  hasItemCount = (item: Item) => {
+    if (item instanceof Coin) return this.coinCount() >= item.stackCount;
+    for (const i of this.items) {
+      if (i.constructor === item.constructor && i.stackCount >= item.stackCount) return true;
+    }
+    return false;
+  };
+
+  subtractItemCount = (item: Item) => {
+    if (item instanceof Coin) {
+      this.subtractCoins(item.stackCount);
+      return;
+    }
+    for (const i of this.items) {
+      if (i.constructor === item.constructor) {
+        i.stackCount -= item.stackCount;
+        if (i.stackCount <= 0) this.items.splice(this.items.indexOf(i), 1);
+      }
+    }
+  };
+
   coinCount = (): number => {
     return this.coins;
   };
 
   subtractCoins = (n: number) => {
     this.coins -= n;
+    if (this.coins < 0) this.coins = 0;
   };
 
   addCoins = (n: number) => {
@@ -155,6 +188,14 @@ export class Inventory {
     return null;
   };
 
+  hasWeapon = () => {
+    return this.weapon !== null;
+  };
+
+  getWeapon = () => {
+    return this.weapon;
+  };
+
   tick = () => {
     for (const i of this.items) {
       i.tickInInventory();
@@ -192,8 +233,8 @@ export class Inventory {
 
     let countText = "" + this.coins;
     let width = Game.ctx.measureText(countText).width;
-    let countX = 16 - width;
-    let countY = 2;
+    let countX = 4 - width;
+    let countY = -1;
 
     Game.ctx.fillStyle = "black";
     for (let xx = -1; xx <= 1; xx++) {

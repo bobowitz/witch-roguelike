@@ -39,7 +39,7 @@ import { GoldResource } from "./enemy/goldResource";
 import { EmeraldResource } from "./enemy/emeraldResource";
 import { Chasm } from "./tile/chasm";
 import { Spawner } from "./enemy/spawner";
-import { ShopTable } from "./enemy/shopTable";
+import { VendingMachine } from "./enemy/vendingMachine";
 import { WallSideTorch } from "./tile/wallSideTorch";
 import { LightSource } from "./lightSource";
 import { ChargeEnemy } from "./enemy/chargeEnemy";
@@ -689,7 +689,7 @@ export class Level {
 
     let cX = Math.floor(this.roomX + this.width / 2 - 1);
     let cY = Math.floor(this.roomY + this.height / 2);
-    this.enemies.push(new ShopTable(this, this.game, cX, cY));
+    this.enemies.push(new VendingMachine(this, this.game, cX, cY));
   };
 
   constructor(

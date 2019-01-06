@@ -10,13 +10,9 @@ export class Coin extends Item {
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
 
-    this.tileX = 20;
+    this.tileX = 19;
     this.tileY = 0;
 
     this.stackable = true;
   }
-
-  getDescription = (): string => {
-    return "COINS\nA pound of gold coins.";
-  };
 }
