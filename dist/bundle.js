@@ -4455,7 +4455,7 @@ var LevelGenerator = /** @class */ (function () {
             var d = depth;
             var node;
             if (d == 0) {
-                node = new N(level_1.RoomType.SPAWNER, d, [
+                node = new N(level_1.RoomType.DUNGEON, d, [
                     new N(level_1.RoomType.DOWNLADDER, d, []),
                     new N(level_1.RoomType.SHOP, d, []),
                 ]);

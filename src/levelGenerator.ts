@@ -224,7 +224,7 @@ export class LevelGenerator {
     let d = depth;
     let node;
     if (d == 0) {
-      node = new N(RoomType.SPAWNER, d, [
+      node = new N(RoomType.DUNGEON, d, [
         new N(RoomType.DOWNLADDER, d, []),
         new N(RoomType.SHOP, d, []),
       ]);
