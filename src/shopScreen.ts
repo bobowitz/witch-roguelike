@@ -190,7 +190,7 @@ export class ShopScreen {
 
     while (words.length > 0) {
       if (Game.ctx.measureText(line + words[0]).width > maxWidth) {
-        Game.ctx.fillText(line, x, y);
+        Game.fillText(line, x, y);
         line = "";
         y += 10;
       } else {
@@ -200,7 +200,7 @@ export class ShopScreen {
       }
     }
     if (line !== " ") {
-      Game.ctx.fillText(line, x, y);
+      Game.fillText(line, x, y);
       y += 10;
     }
     return y;

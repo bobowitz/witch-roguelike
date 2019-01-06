@@ -239,6 +239,10 @@ export class Game {
     this.screenShakeY = shakeY;
   };
 
+  static fillText = (text: string, x: number, y: number, maxWidth?: number) => {
+    Game.ctx.fillText(text, Math.round(x), Math.round(y), maxWidth);
+  };
+
   draw = () => {
     Game.ctx.globalAlpha = 1;
     Game.ctx.fillStyle = "black";
@@ -448,7 +452,7 @@ export class Game {
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
     Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
     Game.ctx.textBaseline = "top";
-    Game.ctx.fillText(
+    Game.fillText(
       GameConstants.VERSION,
       GameConstants.WIDTH - Game.ctx.measureText(GameConstants.VERSION).width - 1,
       -3

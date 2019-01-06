@@ -168,7 +168,7 @@ export class Inventory {
 
     while (words.length > 0) {
       if (Game.ctx.measureText(line + words[0]).width > maxWidth) {
-        Game.ctx.fillText(line, x, y);
+        Game.fillText(line, x, y);
         line = "";
         y += 10;
       } else {
@@ -178,7 +178,7 @@ export class Inventory {
       }
     }
     if (line !== " ") {
-      Game.ctx.fillText(line, x, y);
+      Game.fillText(line, x, y);
       y += 10;
     }
     return y;
@@ -199,7 +199,7 @@ export class Inventory {
     for (let xx = -1; xx <= 1; xx++) {
       for (let yy = -1; yy <= 1; yy++) {
         Game.ctx.fillStyle = GameConstants.OUTLINE;
-        Game.ctx.fillText(
+        Game.fillText(
           countText,
           coinX * GameConstants.TILESIZE + countX + xx,
           coinY * GameConstants.TILESIZE + countY + yy
@@ -208,7 +208,7 @@ export class Inventory {
     }
 
     Game.ctx.fillStyle = "white";
-    Game.ctx.fillText(
+    Game.fillText(
       countText,
       coinX * GameConstants.TILESIZE + countX,
       coinY * GameConstants.TILESIZE + countY
@@ -387,7 +387,7 @@ export class Inventory {
           Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
           Game.ctx.fillStyle = "white";
           let w = Game.ctx.measureText(topPhrase).width;
-          Game.ctx.fillText(topPhrase, 0.5 * (GameConstants.WIDTH - w), 5);
+          Game.fillText(topPhrase, 0.5 * (GameConstants.WIDTH - w), 5);
         }
 
         let lines = this.items[i].getDescription().split("\n");

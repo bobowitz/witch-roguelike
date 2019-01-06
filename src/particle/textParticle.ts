@@ -50,12 +50,12 @@ export class TextParticle extends Particle {
       for (let xx = -1; xx <= 1; xx++) {
         for (let yy = -1; yy <= 1; yy++) {
           Game.ctx.fillStyle = GameConstants.OUTLINE;
-          Game.ctx.fillText(this.text, this.x - width / 2 + xx, this.y - this.z + yy);
+          Game.fillText(this.text, this.x - width / 2 + xx, this.y - this.z + yy);
         }
       }
 
       Game.ctx.fillStyle = this.color;
-      Game.ctx.fillText(this.text, this.x - width / 2, this.y - this.z);
+      Game.fillText(this.text, this.x - width / 2, this.y - this.z);
     }
   };
 }

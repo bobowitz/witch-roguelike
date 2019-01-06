@@ -113,7 +113,7 @@ export class Item {
     for (let xx = -1; xx <= 1; xx++) {
       for (let yy = -1; yy <= 1; yy++) {
         Game.ctx.fillStyle = GameConstants.OUTLINE;
-        Game.ctx.fillText(
+        Game.fillText(
           countText,
           x * GameConstants.TILESIZE + countX + xx,
           y * GameConstants.TILESIZE + countY + yy
@@ -122,7 +122,7 @@ export class Item {
     }
 
     Game.ctx.fillStyle = "white";
-    Game.ctx.fillText(
+    Game.fillText(
       countText,
       x * GameConstants.TILESIZE + countX,
       y * GameConstants.TILESIZE + countY

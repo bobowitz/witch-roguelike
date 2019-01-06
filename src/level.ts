@@ -1230,7 +1230,7 @@ export class Level {
     let old = Game.ctx.font;
     Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
-    Game.ctx.fillText(
+    Game.fillText(
       this.name,
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
       1

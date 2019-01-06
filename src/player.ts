@@ -10,7 +10,6 @@ import { Sound } from "./sound";
 import { TextParticle } from "./particle/textParticle";
 import { DashParticle } from "./particle/dashParticle";
 import { LevelConstants } from "./levelConstants";
-import { Stats } from "./stats";
 import { Chest } from "./enemy/chest";
 import { Map } from "./map";
 import { GenericParticle } from "./particle/genericParticle";
@@ -50,7 +49,6 @@ export class Player {
   health: number;
   maxHealth: number;
   healthBar: HealthBar;
-  stats: Stats;
   dead: boolean;
   lastTickHealth: number;
   inventory: Inventory;
@@ -88,7 +86,6 @@ export class Player {
     this.health = 1;
     this.maxHealth = 1;
     this.healthBar = new HealthBar();
-    this.stats = new Stats();
     this.dead = false;
     this.flashing = false;
     this.flashingFrame = 0;
@@ -491,13 +488,13 @@ export class Player {
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over.";
-      Game.ctx.fillText(
+      Game.fillText(
         gameOverString,
         GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
         GameConstants.HEIGHT / 2
       );
       let refreshString = "[refresh to restart]";
-      Game.ctx.fillText(
+      Game.fillText(
         refreshString,
         GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
         GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
