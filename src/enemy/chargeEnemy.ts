@@ -36,8 +36,8 @@ export class ChargeEnemy extends Enemy {
     this.frame = 0;
     this.health = 1;
     this.maxHealth = 1;
-    this.tileX = 1;
-    this.tileY = 0;
+    this.tileX = 17;
+    this.tileY = 8;
     this.seenPlayer = true;
     this.deathParticleColor = "#ffffff";
 
@@ -162,8 +162,8 @@ export class ChargeEnemy extends Enemy {
           this.shadeAmount()
         );
       Game.drawMob(
-        this.tileX + this.state,
-        this.tileY + this.direction * 2,
+        this.tileX,
+        this.tileY,
         1,
         2,
         this.x - this.drawX,

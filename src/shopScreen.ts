@@ -91,6 +91,12 @@ export class ShopScreen {
     this.isOpen = false;
   };
 
+  left = () => {};
+  right = () => {};
+  up = () => {};
+  down = () => {};
+  space = () => {};
+
   mouseLeftClickListener = (x: number, y: number) => {
     if (!this.isOpen) return;
 

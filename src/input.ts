@@ -4,6 +4,9 @@ import { Game } from "./game";
 export const Input = {
   _pressed: {},
 
+  isTapHold: false,
+  tapStartTime: null,
+  IS_TAP_HOLD_THRESH: 100,
   iListener: function() {},
   iUpListener: function() {},
   mListener: function() {},
@@ -12,10 +15,12 @@ export const Input = {
   rightListener: function() {},
   upListener: function() {},
   downListener: function() {},
+  spaceListener: function() {},
   leftSwipeListener: function() {},
   rightSwipeListener: function() {},
   upSwipeListener: function() {},
   downSwipeListener: function() {},
+  tapListener: function() {},
 
   mouseLeftClickListeners: [],
 
@@ -68,6 +73,9 @@ export const Input = {
       case Input.S:
       case Input.DOWN:
         Input.downListener();
+        break;
+      case Input.SPACE:
+        Input.spaceListener();
         break;
       case Input.M:
         Input.mListener();
@@ -127,6 +135,8 @@ export const Input = {
     Input.currentX = firstTouch.clientX;
     Input.currentY = firstTouch.clientY;
 
+    Input.tapStartTime = Date.now();
+
     Input.updateMousePos({
       clientX: Input.currentX,
       clientY: Input.currentY,
@@ -176,9 +186,12 @@ export const Input = {
   handleTouchEnd: function(evt) {
     evt.preventDefault();
 
+    if (!Input.isTapHold && !Input.swiped) Input.tapListener();
+    Input.isTapHold = false;
+    Input.tapStartTime = null;
+
     // we've already swiped, don't count the click
     if (Input.swiped) return;
-
     Input.mouseClickListener({
       button: 0,
       clientX: Input.currentX,
@@ -189,6 +202,11 @@ export const Input = {
       clientX: 0,
       clientY: 0,
     } as MouseEvent);
+  },
+
+  checkIsTapHold: function() {
+    if (Input.tapStartTime !== null && Date.now() >= Input.tapStartTime + Input.IS_TAP_HOLD_THRESH)
+      Input.isTapHold = true;
   },
 };
 window.addEventListener(

@@ -26,6 +26,7 @@ import { Weapon } from "./weapon/weapon";
 import { Dagger } from "./weapon/dagger";
 import { Spear } from "./weapon/spear";
 import { Shotgun } from "./weapon/shotgun";
+import { TurnState } from "./level";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -73,15 +74,16 @@ export class Player {
     this.direction = PlayerDirection.UP;
 
     Input.iListener = this.iListener;
-    Input.iUpListener = this.iUpListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
     Input.upListener = this.upListener;
     Input.downListener = this.downListener;
+    Input.spaceListener = this.spaceListener;
     Input.leftSwipeListener = this.leftListener;
     Input.rightSwipeListener = this.rightListener;
     Input.upSwipeListener = this.upListener;
     Input.downSwipeListener = this.downListener;
+    Input.tapListener = this.tapListener;
 
     this.health = 1;
     this.maxHealth = 1;
@@ -104,18 +106,23 @@ export class Player {
     this.weapon = new Spear(this.game);
   }
 
-  iListener = () => {
+  tapListener = () => {
     this.inventory.open();
-
-    this.shopScreen.close();
   };
-  iUpListener = () => {
-    //this.inventory.close();
+  iListener = () => {
+    this.shopScreen.close(); // in case the shop is open
+    this.inventory.open();
   };
   leftListener = () => {
+    if (this.inventory.isOpen) {
+      this.inventory.left();
+      return;
+    }
+    if (this.shopScreen.isOpen) {
+      this.shopScreen.left();
+      return;
+    }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      if (this.shopScreen.isOpen) this.shopScreen.close();
-
       /*if (Input.isDown(Input.SPACE)) {
         GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
         this.healthBar.hurt();
@@ -126,33 +133,55 @@ export class Player {
     }
   };
   rightListener = () => {
+    if (this.inventory.isOpen) {
+      this.inventory.right();
+      return;
+    }
+    if (this.shopScreen.isOpen) {
+      this.shopScreen.right();
+      return;
+    }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      //if (Input.isDown(Input.SPACE)) this.tryDash(1, 0);
-      //else
-      if (this.shopScreen.isOpen) this.shopScreen.close();
-
       this.tryMove(this.x + 1, this.y);
       this.direction = PlayerDirection.RIGHT;
     }
   };
   upListener = () => {
+    if (this.inventory.isOpen) {
+      this.inventory.up();
+      return;
+    }
+    if (this.shopScreen.isOpen) {
+      this.shopScreen.up();
+      return;
+    }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      //if (Input.isDown(Input.SPACE)) this.tryDash(0, -1);
-      //else
-      if (this.shopScreen.isOpen) this.shopScreen.close();
-
       this.tryMove(this.x, this.y - 1);
       this.direction = PlayerDirection.UP;
     }
   };
   downListener = () => {
+    if (this.inventory.isOpen) {
+      this.inventory.down();
+      return;
+    }
+    if (this.shopScreen.isOpen) {
+      this.shopScreen.down();
+      return;
+    }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      //if (Input.isDown(Input.SPACE)) this.tryDash(0, 1);
-      //else
-      if (this.shopScreen.isOpen) this.shopScreen.close();
-
       this.tryMove(this.x, this.y + 1);
       this.direction = PlayerDirection.DOWN;
+    }
+  };
+  spaceListener = () => {
+    if (this.inventory.isOpen) {
+      this.inventory.space();
+      return;
+    }
+    if (this.shopScreen.isOpen) {
+      this.shopScreen.space();
+      return;
     }
   };
 
@@ -214,7 +243,9 @@ export class Player {
   };
 
   tryMove = (x: number, y: number) => {
+    // TODO don't move if hit by enemy
     this.game.level.catchUp();
+
     if (this.dead) return;
 
     if (!this.weapon.weaponMove(x, y)) {
@@ -472,7 +503,7 @@ export class Player {
         GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
       );
     }
-    if (Input.isDown(Input.M)) {
+    if (Input.isDown(Input.M) || Input.isTapHold) {
       this.map.draw();
     }
   };

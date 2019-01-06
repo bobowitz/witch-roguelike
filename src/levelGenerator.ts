@@ -194,8 +194,8 @@ export class LevelGenerator {
               break;
           }
         } else {
-          r.x = 128;
-          r.y = 128;
+          r.x = -2;
+          r.y = -2;
           r.w = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
           r.h = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         }
@@ -224,7 +224,7 @@ export class LevelGenerator {
     let d = depth;
     let node;
     if (d == 0) {
-      node = new N(RoomType.DUNGEON, d, [
+      node = new N(RoomType.SPAWNER, d, [
         new N(RoomType.DOWNLADDER, d, []),
         new N(RoomType.SHOP, d, []),
       ]);

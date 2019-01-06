@@ -38,7 +38,6 @@ export class Game {
   static mobset: HTMLImageElement;
   static itemset: HTMLImageElement;
   static fxset: HTMLImageElement;
-  static inventory: HTMLImageElement;
   static shopset: HTMLImageElement;
   static tilesetShadow: HTMLImageElement;
   static objsetShadow: HTMLImageElement;
@@ -59,7 +58,7 @@ export class Game {
       let canvas = document.getElementById("gameCanvas");
       Game.ctx = (canvas as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
 
-      Game.ctx.font = GameConstants.FONT_SIZE + "px PixelFont";
+      Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
       Game.ctx.textBaseline = "top";
 
       Game.tileset = new Image();
@@ -72,8 +71,6 @@ export class Game {
       Game.itemset.src = "res/itemset.png";
       Game.fxset = new Image();
       Game.fxset.src = "res/fxset.png";
-      Game.inventory = new Image();
-      Game.inventory.src = "res/inventory.png";
       Game.shopset = new Image();
       Game.shopset.src = "res/shopset.png";
       Game.tilesetShadow = new Image();
@@ -175,6 +172,8 @@ export class Game {
   };
 
   update = () => {
+    Input.checkIsTapHold();
+
     if (
       Input.lastPressTime !== 0 &&
       Date.now() - Input.lastPressTime > GameConstants.KEY_REPEAT_TIME
@@ -445,14 +444,14 @@ export class Game {
     }
 
     // game version
-    Game.ctx.globalAlpha = 0.2;
+    Game.ctx.globalAlpha = 0.1;
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
-    Game.ctx.font = GameConstants.FONT_SIZE + "px PixelFont";
+    Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
     Game.ctx.textBaseline = "top";
     Game.ctx.fillText(
       GameConstants.VERSION,
       GameConstants.WIDTH - Game.ctx.measureText(GameConstants.VERSION).width - 1,
-      GameConstants.HEIGHT - (GameConstants.FONT_SIZE - 1)
+      -3
     );
     Game.ctx.globalAlpha = 1;
   };

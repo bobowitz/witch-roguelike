@@ -2,6 +2,7 @@ import { Game } from "./game";
 import { GameConstants } from "./gameConstants";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
+import { RoomType } from "./level";
 
 // class MapRoom {
 //   x: number;
@@ -27,30 +28,38 @@ export class Map {
   }
 
   draw = () => {
-    let SCALE = 2;
+    let SCALE = 1;
 
     let startLevel = this.game.levels[0];
-    Game.ctx.translate(
-      startLevel.x + Math.floor(startLevel.width / 2),
-      startLevel.y + Math.floor(startLevel.height / 2)
-    );
-    Game.ctx.scale(Game.scale, Game.scale);
-    Game.ctx.translate(
-      -(startLevel.x + Math.floor(startLevel.width / 2)),
-      -(startLevel.y + Math.floor(startLevel.height / 2))
-    );
 
     Game.ctx.globalAlpha = 0.5;
     Game.ctx.fillStyle = "white";
     Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
+    Game.ctx.translate(0.5 * GameConstants.WIDTH, 0.5 * GameConstants.HEIGHT);
+
+    /*Game.ctx.translate(
+      startLevel.x + Math.floor(startLevel.width / 2),
+      startLevel.y + Math.floor(startLevel.height / 2)
+    );
+    Game.ctx.scale(SCALE, SCALE);
+    Game.ctx.translate(
+      -(startLevel.x + Math.floor(startLevel.width / 2)),
+      -(startLevel.y + Math.floor(startLevel.height / 2))
+    );*/
+
     Game.ctx.globalAlpha = 1;
     for (const level of this.game.levels) {
-      if (this.game.level.depth == level.depth) {
+      if (this.game.level.depth === level.depth) {
         Game.ctx.fillStyle = "black";
+        if (level.type === RoomType.UPLADDER) Game.ctx.fillStyle = "#101460";
+        if (level.type === RoomType.DOWNLADDER) Game.ctx.fillStyle = "#601410";
         if (!level.entered) Game.ctx.fillStyle = "#606060";
         Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
         for (const door of level.doors) {
+          Game.ctx.fillStyle = "black";
+          if (!level.entered) Game.ctx.fillStyle = "#606060";
+
           //Game.ctx.fillStyle = "#0085ff";
           if (door instanceof Door)
             Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);

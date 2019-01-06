@@ -1228,7 +1228,7 @@ export class Level {
 
     // room name
     let old = Game.ctx.font;
-    Game.ctx.font = GameConstants.BIG_FONT_SIZE + "px PixelFont";
+    Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
     Game.ctx.fillText(
       this.name,

@@ -10,7 +10,7 @@ export class GameConstants {
 
   static readonly SWIPE_THRESH = 50 ** 2; // (size of swipe threshold circle)^2
 
-  static readonly KEY_REPEAT_TIME = 300; // milliseconds
+  static readonly KEY_REPEAT_TIME = 300; // millseconds
 
   static readonly DEFAULTWIDTH = 8.5 * GameConstants.TILESIZE;
   static readonly DEFAULTHEIGHT = 8.5 * GameConstants.TILESIZE;
@@ -18,7 +18,7 @@ export class GameConstants {
   static HEIGHT = LevelConstants.SCREEN_H * GameConstants.TILESIZE;
   static scrolling = true;
 
-  static readonly SCRIPT_FONT_SIZE = 13;
+  static readonly SCRIPT_FONT_SIZE = 16;
   static readonly FONT_SIZE = 10;
   static readonly BIG_FONT_SIZE = 20;
 

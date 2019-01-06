@@ -102,11 +102,18 @@ export class SkullEnemy extends Enemy {
 
           if (this.game.player.x === moveX && this.game.player.y === moveY) {
             this.game.player.hurt(this.hit());
+            this.dx = 0;
+            this.dy = 0;
             this.drawX = 0.5 * (this.x - this.game.player.x);
             this.drawY = 0.5 * (this.y - this.game.player.y);
             this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
           } else {
             this.tryMove(moveX, moveY);
+            if (this.x === oldX && this.y === oldY) {
+              // didn't move
+              this.dx = 0;
+              this.dy = 0;
+            }
             this.drawX = this.x - oldX;
             this.drawY = this.y - oldY;
             if (this.x > oldX) this.direction = EnemyDirection.RIGHT;

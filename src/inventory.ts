@@ -8,30 +8,93 @@ import { Equippable } from "./item/equippable";
 import { Armor } from "./item/armor";
 import { GoldenKey } from "./item/goldenKey";
 import { Coin } from "./item/coin";
+import { Gold } from "./item/gold";
+import { Gem } from "./item/gem";
+import { Coal } from "./item/coal";
+
+let OPEN_TIME = 100; // milliseconds
+let FILL_COLOR = "#5a595b";
+let OUTLINE_COLOR = "#292c36";
+let EQUIP_COLOR = "#85a8e6";
+let FULL_OUTLINE = "white";
 
 export class Inventory {
   items: Array<Item>;
   equipped: Array<Equippable>;
-  tileX = 0;
-  tileY = 0;
+  rows = 2;
+  cols = 4;
+  selX = 0;
+  selY = 0;
   game: Game;
   isOpen: boolean;
+  openTime: number;
   coins: number;
+  equipAnimAmount: Array<number>;
 
   constructor(game: Game) {
     this.game = game;
     this.items = new Array<Item>();
     this.equipped = new Array<Equippable>();
-    Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
+    this.equipAnimAmount = [];
+    for (let i = 0; i < this.rows * this.cols; i++) {
+      this.equipAnimAmount[i] = 0;
+    }
+    //Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
     this.coins = 0;
+    this.openTime = Date.now();
+    this.items.push(new Key(this.game.level, 0, 0));
+    this.items.push(new Key(this.game.level, 0, 0));
+    this.items.push(new Key(this.game.level, 0, 0));
+    this.items.push(new Key(this.game.level, 0, 0));
+    this.items.push(new Armor(this.game.level, 0, 0));
+    this.items.push(new Armor(this.game.level, 0, 0));
+    this.items.push(new Armor(this.game.level, 0, 0));
+    this.items.push(new Armor(this.game.level, 0, 0));
   }
 
   open = () => {
     this.isOpen = !this.isOpen;
+    if (this.isOpen) this.openTime = Date.now();
   };
 
   close = () => {
     this.isOpen = false;
+  };
+
+  left = () => {
+    this.selX--;
+    if (this.selX < 0) this.selX = 0;
+  };
+  right = () => {
+    this.selX++;
+    if (this.selX > this.cols - 1) this.selX = this.cols - 1;
+  };
+  up = () => {
+    this.selY--;
+    if (this.selY < 0) this.selY = 0;
+  };
+  down = () => {
+    this.selY++;
+    if (this.selY > this.rows - 1) this.selY = this.rows - 1;
+  };
+  space = () => {
+    let i = this.selX + this.selY * this.cols;
+
+    if (this.items[i] instanceof Equippable) {
+      let e = this.items[i] as Equippable;
+      e.equipped = !e.equipped; // toggle
+      if (e.equipped) {
+        for (const i of this.items) {
+          if (i instanceof Equippable && i !== e && !e.coEquippable(i)) {
+            i.equipped = false; // prevent user from equipping two not coEquippable items
+          }
+        }
+      }
+    }
+
+    this.equipped = this.items.filter(x => x instanceof Equippable && x.equipped) as Array<
+      Equippable
+    >;
   };
 
   hasItem = (itemType: any): Item => {
@@ -54,6 +117,10 @@ export class Inventory {
     this.coins += n;
   };
 
+  isFull = (): boolean => {
+    return this.items.length >= this.rows * this.cols;
+  };
+
   addItem = (item: Item) => {
     if (item instanceof Coin) {
       this.coins += 1;
@@ -68,8 +135,10 @@ export class Inventory {
         }
       }
     }
-    // item is either not stackable, or its stackable but we don't have one yet
-    this.items.push(item);
+    if (!this.isFull()) {
+      // item is either not stackable, or its stackable but we don't have one yet
+      this.items.push(item);
+    }
   };
 
   removeItem = (item: Item) => {
@@ -84,29 +153,6 @@ export class Inventory {
       if (e instanceof Armor) return e;
     }
     return null;
-  };
-
-  mouseLeftClickListener = (x: number, y: number) => {
-    if (!this.isOpen) return;
-
-    let tileX = Math.floor((x - 51) / 19);
-    let tileY = Math.floor((y - 70) / 19);
-    let i = tileX + tileY * 9;
-    if (i >= 0 && i < this.items.length && this.items[i] instanceof Equippable) {
-      let e = this.items[i] as Equippable;
-      e.equipped = !e.equipped; // toggle
-      if (e.equipped) {
-        for (const i of this.items) {
-          if (i instanceof Equippable && i !== e && !e.coEquippable(i)) {
-            i.equipped = false; // prevent user from equipping two notCoEquippable items
-          }
-        }
-      }
-    }
-
-    this.equipped = this.items.filter(x => x instanceof Equippable && x.equipped) as Array<
-      Equippable
-    >;
   };
 
   tick = () => {
@@ -138,16 +184,16 @@ export class Inventory {
     return y;
   };
 
-  draw = () => {
-    let coinX = LevelConstants.SCREEN_W - 1.5;
-    let coinY = LevelConstants.SCREEN_H - 1.5;
+  drawCoins = () => {
+    let coinX = LevelConstants.SCREEN_W - 1;
+    let coinY = LevelConstants.SCREEN_H - 1;
 
-    Game.drawItem(20, 0, 1, 2, coinX, coinY - 1, 1, 2);
+    Game.drawItem(19, 0, 1, 2, coinX, coinY - 1, 1, 2);
 
     let countText = "" + this.coins;
     let width = Game.ctx.measureText(countText).width;
     let countX = 16 - width;
-    let countY = 8;
+    let countY = 2;
 
     Game.ctx.fillStyle = "black";
     for (let xx = -1; xx <= 1; xx++) {
@@ -167,50 +213,191 @@ export class Inventory {
       coinX * GameConstants.TILESIZE + countX,
       coinY * GameConstants.TILESIZE + countY
     );
+  };
+
+  draw = () => {
+    this.drawCoins();
 
     if (this.isOpen) {
-      Game.ctx.fillStyle = "rgb(0, 0, 0, 0.9)";
+      for (let i = 0; i < this.equipAnimAmount.length; i++) {
+        if (this.items[i] instanceof Equippable) {
+          if ((this.items[i] as Equippable).equipped) {
+            this.equipAnimAmount[i] += 0.2 * (1 - this.equipAnimAmount[i]);
+          } else {
+            this.equipAnimAmount[i] += 0.2 * (0 - this.equipAnimAmount[i]);
+          }
+        }
+      }
+
+      Game.ctx.fillStyle = "rgb(0, 0, 0, 0.8)";
       Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
-      Game.ctx.drawImage(Game.inventory, 0, 0);
       // check equips too
       this.items = this.items.filter(x => !x.dead);
 
-      if (Input.mouseX >= 51 && Input.mouseX <= 221 && Input.mouseY >= 70 && Input.mouseY <= 145) {
-        let highlightedSlotX = Math.floor((Input.mouseX - 51) / 19) * 19 + 51;
-        let highlightedSlotY = Math.floor((Input.mouseY - 70) / 19) * 19 + 70;
-        Game.ctx.fillStyle = "#9babd7";
-        Game.ctx.fillRect(highlightedSlotX, highlightedSlotY, 18, 18);
-      }
+      Game.ctx.globalAlpha = 1;
 
-      for (let i = 0; i < this.items.length; i++) {
-        let s = 9;
+      let s = Math.min(18, (18 * (Date.now() - this.openTime)) / OPEN_TIME); // size of box
+      let b = 2; // border
+      let g = -2; // gap
+      let hg = 3; // highlighted growth
+      let ob = 1; // outer border
+      let width = this.cols * (s + 2 * b + g) - g;
+      let height = this.rows * (s + 2 * b + g) - g;
 
-        let x = (52 + 19 * (i % s)) / GameConstants.TILESIZE;
-        let y = (71 + 19 * Math.floor(i / s)) / GameConstants.TILESIZE;
+      Game.ctx.fillStyle = FULL_OUTLINE;
+      Game.ctx.fillRect(
+        Math.round(0.5 * GameConstants.WIDTH - 0.5 * width) - ob,
+        Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height) - ob,
+        Math.round(width + 2 * ob),
+        Math.round(height + 2 * ob)
+      );
+      Game.ctx.fillRect(
+        Math.round(0.5 * GameConstants.WIDTH - 0.5 * width + this.selX * (s + 2 * b + g)) - hg - ob,
+        Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height + this.selY * (s + 2 * b + g)) -
+          hg -
+          ob,
+        Math.round(s + 2 * b + 2 * hg) + 2 * ob,
+        Math.round(s + 2 * b + 2 * hg) + 2 * ob
+      );
 
-        this.items[i].drawIcon(x, y);
-
-        if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
-          Game.drawItem(0, 4, 2, 2, x - 0.5, y - 0.5, 2, 2);
+      for (let x = 0; x < this.cols; x++) {
+        for (let y = 0; y < this.rows; y++) {
+          Game.ctx.fillStyle = OUTLINE_COLOR;
+          Game.ctx.fillRect(
+            Math.round(0.5 * GameConstants.WIDTH - 0.5 * width + x * (s + 2 * b + g)),
+            Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height + y * (s + 2 * b + g)),
+            Math.round(s + 2 * b),
+            Math.round(s + 2 * b)
+          );
+          Game.ctx.fillStyle = FILL_COLOR;
+          Game.ctx.fillRect(
+            Math.round(0.5 * GameConstants.WIDTH - 0.5 * width + x * (s + 2 * b + g) + b),
+            Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height + y * (s + 2 * b + g) + b),
+            Math.round(s),
+            Math.round(s)
+          );
+          let i = x + y * this.cols;
+          Game.ctx.fillStyle = EQUIP_COLOR;
+          let yOff = s * (1 - this.equipAnimAmount[i]);
+          Game.ctx.fillRect(
+            Math.round(0.5 * GameConstants.WIDTH - 0.5 * width + x * (s + 2 * b + g) + b),
+            Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height + y * (s + 2 * b + g) + b + yOff),
+            Math.round(s),
+            Math.round(s - yOff)
+          );
         }
       }
+      if (Date.now() - this.openTime >= OPEN_TIME) {
+        for (let i = 0; i < this.items.length; i++) {
+          let x = i % this.cols;
+          let y = Math.floor(i / this.cols);
 
-      let tileX = Math.floor((Input.mouseX - 51) / 19);
-      let tileY = Math.floor((Input.mouseY - 70) / 19);
-      let i = tileX + tileY * 9;
-      if (i >= 0 && i < this.items.length) {
+          let drawX = Math.round(
+            0.5 * GameConstants.WIDTH -
+              0.5 * width +
+              x * (s + 2 * b + g) +
+              b +
+              Math.floor(0.5 * s) -
+              0.5 * GameConstants.TILESIZE
+          );
+          let drawY = Math.round(
+            0.5 * GameConstants.HEIGHT -
+              0.5 * height +
+              y * (s + 2 * b + g) +
+              b +
+              Math.floor(0.5 * s) -
+              0.5 * GameConstants.TILESIZE
+          );
+
+          let drawXScaled = drawX / GameConstants.TILESIZE;
+          let drawYScaled = drawY / GameConstants.TILESIZE;
+
+          this.items[i].drawIcon(drawXScaled, drawYScaled);
+
+          //if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
+          //  Game.drawItem(0, 4, 2, 2, x - 0.5, y - 0.5, 2, 2);
+          //}
+        }
+        Game.ctx.fillStyle = OUTLINE_COLOR;
+        Game.ctx.fillRect(
+          Math.round(0.5 * GameConstants.WIDTH - 0.5 * width + this.selX * (s + 2 * b + g)) - hg,
+          Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height + this.selY * (s + 2 * b + g)) - hg,
+          Math.round(s + 2 * b + 2 * hg),
+          Math.round(s + 2 * b + 2 * hg)
+        );
+        Game.ctx.fillStyle = FILL_COLOR;
+        Game.ctx.fillRect(
+          Math.round(
+            0.5 * GameConstants.WIDTH - 0.5 * width + this.selX * (s + 2 * b + g) + b - hg
+          ),
+          Math.round(
+            0.5 * GameConstants.HEIGHT - 0.5 * height + this.selY * (s + 2 * b + g) + b - hg
+          ),
+          Math.round(s + 2 * hg),
+          Math.round(s + 2 * hg)
+        );
+        let i = this.selX + this.selY * this.cols;
+        Game.ctx.fillStyle = EQUIP_COLOR;
+        let yOff = (s + 2 * hg) * (1 - this.equipAnimAmount[i]);
+        Game.ctx.fillRect(
+          Math.round(
+            0.5 * GameConstants.WIDTH - 0.5 * width + this.selX * (s + 2 * b + g) + b - hg
+          ),
+          Math.round(
+            0.5 * GameConstants.HEIGHT - 0.5 * height + this.selY * (s + 2 * b + g) + b - hg + yOff
+          ),
+          Math.round(s + 2 * hg),
+          Math.round(s + 2 * hg - yOff)
+        );
+
+        let drawX = Math.round(
+          0.5 * GameConstants.WIDTH -
+            0.5 * width +
+            this.selX * (s + 2 * b + g) +
+            b +
+            Math.floor(0.5 * s) -
+            0.5 * GameConstants.TILESIZE
+        );
+        let drawY = Math.round(
+          0.5 * GameConstants.HEIGHT -
+            0.5 * height +
+            this.selY * (s + 2 * b + g) +
+            b +
+            Math.floor(0.5 * s) -
+            0.5 * GameConstants.TILESIZE
+        );
+
+        let drawXScaled = drawX / GameConstants.TILESIZE;
+        let drawYScaled = drawY / GameConstants.TILESIZE;
+
+        if (i < this.items.length) this.items[i].drawIcon(drawXScaled, drawYScaled);
+      }
+
+      let i = this.selX + this.selY * this.cols;
+
+      if (i < this.items.length) {
         Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
         Game.ctx.fillStyle = "white";
+
+        if (this.items[i] instanceof Equippable) {
+          let e = this.items[i] as Equippable;
+          let topPhrase = "[SPACE] to equip";
+          if (e.equipped) topPhrase = "[SPACE] to de-equip";
+          Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
+          Game.ctx.fillStyle = "white";
+          let w = Game.ctx.measureText(topPhrase).width;
+          Game.ctx.fillText(topPhrase, 0.5 * (GameConstants.WIDTH - w), 5);
+        }
+
         let lines = this.items[i].getDescription().split("\n");
-        if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
-          lines.push("EQUIPPED");
-        }
-        let nextY = 147;
+        let nextY = Math.round(
+          0.5 * GameConstants.HEIGHT - 0.5 * height + this.rows * (s + 2 * b + g) + b + 2
+        );
         for (let j = 0; j < lines.length; j++) {
-          nextY = this.textWrap(lines[j], 55, nextY, 162);
+          nextY = this.textWrap(lines[j], 5, nextY, GameConstants.WIDTH - 5);
         }
-        Game.ctx.font = GameConstants.FONT_SIZE + "px PixelFont";
+        Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
       }
     }
   };
