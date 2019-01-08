@@ -4773,7 +4773,7 @@ var Inventory = /** @class */ (function () {
             this.equipAnimAmount[i] = 0;
         }
         //Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-        this.coins = 1000;
+        this.coins = 0;
         this.openTime = Date.now();
         this.weapon = null;
         this.addItem(new dagger_1.Dagger({ game: this.game }, 0, 0));
