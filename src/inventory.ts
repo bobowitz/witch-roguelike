@@ -152,24 +152,26 @@ export class Inventory {
     return this.items.length >= this.rows * this.cols;
   };
 
-  addItem = (item: Item) => {
+  addItem = (item: Item): boolean => {
     if (item instanceof Coin) {
       this.coins += 1;
-      return;
+      return true;
     }
     if (item.stackable) {
       for (let i of this.items) {
         if (i.constructor === item.constructor) {
           // we already have an item of the same type
           i.stackCount++;
-          return;
+          return true;
         }
       }
     }
     if (!this.isFull()) {
       // item is either not stackable, or its stackable but we don't have one yet
       this.items.push(item);
+      return true;
     }
+    return false;
   };
 
   removeItem = (item: Item) => {

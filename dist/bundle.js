@@ -1001,10 +1001,10 @@ var Item = /** @class */ (function () {
             sound_1.Sound.genericPickup();
         };
         this.onPickup = function (player) {
-            if (!_this.pickedUp && !player.inventory.isFull()) {
-                _this.pickupSound();
-                _this.pickedUp = true;
-                player.inventory.addItem(_this);
+            if (!_this.pickedUp) {
+                _this.pickedUp = player.inventory.addItem(_this);
+                if (_this.pickedUp)
+                    _this.pickupSound();
             }
         };
         this.shadeAmount = function () {
@@ -3378,10 +3378,10 @@ var Level = /** @class */ (function () {
                 return;
             var x = t.x;
             var y = t.y;
-            var r = game_1.Game.rand(0, 150);
-            if (r <= 150 - Math.pow(this.depth, 3))
+            var r = Math.random();
+            if (r <= (10 - Math.pow(this.depth, 3)) / 10)
                 this.enemies.push(new coalResource_1.CoalResource(this, this.game, x, y));
-            else if (r <= 150 - Math.pow(Math.max(0, this.depth - 5), 3))
+            else if (r <= (10 - Math.pow((this.depth - 2), 3)) / 10)
                 this.enemies.push(new goldResource_1.GoldResource(this, this.game, x, y));
             else
                 this.enemies.push(new emeraldResource_1.EmeraldResource(this, this.game, x, y));
@@ -3514,7 +3514,7 @@ var BlueGem = /** @class */ (function (_super) {
     function BlueGem(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
         _this.getDescription = function () {
-            return "RUBY";
+            return "SAPPHIRE";
         };
         _this.tileX = 13;
         _this.tileY = 0;
@@ -4564,7 +4564,7 @@ var Inventory = /** @class */ (function () {
         this.addItem = function (item) {
             if (item instanceof coin_1.Coin) {
                 _this.coins += 1;
-                return;
+                return true;
             }
             if (item.stackable) {
                 for (var _i = 0, _a = _this.items; _i < _a.length; _i++) {
@@ -4572,14 +4572,16 @@ var Inventory = /** @class */ (function () {
                     if (i.constructor === item.constructor) {
                         // we already have an item of the same type
                         i.stackCount++;
-                        return;
+                        return true;
                     }
                 }
             }
             if (!_this.isFull()) {
                 // item is either not stackable, or its stackable but we don't have one yet
                 _this.items.push(item);
+                return true;
             }
+            return false;
         };
         this.removeItem = function (item) {
             var i = _this.items.indexOf(item);

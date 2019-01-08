@@ -52,10 +52,9 @@ export class Item {
   };
 
   onPickup = (player: Player) => {
-    if (!this.pickedUp && !player.inventory.isFull()) {
-      this.pickupSound();
-      this.pickedUp = true;
-      player.inventory.addItem(this);
+    if (!this.pickedUp) {
+      this.pickedUp = player.inventory.addItem(this);
+      if (this.pickedUp) this.pickupSound();
     }
   };
 

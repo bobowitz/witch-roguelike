@@ -450,9 +450,10 @@ export class Level {
       let x = t.x;
       let y = t.y;
 
-      let r = Game.rand(0, 150);
-      if (r <= 150 - this.depth ** 3) this.enemies.push(new CoalResource(this, this.game, x, y));
-      else if (r <= 150 - Math.max(0, this.depth - 5) ** 3)
+      let r = Math.random();
+      if (r <= (10 - this.depth ** 3) / 10)
+        this.enemies.push(new CoalResource(this, this.game, x, y));
+      else if (r <= (10 - (this.depth - 2) ** 3) / 10)
         this.enemies.push(new GoldResource(this, this.game, x, y));
       else this.enemies.push(new EmeraldResource(this, this.game, x, y));
     }
