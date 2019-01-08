@@ -46,6 +46,7 @@ export class VendingMachine extends Enemy {
       let c = new Coin(level, 0, 0);
       c.stackCount = 10;
       this.costItems = [c];
+      this.isInf = true;
     } else if (this.item instanceof Spear) {
       let g = new GreenGem(level, 0, 0);
       g.stackCount = Game.randTable([5, 5, 6, 7]);

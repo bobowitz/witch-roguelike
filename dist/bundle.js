@@ -1721,16 +1721,19 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var item_1 = __webpack_require__(6);
 var sound_1 = __webpack_require__(2);
+var usable_1 = __webpack_require__(42);
 var Heart = /** @class */ (function (_super) {
     __extends(Heart, _super);
     function Heart(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
-        _this.onPickup = function (player) {
+        _this.onUse = function (player) {
             player.health = Math.min(player.maxHealth, player.health + 1);
             sound_1.Sound.heal();
             _this.level.items = _this.level.items.filter(function (x) { return x !== _this; }); // removes itself from the level
+        };
+        _this.getDescription = function () {
+            return "HEALTH POTION\nRestores 1 heart";
         };
         _this.tileX = 8;
         _this.tileY = 0;
@@ -1738,7 +1741,7 @@ var Heart = /** @class */ (function (_super) {
         return _this;
     }
     return Heart;
-}(item_1.Item));
+}(usable_1.Usable));
 exports.Heart = Heart;
 
 
@@ -4739,16 +4742,20 @@ var Inventory = /** @class */ (function () {
                 if (i < _this.items.length) {
                     game_1.Game.ctx.font = gameConstants_1.GameConstants.SCRIPT_FONT_SIZE + "px Script";
                     game_1.Game.ctx.fillStyle = "white";
+                    var topPhrase = "";
                     if (_this.items[i] instanceof equippable_1.Equippable) {
                         var e = _this.items[i];
-                        var topPhrase = "[SPACE] to equip";
+                        topPhrase = "[SPACE] to equip";
                         if (e.equipped)
                             topPhrase = "[SPACE] to de-equip";
-                        game_1.Game.ctx.font = gameConstants_1.GameConstants.SCRIPT_FONT_SIZE + "px Script";
-                        game_1.Game.ctx.fillStyle = "white";
-                        var w = game_1.Game.ctx.measureText(topPhrase).width;
-                        game_1.Game.fillText(topPhrase, 0.5 * (gameConstants_1.GameConstants.WIDTH - w), 5);
                     }
+                    if (_this.items[i] instanceof usable_1.Usable) {
+                        topPhrase = "[SPACE] to use";
+                    }
+                    game_1.Game.ctx.font = gameConstants_1.GameConstants.SCRIPT_FONT_SIZE + "px Script";
+                    game_1.Game.ctx.fillStyle = "white";
+                    var w = game_1.Game.ctx.measureText(topPhrase).width;
+                    game_1.Game.fillText(topPhrase, 0.5 * (gameConstants_1.GameConstants.WIDTH - w), 5);
                     var lines = _this.items[i].getDescription().split("\n");
                     var nextY = Math.round(0.5 * gameConstants_1.GameConstants.HEIGHT - 0.5 * height + _this.rows * (s + 2 * b + g) + b + 2);
                     for (var j = 0; j < lines.length; j++) {
@@ -4766,7 +4773,7 @@ var Inventory = /** @class */ (function () {
             this.equipAnimAmount[i] = 0;
         }
         //Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-        this.coins = 0;
+        this.coins = 1000;
         this.openTime = Date.now();
         this.weapon = null;
         this.addItem(new dagger_1.Dagger({ game: this.game }, 0, 0));
@@ -7025,6 +7032,7 @@ var VendingMachine = /** @class */ (function (_super) {
             var c = new coin_1.Coin(level, 0, 0);
             c.stackCount = 10;
             _this.costItems = [c];
+            _this.isInf = true;
         }
         else if (_this.item instanceof spear_1.Spear) {
             var g = new greengem_1.GreenGem(level, 0, 0);

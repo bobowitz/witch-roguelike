@@ -45,7 +45,7 @@ export class Inventory {
       this.equipAnimAmount[i] = 0;
     }
     //Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-    this.coins = 0;
+    this.coins = 1000;
     this.openTime = Date.now();
 
     this.weapon = null;
@@ -419,15 +419,20 @@ export class Inventory {
         Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
         Game.ctx.fillStyle = "white";
 
+        let topPhrase = "";
         if (this.items[i] instanceof Equippable) {
           let e = this.items[i] as Equippable;
-          let topPhrase = "[SPACE] to equip";
+          topPhrase = "[SPACE] to equip";
           if (e.equipped) topPhrase = "[SPACE] to de-equip";
-          Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
-          Game.ctx.fillStyle = "white";
-          let w = Game.ctx.measureText(topPhrase).width;
-          Game.fillText(topPhrase, 0.5 * (GameConstants.WIDTH - w), 5);
         }
+        if (this.items[i] instanceof Usable) {
+          topPhrase = "[SPACE] to use";
+        }
+
+        Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
+        Game.ctx.fillStyle = "white";
+        let w = Game.ctx.measureText(topPhrase).width;
+        Game.fillText(topPhrase, 0.5 * (GameConstants.WIDTH - w), 5);
 
         let lines = this.items[i].getDescription().split("\n");
         let nextY = Math.round(
