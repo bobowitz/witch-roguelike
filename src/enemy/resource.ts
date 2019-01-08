@@ -6,7 +6,7 @@ import { Heart } from "../item/heart";
 import { Armor } from "../item/armor";
 import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 
 export class Resource extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -36,7 +36,8 @@ export class Resource extends Enemy {
         this.y - 1 - this.drawY,
         1,
         2,
-        "black", this.shadeAmount()
+        this.level.shadeColor,
+        this.shadeAmount()
       );
     }
   };

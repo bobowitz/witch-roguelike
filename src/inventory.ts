@@ -9,11 +9,12 @@ import { Armor } from "./item/armor";
 import { GoldenKey } from "./item/goldenKey";
 import { Coin } from "./item/coin";
 import { Gold } from "./item/gold";
-import { Gem } from "./item/gem";
+import { GreenGem } from "./item/greengem";
 import { Coal } from "./item/coal";
 import { Weapon } from "./weapon/weapon";
 import { Dagger } from "./weapon/dagger";
 import { Level } from "./level";
+import { Usable } from "./item/usable";
 
 let OPEN_TIME = 100; // milliseconds
 let FILL_COLOR = "#5a595b";
@@ -44,19 +45,12 @@ export class Inventory {
       this.equipAnimAmount[i] = 0;
     }
     //Input.mouseLeftClickListeners.push(this.mouseLeftClickListener);
-    this.coins = 100;
+    this.coins = 0;
     this.openTime = Date.now();
 
     this.weapon = null;
 
     this.addItem(new Dagger({ game: this.game } as Level, 0, 0));
-
-    this.addItem(new Coal(this.game.level, 0, 0));
-    this.addItem(new Coal(this.game.level, 0, 0));
-    this.addItem(new Coal(this.game.level, 0, 0));
-    this.addItem(new Gem(this.game.level, 0, 0));
-    this.addItem(new Gem(this.game.level, 0, 0));
-    this.addItem(new Gem(this.game.level, 0, 0));
   }
 
   open = () => {
@@ -87,6 +81,11 @@ export class Inventory {
   space = () => {
     let i = this.selX + this.selY * this.cols;
 
+    if (this.items[i] instanceof Usable) {
+      (this.items[i] as Usable).onUse(this.game.player);
+      this.items.splice(i, 1);
+    }
+
     if (this.items[i] instanceof Equippable) {
       let e = this.items[i] as Equippable;
       e.equipped = !e.equipped; // toggle
@@ -101,11 +100,10 @@ export class Inventory {
           }
         }
       }
+      this.equipped = this.items.filter(x => x instanceof Equippable && x.equipped) as Array<
+        Equippable
+      >;
     }
-
-    this.equipped = this.items.filter(x => x instanceof Equippable && x.equipped) as Array<
-      Equippable
-    >;
   };
 
   hasItem = (itemType: any): Item => {

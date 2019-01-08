@@ -10,10 +10,11 @@ import { GameConstants } from "../gameConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
 import { HitWarning } from "../projectile/hitWarning";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 import { SpikeTrap } from "../tile/spiketrap";
 import { GenericParticle } from "../particle/genericParticle";
 import { Coin } from "../item/coin";
+import { RedGem } from "../item/redgem";
 
 export class SkullEnemy extends Enemy {
   frame: number;
@@ -160,7 +161,7 @@ export class SkullEnemy extends Enemy {
           this.y - this.drawY,
           1,
           1,
-          "black",
+          this.level.shadeColor,
           this.shadeAmount()
         );
       Game.drawMob(
@@ -172,13 +173,14 @@ export class SkullEnemy extends Enemy {
         this.y - 1.5 - this.drawY,
         1,
         2,
-        "black",
+        this.level.shadeColor,
         this.shadeAmount()
       );
     }
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new Coin(this.level, this.x, this.y));
+    if (Math.random() < 0.02) this.game.level.items.push(new RedGem(this.level, this.x, this.y));
+    else this.game.level.items.push(new Coin(this.level, this.x, this.y));
   };
 }

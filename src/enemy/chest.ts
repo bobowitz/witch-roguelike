@@ -6,7 +6,7 @@ import { Heart } from "../item/heart";
 import { Armor } from "../item/armor";
 import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 import { GenericParticle } from "../particle/genericParticle";
 import { Coin } from "../item/coin";
 import { Sound } from "../sound";
@@ -38,7 +38,7 @@ export class Chest extends Enemy {
         this.game.level.items.push(new Heart(this.level, this.x, this.y));
         break;
       case 3:
-        this.game.level.items.push(new Gem(this.level, this.x, this.y));
+        this.game.level.items.push(new GreenGem(this.level, this.x, this.y));
         break;
       case 3:
         this.game.level.items.push(new Key(this.level, this.x, this.y));
@@ -63,7 +63,8 @@ export class Chest extends Enemy {
         this.y - 1 - this.drawY,
         1,
         2,
-        "black", this.shadeAmount()
+        this.level.shadeColor,
+        this.shadeAmount()
       );
     }
   };

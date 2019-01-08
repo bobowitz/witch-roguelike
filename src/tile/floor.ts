@@ -37,7 +37,7 @@ export class Floor extends Tile {
       this.y,
       1,
       1,
-      "black",
+      this.level.shadeColor,
       this.shadeAmount()
     );
   };

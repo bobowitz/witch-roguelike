@@ -9,10 +9,12 @@ import { Bones } from "../tile/bones";
 import { DeathParticle } from "../particle/deathParticle";
 import { GameConstants } from "../gameConstants";
 import { HitWarning } from "../projectile/hitWarning";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 import { SpikeTrap } from "../tile/spiketrap";
 import { SkullEnemy } from "./skullEnemy";
 import { EnemySpawnAnimation } from "../projectile/enemySpawnAnimation";
+import { RedGem } from "../item/redgem";
+import { BlueGem } from "../item/bluegem";
 
 export class Spawner extends Enemy {
   ticks: number;
@@ -64,6 +66,6 @@ export class Spawner extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new Gem(this.level, this.x, this.y));
+    this.game.level.items.push(new BlueGem(this.level, this.x, this.y));
   };
 }

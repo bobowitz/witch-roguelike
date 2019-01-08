@@ -43,6 +43,9 @@ import { VendingMachine } from "./enemy/vendingMachine";
 import { WallSideTorch } from "./tile/wallSideTorch";
 import { LightSource } from "./lightSource";
 import { ChargeEnemy } from "./enemy/chargeEnemy";
+import { Shotgun } from "./weapon/shotgun";
+import { Heart } from "./item/heart";
+import { Spear } from "./weapon/spear";
 
 export enum RoomType {
   DUNGEON,
@@ -97,6 +100,7 @@ export class Level {
   entered: boolean; // has the player entered this level
   upLadder: UpLadder;
   lightSources: Array<LightSource>;
+  shadeColor = "black";
 
   private pointInside(
     x: number,
@@ -306,7 +310,7 @@ export class Level {
       t = walls.splice(Game.rand(0, walls.length - 1), 1)[0];
       x = t.x;
       y = t.y;
-      this.levelArray[x][y] = new WallSideTorch(this, x, y);
+      //this.levelArray[x][y] = new WallSideTorch(this, x, y);
     }
   }
 
@@ -687,9 +691,12 @@ export class Level {
     this.fixWalls();
     this.addTorches(2);
 
-    let cX = Math.floor(this.roomX + this.width / 2 - 1);
+    let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
-    this.enemies.push(new VendingMachine(this, this.game, cX, cY));
+    this.enemies.push(new VendingMachine(this, this.game, cX - 2, cY - 1, new Shotgun(this, 0, 0)));
+    this.enemies.push(new VendingMachine(this, this.game, cX + 2, cY - 1, new Heart(this, 0, 0)));
+    this.enemies.push(new VendingMachine(this, this.game, cX - 2, cY + 2, new Armor(this, 0, 0)));
+    this.enemies.push(new VendingMachine(this, this.game, cX + 2, cY + 2, new Spear(this, 0, 0)));
   };
 
   constructor(
@@ -1192,9 +1199,9 @@ export class Level {
 
   drawShade = () => {
     let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / this.game.player.sightRadius));
-    Game.ctx.globalCompositeOperation = "multiply";
     Game.ctx.globalAlpha = shadingAlpha;
-    Game.ctx.fillStyle = "#400a0e";
+    //Game.ctx.fillStyle = "#400a0e";
+    Game.ctx.fillStyle = this.shadeColor;
     Game.ctx.fillRect(
       (this.roomX - LevelConstants.SCREEN_W) * GameConstants.TILESIZE,
       (this.roomY - LevelConstants.SCREEN_H) * GameConstants.TILESIZE,

@@ -246,7 +246,7 @@ export class Game {
 
   draw = () => {
     Game.ctx.globalAlpha = 1;
-    Game.ctx.fillStyle = "black";
+    Game.ctx.fillStyle = this.level.shadeColor;
     Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
     if (this.levelState === LevelState.TRANSITIONING) {
@@ -593,7 +593,6 @@ export class Game {
         Math.round(dH * GameConstants.TILESIZE)
       );
 
-      Game.shCtx.globalCompositeOperation = "multiply";
       Game.shCtx.globalAlpha = shadeOpacity;
       Game.shCtx.fillStyle = shadeColor;
       Game.shCtx.fillRect(0, 0, Game.shImg.width, Game.shImg.height);
@@ -658,7 +657,6 @@ export class Game {
       Math.round(dH * GameConstants.TILESIZE)
     );
 
-    Game.ctx.globalCompositeOperation = "multiply";
     Game.ctx.globalAlpha = shadeOpacity;
     Game.ctx.fillStyle = shadeColor;
     Game.ctx.fillRect(
@@ -668,8 +666,6 @@ export class Game {
       Math.round(dH * GameConstants.TILESIZE)
     );
     Game.ctx.globalAlpha = 1.0;
-
-    Game.ctx.globalCompositeOperation = "source-over";
   };
 
   static drawObj = (

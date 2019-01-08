@@ -26,13 +26,50 @@ export class InsideLevelDoor extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
-    if (this.opened) Game.drawTile(15, 1, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
-    else Game.drawTile(3, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
+    Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.level.shadeColor, this.shadeAmount());
+    if (this.opened)
+      Game.drawTile(15, 1, 1, 1, this.x, this.y, 1, 1, this.level.shadeColor, this.shadeAmount());
+    else
+      Game.drawTile(
+        3,
+        this.skin,
+        1,
+        1,
+        this.x,
+        this.y,
+        1,
+        1,
+        this.level.shadeColor,
+        this.shadeAmount()
+      );
   };
 
   drawAbovePlayer = () => {
-    if (!this.opened) Game.drawTile(13, 0, 1, 1, this.x, this.y - 1, 1, 1, "black", this.shadeAmount());
-    else Game.drawTile(14, 0, 1, 1, this.x, this.y - 1, 1, 1, "black", this.shadeAmount());
+    if (!this.opened)
+      Game.drawTile(
+        13,
+        0,
+        1,
+        1,
+        this.x,
+        this.y - 1,
+        1,
+        1,
+        this.level.shadeColor,
+        this.shadeAmount()
+      );
+    else
+      Game.drawTile(
+        14,
+        0,
+        1,
+        1,
+        this.x,
+        this.y - 1,
+        1,
+        1,
+        this.level.shadeColor,
+        this.shadeAmount()
+      );
   };
 }

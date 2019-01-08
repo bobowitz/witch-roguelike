@@ -83,7 +83,7 @@ export class Item {
           this.h * (this.scaleFactor * -0.5 + 0.5),
         this.w * this.scaleFactor,
         this.h * this.scaleFactor,
-        "black",
+        this.level.shadeColor,
         this.shadeAmount()
       );
     }

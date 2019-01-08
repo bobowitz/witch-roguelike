@@ -10,8 +10,10 @@ import { DeathParticle } from "../particle/deathParticle";
 import { WizardTeleportParticle } from "../particle/wizardTeleportParticle";
 import { GameConstants } from "../gameConstants";
 import { WizardFireball } from "../projectile/wizardFireball";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 import { Player } from "../player";
+import { Coin } from "../item/coin";
+import { BlueGem } from "../item/bluegem";
 
 enum WizardState {
   idle,
@@ -144,7 +146,7 @@ export class WizardEnemy extends Enemy {
           this.y - this.drawY,
           1,
           1,
-          "black",
+          this.level.shadeColor,
           this.shadeAmount()
         );
       if (this.frame >= 0) {
@@ -157,7 +159,7 @@ export class WizardEnemy extends Enemy {
           this.y - 1.5,
           1,
           2,
-          "black",
+          this.level.shadeColor,
           this.shadeAmount()
         );
         this.frame += 0.4;
@@ -172,7 +174,7 @@ export class WizardEnemy extends Enemy {
           this.y - 1.5 - this.drawY,
           1,
           2,
-          "black",
+          this.level.shadeColor,
           this.shadeAmount()
         );
       }
@@ -193,6 +195,7 @@ export class WizardEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new Gem(this.level, this.x, this.y));
+    if (Math.random() < 0.02) this.game.level.items.push(new BlueGem(this.level, this.x, this.y));
+    else this.game.level.items.push(new Coin(this.level, this.x, this.y));
   };
 }

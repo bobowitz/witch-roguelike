@@ -153,7 +153,7 @@ export class Enemy {
           this.y - this.drawY,
           1,
           1,
-          "black",
+          this.level.shadeColor,
           this.shadeAmount()
         );
       Game.drawMob(
@@ -165,7 +165,7 @@ export class Enemy {
         this.y - 1.5 - this.drawY,
         1,
         2,
-        "black",
+        this.level.shadeColor,
         this.shadeAmount()
       );
     }

@@ -1,15 +1,8 @@
 import { Enemy, EnemyDirection } from "./enemy";
-import { LevelConstants } from "../levelConstants";
 import { Game } from "../game";
 import { Level } from "../level";
 import { astar } from "../astarclass";
-import { Heart } from "../item/heart";
-import { Floor } from "../tile/floor";
-import { Bones } from "../tile/bones";
-import { DeathParticle } from "../particle/deathParticle";
-import { GameConstants } from "../gameConstants";
 import { HitWarning } from "../projectile/hitWarning";
-import { Gem } from "../item/gem";
 import { SpikeTrap } from "../tile/spiketrap";
 import { Coin } from "../item/coin";
 
@@ -122,7 +115,7 @@ export class KnightEnemy extends Enemy {
           this.y - this.drawY,
           1,
           1,
-          "black",
+          this.level.shadeColor,
           this.shadeAmount()
         );
       Game.drawMob(
@@ -134,7 +127,7 @@ export class KnightEnemy extends Enemy {
         this.y - 1.5 - this.drawY + (this.tileX === 4 ? 0.1875 : 0),
         1,
         2,
-        "black",
+        this.level.shadeColor,
         this.shadeAmount()
       );
     }

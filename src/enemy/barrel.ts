@@ -37,7 +37,7 @@ export class Barrel extends Enemy {
         this.y - 1 - this.drawY,
         1,
         2,
-        "black",
+        this.level.shadeColor,
         this.shadeAmount()
       );
     }

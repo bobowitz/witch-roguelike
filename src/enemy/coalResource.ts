@@ -6,7 +6,7 @@ import { Heart } from "../item/heart";
 import { Armor } from "../item/armor";
 import { Enemy } from "./enemy";
 import { LevelConstants } from "../levelConstants";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 import { Resource } from "./resource";
 import { GenericParticle } from "../particle/genericParticle";
 import { Coal } from "../item/coal";
@@ -36,22 +36,6 @@ export class CoalResource extends Resource {
   };
   killNoBones = () => {
     this.kill();
-  };
-
-  draw = () => {
-    if (!this.dead) {
-      Game.drawObj(
-        this.tileX,
-        this.tileY,
-        1,
-        2,
-        this.x - this.drawX,
-        this.y - 1 - this.drawY,
-        1,
-        2,
-        "black", this.shadeAmount()
-      );
-    }
   };
 
   drawTopLayer = () => {};

@@ -10,7 +10,7 @@ import { GameConstants } from "../gameConstants";
 import { Player } from "../player";
 import { DeathParticle } from "../particle/deathParticle";
 import { HitWarning } from "../projectile/hitWarning";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 import { SpikeTrap } from "../tile/spiketrap";
 import { GenericParticle } from "../particle/genericParticle";
 
@@ -162,6 +162,6 @@ export class AStarSkullEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new Gem(this.level, this.x, this.y));
+    this.game.level.items.push(new GreenGem(this.level, this.x, this.y));
   };
 }

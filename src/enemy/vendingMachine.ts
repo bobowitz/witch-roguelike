@@ -6,11 +6,14 @@ import { Item } from "../item/item";
 import { Key } from "../item/key";
 import { Coin } from "../item/coin";
 import { Coal } from "../item/coal";
-import { Gem } from "../item/gem";
+import { GreenGem } from "../item/greengem";
 import { GameConstants } from "../gameConstants";
 import { Shotgun } from "../weapon/shotgun";
 import { Dagger } from "../weapon/dagger";
 import { Armor } from "../item/armor";
+import { Heart } from "../item/heart";
+import { Spear } from "../weapon/spear";
+import { Gold } from "../item/gold";
 
 let OPEN_TIME = 150;
 let FILL_COLOR = "#5a595b";
@@ -26,7 +29,7 @@ export class VendingMachine extends Enemy {
   quantity = 1;
   buyAnimAmount = 0;
 
-  constructor(level: Level, game: Game, x: number, y: number) {
+  constructor(level: Level, game: Game, x: number, y: number, item: Item) {
     super(level, game, x, y);
 
     this.destroyable = false;
@@ -34,16 +37,31 @@ export class VendingMachine extends Enemy {
     this.chainPushable = false;
     this.interactable = true;
 
-    let c = new Coin(level, 0, 0);
-    c.stackCount = 5;
-    this.costItems = [c, new Coal(level, 0, 0), new Gem(level, 0, 0)];
-    this.item = new Shotgun(level, 0, 0);
+    this.item = item;
+    if (this.item instanceof Shotgun) {
+      let g = new GreenGem(level, 0, 0);
+      g.stackCount = Game.randTable([5, 5, 6, 7]);
+      this.costItems = [g];
+    } else if (this.item instanceof Heart) {
+      let c = new Coin(level, 0, 0);
+      c.stackCount = 10;
+      this.costItems = [c];
+    } else if (this.item instanceof Spear) {
+      let g = new GreenGem(level, 0, 0);
+      g.stackCount = Game.randTable([5, 5, 6, 7]);
+      this.costItems = [g];
+    } else if (this.item instanceof Armor) {
+      let g = new Gold(level, 0, 0);
+      g.stackCount = Game.randTable([5, 5, 6, 7]);
+      this.costItems = [g];
+    }
   }
 
   interact = () => {
     if (this.isInf || this.quantity > 0) {
       this.open = true;
       this.openTime = Date.now();
+      if (this.game.player.openVendingMachine) this.game.player.openVendingMachine.close();
       this.game.player.openVendingMachine = this;
     }
   };
@@ -90,7 +108,18 @@ export class VendingMachine extends Enemy {
   draw = () => {
     let tileX = 19;
     if (!this.isInf && this.quantity === 0) tileX = 20;
-    Game.drawObj(tileX, 0, 1, 2, this.x, this.y - 1, 1, 2, "black", this.shadeAmount());
+    Game.drawObj(
+      tileX,
+      0,
+      1,
+      2,
+      this.x,
+      this.y - 1,
+      1,
+      2,
+      this.level.shadeColor,
+      this.shadeAmount()
+    );
   };
 
   drawTopLayer = () => {

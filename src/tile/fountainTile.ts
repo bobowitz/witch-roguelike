@@ -20,7 +20,29 @@ export class FountainTile extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(1, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
-    Game.drawTile(this.subTileX, 2 + this.subTileY, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
+    Game.drawTile(
+      1,
+      this.skin,
+      1,
+      1,
+      this.x,
+      this.y,
+      1,
+      1,
+      this.level.shadeColor,
+      this.shadeAmount()
+    );
+    Game.drawTile(
+      this.subTileX,
+      2 + this.subTileY,
+      1,
+      1,
+      this.x,
+      this.y,
+      1,
+      1,
+      this.level.shadeColor,
+      this.shadeAmount()
+    );
   };
 }

@@ -13,6 +13,17 @@ export class WallSide extends Tile {
   };
 
   draw = () => {
-    Game.drawTile(0, this.skin, 1, 1, this.x, this.y, 1, 1, "black", this.shadeAmount());
+    Game.drawTile(
+      0,
+      this.skin,
+      1,
+      1,
+      this.x,
+      this.y,
+      1,
+      1,
+      this.level.shadeColor,
+      this.shadeAmount()
+    );
   };
 }

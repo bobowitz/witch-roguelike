@@ -196,8 +196,8 @@ export class LevelGenerator {
         } else {
           r.x = -2;
           r.y = -2;
-          r.w = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-          r.h = 5; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.w = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.h = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
         }
         if (this.noCollisions(r)) {
           let level = new Level(this.game, r.x, r.y, r.w, r.h, thisNode.type, thisNode.difficulty);
@@ -224,10 +224,7 @@ export class LevelGenerator {
     let d = depth;
     let node;
     if (d == 0) {
-      node = new N(RoomType.SHOP, d, [
-        new N(RoomType.DOWNLADDER, d, []),
-        new N(RoomType.SHOP, d, []),
-      ]);
+      node = new N(RoomType.SHOP, d, [new N(RoomType.DOWNLADDER, d, [])]);
     } else {
       switch (Game.rand(1, 10)) {
         case 1:
