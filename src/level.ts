@@ -394,7 +394,7 @@ export class Level {
       let x = t.x;
       let y = t.y;
       if (this.depth !== 0) {
-        let d = Game.rand(1, Math.min(3, this.depth));
+        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3]));
         switch (d) {
           case 1:
             this.enemies.push(new KnightEnemy(this, this.game, x, y));

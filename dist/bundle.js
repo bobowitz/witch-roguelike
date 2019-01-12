@@ -3500,7 +3500,7 @@ var Level = /** @class */ (function () {
             var x = t.x;
             var y = t.y;
             if (this.depth !== 0) {
-                var d = game_1.Game.rand(1, Math.min(3, this.depth));
+                var d = Math.min(this.depth, game_1.Game.randTable([1, 1, 1, 2, 2, 2, 3]));
                 switch (d) {
                     case 1:
                         this.enemies.push(new knightEnemy_1.KnightEnemy(this, this.game, x, y));
@@ -5813,11 +5813,12 @@ var WizardEnemy = /** @class */ (function (_super) {
                             var min = 100000;
                             var bestPos = void 0;
                             var emptyTiles = _this.shuffle(_this.level.getEmptyTiles());
+                            var optimalDist = game_1.Game.randTable([2, 2, 3, 3, 3, 3, 3]);
                             for (var _i = 0, emptyTiles_1 = emptyTiles; _i < emptyTiles_1.length; _i++) {
                                 var t = emptyTiles_1[_i];
                                 var newPos = t;
                                 var dist = Math.abs(newPos.x - _this.game.player.x) + Math.abs(newPos.y - _this.game.player.y);
-                                if (Math.abs(dist - 4) < Math.abs(min - 4)) {
+                                if (Math.abs(dist - optimalDist) < Math.abs(min - optimalDist)) {
                                     min = dist;
                                     bestPos = newPos;
                                 }

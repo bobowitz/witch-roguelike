@@ -111,11 +111,12 @@ export class WizardEnemy extends Enemy {
             let min = 100000;
             let bestPos;
             let emptyTiles = this.shuffle(this.level.getEmptyTiles());
+            let optimalDist = Game.randTable([2, 2, 3, 3, 3, 3, 3]);
             for (let t of emptyTiles) {
               let newPos = t;
               let dist =
                 Math.abs(newPos.x - this.game.player.x) + Math.abs(newPos.y - this.game.player.y);
-              if (Math.abs(dist - 4) < Math.abs(min - 4)) {
+              if (Math.abs(dist - optimalDist) < Math.abs(min - optimalDist)) {
                 min = dist;
                 bestPos = newPos;
               }
