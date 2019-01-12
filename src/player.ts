@@ -15,6 +15,7 @@ import { Map } from "./map";
 import { SlashParticle } from "./particle/slashParticle";
 import { HealthBar } from "./healthbar";
 import { VendingMachine } from "./enemy/vendingMachine";
+import { SideDoor } from "./tile/sidedoor";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -154,53 +155,6 @@ export class Player {
     return 1;
   };
 
-  // dash length 2
-  tryDash = (dx: number, dy: number) => {
-    let startX = this.x;
-    let startY = this.y;
-    let x = this.x;
-    let y = this.y;
-    let particleFrameOffset = 4;
-    while (x !== startX + 2 * dx || y !== startY + 2 * dy) {
-      x += dx;
-      y += dy;
-      let other = this.game.level.levelArray[x][y];
-      if (other.isSolid()) break;
-      if (other instanceof Door || other instanceof BottomDoor) {
-        this.move(x, y);
-        other.onCollide(this);
-        return;
-      }
-      other.onCollide(this);
-
-      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
-      particleFrameOffset -= 2;
-      let breakFlag = false;
-      for (let e of this.game.level.enemies) {
-        if (e.x === x && e.y === y) {
-          let dmg = this.hit();
-          e.hurt(dmg);
-          this.game.level.particles.push(
-            new TextParticle("" + dmg, x + 0.5, y - 0.5, GameConstants.HIT_ENEMY_TEXT_COLOR, 5)
-          );
-          if (e instanceof Chest) {
-            breakFlag = true;
-            this.game.level.tick();
-            break;
-          }
-        }
-      }
-      if (breakFlag) break;
-      this.dashMove(x, y);
-    }
-    this.drawX = this.x - startX;
-    this.drawY = this.y - startY;
-    if (this.x !== startX || this.y !== startY) {
-      this.game.level.tick();
-      this.game.level.particles.push(new DashParticle(this.x, this.y, particleFrameOffset));
-    }
-  };
-
   tryCollide = (other: any, newX: number, newY: number) => {
     if (newX >= other.x + other.w || newX + this.w <= other.x) return false;
     if (newY >= other.y + other.h || newY + this.h <= other.y) return false;
@@ -298,7 +252,14 @@ export class Player {
     if (!other.isSolid()) {
       this.move(x, y);
       other.onCollide(this);
-      if (!(other instanceof Door || other instanceof BottomDoor || other instanceof Trapdoor))
+      if (
+        !(
+          other instanceof Door ||
+          other instanceof BottomDoor ||
+          other instanceof Trapdoor ||
+          other instanceof SideDoor
+        )
+      )
         this.game.level.tick();
     } else {
       if (other instanceof LockedDoor) {

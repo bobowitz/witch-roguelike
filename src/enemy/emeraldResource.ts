@@ -17,7 +17,7 @@ export class EmeraldResource extends Resource {
 
     this.tileX = 14;
     this.tileY = 0;
-    this.health = 30;
+    this.health = 3;
   }
 
   hurtCallback = () => {

@@ -34,7 +34,7 @@ export class SkullEnemy extends Enemy {
     this.maxHealth = 2;
     this.tileX = 5;
     this.tileY = 8;
-    this.seenPlayer = true;
+    this.seenPlayer = false;
     this.ticksSinceFirstHit = 0;
     this.flashingFrame = 0;
     this.dx = 0;
@@ -69,7 +69,7 @@ export class SkullEnemy extends Enemy {
           this.health = 2;
         }
       } else {
-        if (this.seenPlayer || this.level.softVis[this.x][this.y] < 1) {
+        if (this.seenPlayer || this.seesPlayer()) {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;

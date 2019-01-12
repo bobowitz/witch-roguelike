@@ -21,7 +21,7 @@ export class KnightEnemy extends Enemy {
     this.maxHealth = 2;
     this.tileX = 9;
     this.tileY = 8;
-    this.seenPlayer = true;
+    this.seenPlayer = false;
     this.deathParticleColor = "#ffffff";
   }
 
@@ -38,7 +38,7 @@ export class KnightEnemy extends Enemy {
       this.ticks++;
       this.tileX = 9;
       this.tileY = 8;
-      if (this.seenPlayer || this.level.softVis[this.x][this.y] < 1) {
+      if (this.seenPlayer || this.seesPlayer()) {
         if (this.ticks % 2 === 0) {
           this.tileX = 4;
           this.tileY = 0;

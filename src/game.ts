@@ -8,6 +8,7 @@ import { LevelGenerator } from "./levelGenerator";
 import { BottomDoor } from "./tile/bottomDoor";
 import { Input } from "./input";
 import { DownLadder } from "./tile/downLadder";
+import { SideDoor } from "./tile/sidedoor";
 
 export enum LevelState {
   IN_LEVEL,
@@ -29,6 +30,8 @@ export class Game {
   transitionX: number;
   transitionY: number;
   upwardTransition: boolean;
+  sideTransition: boolean;
+  sideTransitionDirection: number;
   transitioningLadder: any;
   screenShakeX: number;
   screenShakeY: number;
@@ -148,7 +151,7 @@ export class Game {
     this.transitioningLadder = ladder;
   };
 
-  changeLevelThroughDoor = (door: any) => {
+  changeLevelThroughDoor = (door: any, side?: number) => {
     this.levelState = LevelState.TRANSITIONING;
     this.transitionStartTime = Date.now();
 
@@ -158,13 +161,16 @@ export class Game {
     this.prevLevel = this.level;
     this.level.exitLevel();
     this.level = door.level;
-    this.level.enterLevelThroughDoor(door);
+    this.level.enterLevelThroughDoor(door, side);
 
     this.transitionX = (this.player.x - this.transitionX) * GameConstants.TILESIZE;
     this.transitionY = (this.player.y - this.transitionY) * GameConstants.TILESIZE;
 
     this.upwardTransition = false;
-    if (door instanceof BottomDoor) this.upwardTransition = true;
+    this.sideTransition = false;
+    this.sideTransitionDirection = side;
+    if (door instanceof SideDoor) this.sideTransition = true;
+    else if (door instanceof BottomDoor) this.upwardTransition = true;
   };
 
   run = () => {
@@ -286,9 +292,17 @@ export class Game {
       let newLevelOffsetX = playerOffsetX;
       let newLevelOffsetY = playerOffsetY;
 
-      if (this.upwardTransition) {
+      if (this.sideTransition) {
+        if (this.sideTransitionDirection > 0) {
+          levelOffsetX += extraTileLerp;
+          newLevelOffsetX += extraTileLerp + GameConstants.TILESIZE;
+        } else {
+          levelOffsetX -= extraTileLerp;
+          newLevelOffsetX -= extraTileLerp + GameConstants.TILESIZE;
+        }
+      } else if (this.upwardTransition) {
         levelOffsetY -= extraTileLerp;
-        newLevelOffsetY += -extraTileLerp - GameConstants.TILESIZE;
+        newLevelOffsetY -= extraTileLerp + GameConstants.TILESIZE;
       } else {
         levelOffsetY += extraTileLerp;
         newLevelOffsetY += extraTileLerp + GameConstants.TILESIZE;

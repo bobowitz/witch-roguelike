@@ -50,6 +50,12 @@ class Room {
       { x: this.x, y: this.y + this.h },
       { x: Math.floor(this.x + this.w / 2), y: this.y + this.h },
       { x: this.x + this.w - 1, y: this.y + this.h },
+      { x: this.x - 1, y: this.y + 1 },
+      { x: this.x - 1, y: Math.floor(this.y + this.h / 2) },
+      { x: this.x - 1, y: this.y + this.h - 1 },
+      { x: this.x + this.w, y: this.y + 1 },
+      { x: this.x + this.w, y: Math.floor(this.y + this.h / 2) },
+      { x: this.x + this.w, y: this.y + this.h - 1 },
     ];
   };
 
@@ -71,8 +77,12 @@ class Room {
     let ind = 1;
     if (dir === 0 || dir === 1 || dir === 2) {
       ind = 3 + Math.floor(Math.random() * 3);
-    } else {
+    } else if (dir === 3 || dir === 4 || dir === 5) {
       ind = Math.floor(Math.random() * 3);
+    } else if (dir === 6 || dir === 7 || dir === 8) {
+      ind = 9 + Math.floor(Math.random() * 3);
+    } else {
+      ind = 6 + Math.floor(Math.random() * 3);
     }
     let point = this.getPoints()[ind];
     this.x += p.x - point.x;
@@ -132,7 +142,7 @@ export class LevelGenerator {
   };
 
   addRooms = (thisNode: N, parent: Room, parentLevel: Level) => {
-    let order = this.shuffle([0, 1, 2, 3, 4, 5]);
+    let order = this.shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
     //console.log(thisNode, parent);
 
@@ -144,7 +154,7 @@ export class LevelGenerator {
         let r = new Room();
         r.x = 0;
         r.y = 0;
-        let newLevelDoorDir = Game.rand(1, 6);
+        let newLevelDoorDir = Game.rand(1, 12);
         if (parent) {
           switch (thisNode.type) {
             case RoomType.DUNGEON:
@@ -162,6 +172,9 @@ export class LevelGenerator {
                 Game.randTable([10, 11, 12, 13]),
                 Game.randTable([10, 11, 12, 13])
               );
+              break;
+            case RoomType.BIGCAVE:
+              newLevelDoorDir = r.generateAroundPoint(points[ind], ind, 30, 30);
               break;
             case RoomType.UPLADDER:
             case RoomType.DOWNLADDER:
@@ -205,8 +218,7 @@ export class LevelGenerator {
           this.levels.push(level);
           if (parentLevel) {
             let newDoor = level.addDoor(newLevelDoorDir, null);
-            parentLevel.doors[ind] = parentLevel.addDoor(ind, newDoor);
-            newDoor.linkedDoor = parentLevel.doors[ind];
+            newDoor.linkedDoor = parentLevel.addDoor(ind, newDoor);
             r.doors[newLevelDoorDir] = newDoor;
           }
           this.rooms.push(r);
@@ -226,55 +238,30 @@ export class LevelGenerator {
     if (d == 0) {
       node = new N(RoomType.SHOP, d, [new N(RoomType.DOWNLADDER, d, [])]);
     } else {
-      switch (Game.rand(1, 10)) {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-          node = new N(RoomType.UPLADDER, d, [
+      node = new N(RoomType.UPLADDER, d, [
+        new N(RoomType.DUNGEON, d, [
+          new N(RoomType.DUNGEON, d, [
             new N(RoomType.DUNGEON, d, [
-              new N(RoomType.SPAWNER, d, [
-                new N(RoomType.DOWNLADDER, d, [
-                  new N(RoomType.CAVE, d, [
-                    new N(RoomType.CAVE, d, []),
-                    new N(RoomType.CAVE, d, []),
-                  ]),
-                ]),
-                new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])])]),
-                new N(Game.rand(1, 3) === 1 ? RoomType.TREASURE : RoomType.DUNGEON, d, []),
+              new N(RoomType.DUNGEON, d, [new N(RoomType.TREASURE, d, [])]),
+            ]),
+          ]),
+        ]),
+        new N(RoomType.DUNGEON, d, [
+          new N(RoomType.DUNGEON, d, [
+            new N(RoomType.DUNGEON, d, [
+              new N(RoomType.DUNGEON, d, [
                 new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])]),
               ]),
             ]),
-            new N(RoomType.DUNGEON, d, [new N(RoomType.DUNGEON, d, [])]),
-          ]);
-          break;
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-          node = new N(RoomType.UPLADDER, d, [
-            new N(RoomType.DUNGEON, d, [
-              new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])]),
-              new N(RoomType.BIGDUNGEON, d, [
-                new N(RoomType.SPIKECORRIDOR, d, [new N(RoomType.TREASURE, d, [])]),
-                new N(RoomType.DUNGEON, d, [
-                  new N(RoomType.CAVE, d, []),
-                  new N(RoomType.CAVE, d, []),
-                ]),
-              ]),
-              new N(RoomType.DUNGEON, d, [
-                new N(RoomType.CAVE, d, [
-                  new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
-                  new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
-                  new N(RoomType.CAVE, d, []),
-                ]),
-              ]),
-            ]),
-          ]);
-          break;
-      }
+          ]),
+        ]),
+        new N(RoomType.BIGCAVE, d, [
+          new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
+          new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
+          new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
+          new N(RoomType.CAVE, d, []),
+        ]),
+      ]);
     }
     /*  new N(RoomType.DUNGEON, d, [
         new N(RoomType.COFFIN, d, [])

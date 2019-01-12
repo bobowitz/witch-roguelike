@@ -3,6 +3,7 @@ import { GameConstants } from "./gameConstants";
 import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { RoomType } from "./level";
+import { SideDoor } from "./tile/sidedoor";
 
 // class MapRoom {
 //   x: number;
@@ -56,20 +57,13 @@ export class Map {
         if (level.type === RoomType.DOWNLADDER) Game.ctx.fillStyle = "#601410";
         if (!level.entered) Game.ctx.fillStyle = "#606060";
         Game.ctx.fillRect(level.x, level.y + 1, level.width, level.height - 1);
+        //console.log(level.doors);
         for (const door of level.doors) {
           Game.ctx.fillStyle = "black";
           if (!level.entered) Game.ctx.fillStyle = "#606060";
 
           //Game.ctx.fillStyle = "#0085ff";
-          if (door instanceof Door)
-            Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
-          if (door instanceof BottomDoor)
-            Game.ctx.fillRect(
-              level.x - level.roomX + door.x,
-              level.y - level.roomY + door.y - 1,
-              1,
-              1
-            );
+          Game.ctx.fillRect(level.x - level.roomX + door.x, level.y - level.roomY + door.y, 1, 1);
         }
       }
     }

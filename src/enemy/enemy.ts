@@ -127,6 +127,14 @@ export class Enemy {
     return Math.abs(this.drawX) < EPSILON && Math.abs(this.drawY) < EPSILON;
   };
 
+  seesPlayer = (): boolean => {
+    let RADIUS = 4;
+    return (
+      Math.abs(this.x - this.game.player.x) <= RADIUS &&
+      Math.abs(this.y - this.game.player.y) <= RADIUS
+    );
+  };
+
   facePlayer = () => {
     let dx = this.game.player.x - this.x;
     let dy = this.game.player.y - this.y;

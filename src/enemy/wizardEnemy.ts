@@ -26,6 +26,7 @@ export class WizardEnemy extends Enemy {
   ticks: number;
   state: WizardState;
   frame: number;
+  seenPlayer: boolean;
   readonly ATTACK_RADIUS = 5;
 
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -36,6 +37,7 @@ export class WizardEnemy extends Enemy {
     this.tileY = 0;
     this.frame = 0;
     this.state = WizardState.attack;
+    this.seenPlayer = false;
     this.deathParticleColor = "#ffffff";
   }
 
@@ -68,68 +70,71 @@ export class WizardEnemy extends Enemy {
         this.skipNextTurns--;
         return;
       }
-      switch (this.state) {
-        case WizardState.attack:
-          this.tileX = 7;
-          if (!this.level.levelArray[this.x - 1][this.y].isSolid()) {
-            this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
-            if (!this.level.levelArray[this.x - 2][this.y].isSolid()) {
-              this.level.projectiles.push(new WizardFireball(this, this.x - 2, this.y));
+      if (this.seenPlayer || this.seesPlayer()) {
+        this.seenPlayer = true;
+        switch (this.state) {
+          case WizardState.attack:
+            this.tileX = 7;
+            if (!this.level.levelArray[this.x - 1][this.y].isSolid()) {
+              this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
+              if (!this.level.levelArray[this.x - 2][this.y].isSolid()) {
+                this.level.projectiles.push(new WizardFireball(this, this.x - 2, this.y));
+              }
             }
-          }
-          if (!this.level.levelArray[this.x + 1][this.y].isSolid()) {
-            this.level.projectiles.push(new WizardFireball(this, this.x + 1, this.y));
-            if (!this.level.levelArray[this.x + 2][this.y].isSolid()) {
-              this.level.projectiles.push(new WizardFireball(this, this.x + 2, this.y));
+            if (!this.level.levelArray[this.x + 1][this.y].isSolid()) {
+              this.level.projectiles.push(new WizardFireball(this, this.x + 1, this.y));
+              if (!this.level.levelArray[this.x + 2][this.y].isSolid()) {
+                this.level.projectiles.push(new WizardFireball(this, this.x + 2, this.y));
+              }
             }
-          }
-          if (!this.level.levelArray[this.x][this.y - 1].isSolid()) {
-            this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 1));
-            if (!this.level.levelArray[this.x][this.y - 2].isSolid()) {
-              this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 2));
+            if (!this.level.levelArray[this.x][this.y - 1].isSolid()) {
+              this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 1));
+              if (!this.level.levelArray[this.x][this.y - 2].isSolid()) {
+                this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 2));
+              }
             }
-          }
-          if (!this.level.levelArray[this.x][this.y + 1].isSolid()) {
-            this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 1));
-            if (!this.level.levelArray[this.x][this.y + 2].isSolid()) {
-              this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 2));
+            if (!this.level.levelArray[this.x][this.y + 1].isSolid()) {
+              this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 1));
+              if (!this.level.levelArray[this.x][this.y + 2].isSolid()) {
+                this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 2));
+              }
             }
-          }
-          this.state = WizardState.justAttacked;
-          break;
-        case WizardState.justAttacked:
-          this.tileX = 6;
-          this.state = WizardState.idle;
-          break;
-        case WizardState.teleport:
-          let oldX = this.x;
-          let oldY = this.y;
-          let min = 100000;
-          let bestPos;
-          let emptyTiles = this.shuffle(this.level.getEmptyTiles());
-          for (let t of emptyTiles) {
-            let newPos = t;
-            let dist =
-              Math.abs(newPos.x - this.game.player.x) + Math.abs(newPos.y - this.game.player.y);
-            if (Math.abs(dist - 4) < Math.abs(min - 4)) {
-              min = dist;
-              bestPos = newPos;
-            }
-          }
-          this.tryMove(bestPos.x, bestPos.y);
-          this.drawX = this.x - oldX;
-          this.drawY = this.y - oldY;
-          this.frame = 0; // trigger teleport animation
-          this.level.particles.push(new WizardTeleportParticle(oldX, oldY));
-          if (this.withinAttackingRangeOfPlayer()) {
-            this.state = WizardState.attack;
-          } else {
+            this.state = WizardState.justAttacked;
+            break;
+          case WizardState.justAttacked:
+            this.tileX = 6;
             this.state = WizardState.idle;
-          }
-          break;
-        case WizardState.idle:
-          this.state = WizardState.teleport;
-          break;
+            break;
+          case WizardState.teleport:
+            let oldX = this.x;
+            let oldY = this.y;
+            let min = 100000;
+            let bestPos;
+            let emptyTiles = this.shuffle(this.level.getEmptyTiles());
+            for (let t of emptyTiles) {
+              let newPos = t;
+              let dist =
+                Math.abs(newPos.x - this.game.player.x) + Math.abs(newPos.y - this.game.player.y);
+              if (Math.abs(dist - 4) < Math.abs(min - 4)) {
+                min = dist;
+                bestPos = newPos;
+              }
+            }
+            this.tryMove(bestPos.x, bestPos.y);
+            this.drawX = this.x - oldX;
+            this.drawY = this.y - oldY;
+            this.frame = 0; // trigger teleport animation
+            this.level.particles.push(new WizardTeleportParticle(oldX, oldY));
+            if (this.withinAttackingRangeOfPlayer()) {
+              this.state = WizardState.attack;
+            } else {
+              this.state = WizardState.idle;
+            }
+            break;
+          case WizardState.idle:
+            this.state = WizardState.teleport;
+            break;
+        }
       }
     }
   };

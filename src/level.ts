@@ -46,6 +46,7 @@ import { ChargeEnemy } from "./enemy/chargeEnemy";
 import { Shotgun } from "./weapon/shotgun";
 import { Heart } from "./item/heart";
 import { Spear } from "./weapon/spear";
+import { SideDoor } from "./tile/sidedoor";
 
 export enum RoomType {
   DUNGEON,
@@ -63,6 +64,7 @@ export enum RoomType {
   UPLADDER,
   DOWNLADDER,
   SHOP,
+  BIGCAVE,
   CAVE,
   SPAWNER,
 }
@@ -144,8 +146,8 @@ export class Level {
     // Floor    Floor
     // Wall     Wall
 
-    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
-      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
+    for (let x = 0; x < this.levelArray.length; x++) {
+      for (let y = 0; y < this.levelArray[0].length; y++) {
         if (this.levelArray[x][y] instanceof Wall) {
           if (
             this.levelArray[x][y + 1] instanceof Floor ||
@@ -169,22 +171,22 @@ export class Level {
 
   private buildEmptyRoom() {
     // fill in outside walls
-    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
-      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
+    for (let x = 0; x < this.width + 6; x++) {
+      for (let y = 0; y < this.height + 6; y++) {
         this.levelArray[x][y] = new Wall(this, x, y, 1);
       }
     }
     // put in floors
-    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
-      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
+    for (let x = 0; x < this.width + 6; x++) {
+      for (let y = 0; y < this.height + 6; y++) {
         if (this.pointInside(x, y, this.roomX, this.roomY, this.width, this.height)) {
           this.levelArray[x][y] = new Floor(this, x, y);
         }
       }
     }
     // outer ring walls
-    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
-      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
+    for (let x = 0; x < this.width + 6; x++) {
+      for (let y = 0; y < this.height + 6; y++) {
         if (
           this.pointInside(x, y, this.roomX - 1, this.roomY - 1, this.width + 2, this.height + 2)
         ) {
@@ -729,22 +731,22 @@ export class Level {
     this.lightSources = Array<LightSource>();
 
     this.levelArray = [];
-    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
+    for (let x = 0; x < w + 6; x++) {
       this.levelArray[x] = [];
     }
     this.vis = [];
     this.softVis = [];
-    for (let x = 0; x < LevelConstants.ROOM_W; x++) {
+    for (let x = 0; x < w + 6; x++) {
       this.vis[x] = [];
       this.softVis[x] = [];
-      for (let y = 0; y < LevelConstants.ROOM_H; y++) {
+      for (let y = 0; y < h + 6; y++) {
         this.vis[x][y] = 1;
         this.softVis[x][y] = 1;
       }
     }
 
-    this.roomX = Math.floor(LevelConstants.ROOM_W / 2 - this.width / 2);
-    this.roomY = Math.floor(LevelConstants.ROOM_H / 2 - this.height / 2);
+    this.roomX = 2;//Math.floor(- this.width / 2);
+    this.roomY = 2;//Math.floor(- this.height / 2);
 
     this.upLadder = null;
 
@@ -780,6 +782,8 @@ export class Level {
       case RoomType.GRASS:
         this.generateDungeon();
         break;
+      case RoomType.BIGCAVE:
+        this.generateCave();
       case RoomType.CAVE:
         this.generateCave();
         break;
@@ -829,7 +833,7 @@ export class Level {
           this.roomX,
           this.roomY + this.height
         );
-        d = new BottomDoor(this, this.game, this.roomX, this.roomY + this.height + 1, link);
+        d = new BottomDoor(this, this.game, this.roomX, this.roomY + this.height, link);
         break;
       case 4:
         this.levelArray[this.roomX + Math.floor(this.width / 2)][
@@ -839,7 +843,7 @@ export class Level {
           this,
           this.game,
           this.roomX + Math.floor(this.width / 2),
-          this.roomY + this.height + 1,
+          this.roomY + this.height,
           link
         );
         break;
@@ -853,7 +857,67 @@ export class Level {
           this,
           this.game,
           this.roomX + this.width - 1,
-          this.roomY + this.height + 1,
+          this.roomY + this.height,
+          link
+        );
+        break;
+      case 6:
+        this.levelArray[this.roomX][this.roomY + 1] = new Floor(this, this.roomX, this.roomY + 1);
+        d = new SideDoor(this, this.game, this.roomX - 1, this.roomY + 1, link);
+        break;
+      case 7:
+        this.levelArray[this.roomX][this.roomY + Math.floor(this.height / 2)] = new Floor(
+          this,
+          this.roomX,
+          this.roomY + Math.floor(this.height / 2)
+        );
+        d = new SideDoor(
+          this,
+          this.game,
+          this.roomX - 1,
+          this.roomY + Math.floor(this.height / 2),
+          link
+        );
+        break;
+      case 8:
+        this.levelArray[this.roomX][this.roomY + this.height - 1] = new Floor(
+          this,
+          this.roomX,
+          this.roomY + this.height - 1
+        );
+        d = new SideDoor(this, this.game, this.roomX - 1, this.roomY + this.height - 1, link);
+        break;
+      case 9:
+        this.levelArray[this.roomX + this.width - 1][this.roomY + 1] = new Floor(
+          this,
+          this.roomX + this.width - 1,
+          this.roomY + 1
+        );
+        d = new SideDoor(this, this.game, this.roomX + this.width, this.roomY + 1, link);
+        break;
+      case 10:
+        this.levelArray[this.roomX + this.width - 1][
+          this.roomY + Math.floor(this.height / 2)
+        ] = new Floor(this, this.roomX + this.width - 1, this.roomY + Math.floor(this.height / 2));
+        d = new SideDoor(
+          this,
+          this.game,
+          this.roomX + this.width,
+          this.roomY + Math.floor(this.height / 2),
+          link
+        );
+        break;
+      case 11:
+        this.levelArray[this.roomX + this.width - 1][this.roomY + this.height - 1] = new Floor(
+          this,
+          this.roomX + this.width - 1,
+          this.roomY + this.height - 1
+        );
+        d = new SideDoor(
+          this,
+          this.game,
+          this.roomX + this.width,
+          this.roomY + this.height - 1,
           link
         );
         break;
@@ -885,13 +949,15 @@ export class Level {
     this.entered = true;
   };
 
-  enterLevelThroughDoor = (door: any) => {
+  enterLevelThroughDoor = (door: any, side?: number) => {
     this.updateLevelTextColor();
     if (door instanceof Door) {
       (door as Door).opened = true;
       this.game.player.moveNoSmooth(door.x, door.y + 1);
-    } else {
+    } else if (door instanceof BottomDoor) {
       this.game.player.moveNoSmooth(door.x, door.y - 1);
+    } else if (door instanceof SideDoor) {
+      this.game.player.moveNoSmooth(door.x + side, door.y);
     }
 
     this.updateLighting();
@@ -1194,7 +1260,10 @@ export class Level {
     }*/
 
     for (const i of this.items) {
-      if (i.y <= this.game.player.y) i.drawTopLayer();
+      if (i.y > this.game.player.y) i.draw();
+    }
+    for (const i of this.items) {
+      i.drawTopLayer();
     }
   };
 
