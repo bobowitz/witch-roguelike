@@ -16,6 +16,7 @@ import { Dagger } from "./weapon/dagger";
 import { Level } from "./level";
 import { Usable } from "./item/usable";
 import { Shotgun } from "./weapon/shotgun";
+import { DualDagger } from "./weapon/dualdagger";
 
 let OPEN_TIME = 100; // milliseconds
 let FILL_COLOR = "#5a595b";
@@ -54,6 +55,7 @@ export class Inventory {
     this.addItem(new Dagger({ game: this.game } as Level, 0, 0));
     this.addItem(new Shotgun({ game: this.game } as Level, 0, 0));
     this.addItem(new Armor({ game: this.game } as Level, 0, 0));
+    this.addItem(new DualDagger({ game: this.game } as Level, 0, 0));
   }
 
   open = () => {

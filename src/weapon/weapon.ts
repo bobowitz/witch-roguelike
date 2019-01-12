@@ -16,6 +16,8 @@ export class Weapon extends Equippable {
     return true;
   };
 
+  tick = () => {};
+
   weaponMove = (newX: number, newY: number): boolean => {
     return true;
   };

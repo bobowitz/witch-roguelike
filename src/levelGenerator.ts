@@ -157,6 +157,10 @@ export class LevelGenerator {
         let newLevelDoorDir = Game.rand(1, 12);
         if (parent) {
           switch (thisNode.type) {
+            case RoomType.ROPECAVE:
+            case RoomType.ROPEHOLE:
+              newLevelDoorDir = r.generateAroundPoint(points[ind], ind, 3, 4);
+              break;
             case RoomType.DUNGEON:
               newLevelDoorDir = r.generateAroundPoint(
                 points[ind],
@@ -232,29 +236,11 @@ export class LevelGenerator {
     return false;
   };
 
-  generate = (game: Game, depth: number) => {
+  generate = (game: Game, depth: number, cave = false) => {
     let d = depth;
     let node;
-    if (d == 0) {
-      node = new N(RoomType.SHOP, d, [new N(RoomType.DOWNLADDER, d, [])]);
-    } else {
-      node = new N(RoomType.UPLADDER, d, [
-        new N(RoomType.DUNGEON, d, [
-          new N(RoomType.DUNGEON, d, [
-            new N(RoomType.DUNGEON, d, [
-              new N(RoomType.DUNGEON, d, [new N(RoomType.TREASURE, d, [])]),
-            ]),
-          ]),
-        ]),
-        new N(RoomType.DUNGEON, d, [
-          new N(RoomType.DUNGEON, d, [
-            new N(RoomType.DUNGEON, d, [
-              new N(RoomType.DUNGEON, d, [
-                new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])]),
-              ]),
-            ]),
-          ]),
-        ]),
+    if (cave) {
+      node = new N(RoomType.ROPECAVE, d, [
         new N(RoomType.BIGCAVE, d, [
           new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
           new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
@@ -262,6 +248,30 @@ export class LevelGenerator {
           new N(RoomType.CAVE, d, []),
         ]),
       ]);
+    } else {
+      if (d == 0) {
+        node = new N(RoomType.SHOP, d, [new N(RoomType.DOWNLADDER, d, [])]);
+      } else {
+        node = new N(RoomType.UPLADDER, d, [
+          new N(RoomType.DUNGEON, d, [
+            new N(RoomType.DUNGEON, d, [
+              new N(RoomType.DUNGEON, d, [
+                new N(RoomType.DUNGEON, d, [new N(RoomType.TREASURE, d, [])]),
+              ]),
+            ]),
+          ]),
+          new N(RoomType.DUNGEON, d, [
+            new N(RoomType.DUNGEON, d, [
+              new N(RoomType.DUNGEON, d, [
+                new N(RoomType.DUNGEON, d, [
+                  new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])]),
+                ]),
+              ]),
+            ]),
+          ]),
+          new N(RoomType.ROPEHOLE, d, []),
+        ]);
+      }
     }
     /*  new N(RoomType.DUNGEON, d, [
         new N(RoomType.COFFIN, d, [])

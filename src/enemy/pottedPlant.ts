@@ -45,5 +45,7 @@ export class PottedPlant extends Enemy {
     }
   };
 
-  drawTopLayer = () => {};
+  drawTopLayer = () => {
+    this.drawableY = this.y;
+  };
 }

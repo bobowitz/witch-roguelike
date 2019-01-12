@@ -47,6 +47,7 @@ import { Shotgun } from "./weapon/shotgun";
 import { Heart } from "./item/heart";
 import { Spear } from "./weapon/spear";
 import { SideDoor } from "./tile/sidedoor";
+import { Drawable } from "./drawable";
 
 export enum RoomType {
   DUNGEON,
@@ -67,6 +68,8 @@ export enum RoomType {
   BIGCAVE,
   CAVE,
   SPAWNER,
+  ROPEHOLE,
+  ROPECAVE,
 }
 
 export enum TurnState {
@@ -96,6 +99,7 @@ export class Level {
   type: RoomType;
   depth: number;
   name: string;
+  message: string;
   turn: TurnState;
   playerTurnTime: number;
   skin: SkinType;
@@ -312,7 +316,7 @@ export class Level {
       t = walls.splice(Game.rand(0, walls.length - 1), 1)[0];
       x = t.x;
       y = t.y;
-      //this.levelArray[x][y] = new WallSideTorch(this, x, y);
+      this.levelArray[x][y] = new WallSideTorch(this, x, y);
     }
   }
 
@@ -394,7 +398,7 @@ export class Level {
       let x = t.x;
       let y = t.y;
       if (this.depth !== 0) {
-        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3]));
+        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3, 4, 4]));
         switch (d) {
           case 1:
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
@@ -406,6 +410,9 @@ export class Level {
             this.enemies.push(new WizardEnemy(this, this.game, x, y));
             break;
           case 4:
+            this.enemies.push(new Spawner(this, this.game, x, y));
+            break;
+          case 5:
             this.enemies.push(new ChargeEnemy(this, this.game, x, y));
             break;
         }
@@ -421,7 +428,7 @@ export class Level {
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
-      switch (Game.rand(1, 2)) {
+      switch (Game.randTable([1, 1, 2])) {
         case 1:
           this.enemies.push(new Crate(this, this.game, x, y));
           break;
@@ -687,6 +694,31 @@ export class Level {
     let cY = Math.floor(this.roomY + this.height / 2);
     this.levelArray[cX][cY] = new DownLadder(this, this.game, cX, cY);
   };
+  generateRopeHole = () => {
+    this.skin = SkinType.DUNGEON;
+
+    this.buildEmptyRoom();
+    this.fixWalls();
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2]));
+
+    let cX = Math.floor(this.roomX + this.width / 2);
+    let cY = Math.floor(this.roomY + this.height / 2);
+    let d = new DownLadder(this, this.game, cX, cY);
+    d.isRope = true;
+    this.levelArray[cX][cY] = d;
+  };
+  generateRopeCave = () => {
+    this.skin = SkinType.CAVE;
+
+    this.buildEmptyRoom();
+    this.fixWalls();
+
+    let cX = Math.floor(this.roomX + this.width / 2);
+    let cY = Math.floor(this.roomY + this.height / 2);
+    this.upLadder = new UpLadder(this, this.game, cX, cY);
+    this.upLadder.isRope = true;
+    this.levelArray[cX][cY] = this.upLadder;
+  };
   generateShop = () => {
     this.skin = SkinType.DUNGEON;
 
@@ -745,8 +777,8 @@ export class Level {
       }
     }
 
-    this.roomX = 2;//Math.floor(- this.width / 2);
-    this.roomY = 2;//Math.floor(- this.height / 2);
+    this.roomX = 2; //Math.floor(- this.width / 2);
+    this.roomY = 2; //Math.floor(- this.height / 2);
 
     this.upLadder = null;
 
@@ -794,6 +826,12 @@ export class Level {
       case RoomType.DOWNLADDER:
         this.generateDownLadder();
         this.name = "FLOOR " + -this.depth;
+        break;
+      case RoomType.ROPEHOLE:
+        this.generateRopeHole();
+        break;
+      case RoomType.ROPECAVE:
+        this.generateRopeCave();
         break;
       case RoomType.SHOP:
         /* shop rates:
@@ -947,6 +985,7 @@ export class Level {
 
     this.updateLighting();
     this.entered = true;
+    this.message = this.name;
   };
 
   enterLevelThroughDoor = (door: any, side?: number) => {
@@ -962,6 +1001,7 @@ export class Level {
 
     this.updateLighting();
     this.entered = true;
+    this.message = this.name;
   };
 
   enterLevelThroughLadder = (ladder: any) => {
@@ -971,6 +1011,7 @@ export class Level {
 
     this.updateLighting();
     this.entered = true;
+    this.message = this.name;
   };
 
   // doesn't include top row or bottom row, as to not block doors
@@ -1177,23 +1218,6 @@ export class Level {
     this.turn = TurnState.playerTurn;
   };
 
-  /* TODO fix turn skipping bug
-  
-  computerTurnDelayed = () => {
-    // take computer turn
-    for (const p of this.projectiles) {
-      p.tickDelayAnim();
-    }
-    for (const e of this.enemies) {
-      e.tickDelayAnim();
-    }
-    for (const i of this.items) {
-      i.tickDelayAnim();
-    }
-
-    this.turn = TurnState.playerTurn; // now it's the player's turn
-  };*/
-
   draw = () => {
     HitWarning.updateFrame();
 
@@ -1213,23 +1237,25 @@ export class Level {
       }
     }
 
-    this.enemies.sort((a, b) => a.y - b.y);
-    this.items.sort((a, b) => a.y - b.y);
-
-    for (const p of this.particles) {
-      p.drawBehind();
-    }
-
     this.projectiles = this.projectiles.filter(p => !p.dead);
-    for (const p of this.projectiles) {
-      p.draw();
-    }
+    this.particles = this.particles.filter(p => !p.dead);
+    
+    let drawables = new Array<Drawable>();
+    drawables = drawables.concat(this.enemies, this.projectiles, this.particles, this.items);
+    drawables.sort((a, b) => {
+      if (a.drawableY - b.drawableY === 0) {
+        if (a instanceof Enemy) {
+          return 1;
+        } else if (b instanceof Enemy) {
+          return -1;
+        } else return 0;
+      } else {
+        return a.drawableY - b.drawableY;
+      }
+    });
 
-    for (const i of this.items) {
-      if (i.y <= this.game.player.y) i.draw();
-    }
-    for (const e of this.enemies) {
-      if (e.y <= this.game.player.y) e.draw();
+    for (const d of drawables) {
+      if (d.drawableY <= this.game.player.y) d.draw();
     }
   };
   drawEntitiesInFrontOfPlayer = () => {
@@ -1239,29 +1265,24 @@ export class Level {
       }
     }
 
-    for (const i of this.items) {
-      if (i.y > this.game.player.y) i.draw();
-    }
-    for (const e of this.enemies) {
-      if (e.y > this.game.player.y) e.draw();
-    }
-
-    this.particles = this.particles.filter(x => !x.dead);
-    for (const p of this.particles) {
-      p.draw();
-    }
-
-    // D I T H E R E D     S H A D I N G
-    /*for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
-      for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
-        let frame = Math.round(6 * (this.softVis[x][y] / LevelConstants.MIN_VISIBILITY));
-        Game.drawFX(frame, 10, 1, 1, x, y, 1, 1);
+    let drawables = new Array<Drawable>();
+    drawables = drawables.concat(this.enemies, this.projectiles, this.particles, this.items);
+    drawables.sort((a, b) => {
+      if (a.drawableY - b.drawableY === 0) {
+        if (a instanceof Enemy) {
+          return 1;
+        } else if (b instanceof Enemy) {
+          return -1;
+        } else return 0;
+      } else {
+        return a.drawableY - b.drawableY;
       }
-    }*/
+    });
 
-    for (const i of this.items) {
-      if (i.y > this.game.player.y) i.draw();
+    for (const d of drawables) {
+      if (d.drawableY > this.game.player.y) d.draw();
     }
+
     for (const i of this.items) {
       i.drawTopLayer();
     }
@@ -1308,7 +1329,7 @@ export class Level {
     Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
     Game.fillText(
-      this.name,
+      this.message,
       GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
       1
     );

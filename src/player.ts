@@ -72,8 +72,8 @@ export class Player {
     Input.downSwipeListener = this.downListener;
     Input.tapListener = this.tapListener;
 
-    this.health = 1;
-    this.maxHealth = 1;
+    this.health = 2;
+    this.maxHealth = 2;
     this.healthBar = new HealthBar();
     this.dead = false;
     this.flashing = false;
@@ -209,8 +209,9 @@ export class Player {
             pushedEnemies.length === 0 &&
             (this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
           ) {
-            if (e.destroyable) {
-              e.kill();
+            return;
+            /*if (e.destroyable) {
+            e.kill();
               Sound.hit();
               this.drawX = 0.5 * (this.x - e.x);
               this.drawY = 0.5 * (this.y - e.y);
@@ -218,7 +219,7 @@ export class Player {
               this.game.level.tick();
               this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
               return;
-            }
+            }*/
           } else {
             Sound.push();
             // here pushedEnemies may still be []

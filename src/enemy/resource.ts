@@ -42,5 +42,7 @@ export class Resource extends Enemy {
     }
   };
 
-  drawTopLayer = () => {};
+  drawTopLayer = () => {
+    this.drawableY = this.y;
+  };
 }

@@ -59,7 +59,9 @@ export class Game {
   constructor() {
     window.addEventListener("load", () => {
       let canvas = document.getElementById("gameCanvas");
-      Game.ctx = (canvas as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
+      Game.ctx = (canvas as HTMLCanvasElement).getContext("2d", {
+        alpha: false,
+      }) as CanvasRenderingContext2D;
 
       Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
       Game.ctx.textBaseline = "top";

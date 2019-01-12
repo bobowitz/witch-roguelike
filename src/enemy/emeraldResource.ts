@@ -37,5 +37,7 @@ export class EmeraldResource extends Resource {
     this.kill();
   };
 
-  drawTopLayer = () => {};
+  drawTopLayer = () => {
+    this.drawableY = this.y;
+  };
 }

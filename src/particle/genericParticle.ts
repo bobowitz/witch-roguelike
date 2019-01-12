@@ -158,16 +158,6 @@ export class GenericParticle extends Particle {
 
     if (this.dead) return;
 
-    if (this.y >= this.level.game.player.y) {
-      this.render();
-    }
-  };
-
-  drawBehind = () => {
-    if (this.dead) return;
-
-    if (this.y < this.level.game.player.y) {
-      this.render();
-    }
+    this.render();
   };
 }

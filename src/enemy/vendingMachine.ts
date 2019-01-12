@@ -62,7 +62,8 @@ export class VendingMachine extends Enemy {
     if (this.isInf || this.quantity > 0) {
       this.open = true;
       this.openTime = Date.now();
-      if (this.game.player.openVendingMachine) this.game.player.openVendingMachine.close();
+      if (this.game.player.openVendingMachine && this.game.player.openVendingMachine !== this)
+        this.game.player.openVendingMachine.close();
       this.game.player.openVendingMachine = this;
     }
   };
@@ -124,6 +125,8 @@ export class VendingMachine extends Enemy {
   };
 
   drawTopLayer = () => {
+    this.drawableY = this.y - this.drawY;
+
     if (this.open) {
       let s = Math.min(18, (18 * (Date.now() - this.openTime)) / OPEN_TIME); // size of box
       let b = 2; // border

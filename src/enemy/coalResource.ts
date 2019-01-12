@@ -38,5 +38,7 @@ export class CoalResource extends Resource {
     this.kill();
   };
 
-  drawTopLayer = () => {};
+  drawTopLayer = () => {
+    this.drawableY = this.y;
+  };
 }

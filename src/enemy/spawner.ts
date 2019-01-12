@@ -15,19 +15,23 @@ import { SkullEnemy } from "./skullEnemy";
 import { EnemySpawnAnimation } from "../projectile/enemySpawnAnimation";
 import { RedGem } from "../item/redgem";
 import { BlueGem } from "../item/bluegem";
+import { KnightEnemy } from "./knightEnemy";
+import { WizardEnemy } from "./wizardEnemy";
 
 export class Spawner extends Enemy {
   ticks: number;
   seenPlayer: boolean;
+  enemySpawnType: number;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
     this.ticks = 0;
-    this.health = 6;
-    this.maxHealth = 6;
+    this.health = 4;
+    this.maxHealth = 4;
     this.tileX = 6;
     this.tileY = 4;
     this.seenPlayer = true;
+    this.enemySpawnType = Game.randTable([1, 1, 1, 2, 2, 2, 2, 3]);
     this.deathParticleColor = "#ffffff";
   }
 
@@ -55,9 +59,20 @@ export class Spawner extends Enemy {
           let knockbackX = this.x + position[0] * 2;
           let knockbackY = this.y + position[1] * 2;
 
-          let skeleton = new SkullEnemy(this.level, this.game, spawnX, spawnY);
+          let spawned;
+          switch (this.enemySpawnType) {
+            case 1:
+              spawned = new KnightEnemy(this.level, this.game, spawnX, spawnY);
+              break;
+            case 2:
+              spawned = new SkullEnemy(this.level, this.game, spawnX, spawnY);
+              break;
+            case 3:
+              spawned = new WizardEnemy(this.level, this.game, spawnX, spawnY);
+              break;
+          }
           this.level.projectiles.push(
-            new EnemySpawnAnimation(this.level, skeleton, spawnX, spawnY, knockbackX, knockbackY)
+            new EnemySpawnAnimation(this.level, spawned, spawnX, spawnY, knockbackX, knockbackY)
           );
         }
       }

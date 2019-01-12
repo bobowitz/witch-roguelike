@@ -45,6 +45,8 @@ export class Crate extends Enemy {
   };
 
   drawTopLayer = () => {
+    this.drawableY = this.y - this.drawY;
+
     this.drawX += -0.5 * this.drawX;
     this.drawY += -0.5 * this.drawY;
   };

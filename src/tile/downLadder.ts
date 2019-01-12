@@ -9,6 +9,7 @@ import { UpLadder } from "./upLadder";
 export class DownLadder extends Tile {
   linkedLadder: UpLadder;
   game: Game;
+  isRope = false;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
@@ -19,7 +20,7 @@ export class DownLadder extends Tile {
   generate = () => {
     // called by Game during transition
     if (!this.linkedLadder) {
-      this.linkedLadder = this.game.levelgen.generate(this.game, this.level.depth + 1);
+      this.linkedLadder = this.game.levelgen.generate(this.game, this.level.depth + 1, this.isRope);
       this.linkedLadder.linkedLadder = this;
     }
   };
@@ -29,8 +30,23 @@ export class DownLadder extends Tile {
   };
 
   draw = () => {
+    let xx = 4;
+    if (this.isRope) xx = 16;
+
     Game.drawTile(
-      4,
+      1,
+      this.skin,
+      1,
+      1,
+      this.x,
+      this.y,
+      1,
+      1,
+      this.level.shadeColor,
+      this.shadeAmount()
+    );
+    Game.drawTile(
+      xx,
       this.skin,
       1,
       1,

@@ -26,7 +26,7 @@ export class KnightEnemy extends Enemy {
   }
 
   hit = (): number => {
-    return 0.5;
+    return 1;
   };
 
   tick = () => {

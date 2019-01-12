@@ -7,6 +7,7 @@ import { DeathParticle } from "../particle/deathParticle";
 import { Floor } from "../tile/floor";
 import { GenericParticle } from "../particle/genericParticle";
 import { HealthBar } from "../healthbar";
+import { Drawable } from "../drawable";
 
 export enum EnemyDirection {
   DOWN = 0,
@@ -15,7 +16,7 @@ export enum EnemyDirection {
   LEFT = 3,
 }
 
-export class Enemy {
+export class Enemy extends Drawable {
   level: Level;
   x: number;
   y: number;
@@ -41,6 +42,8 @@ export class Enemy {
   healthBar: HealthBar;
 
   constructor(level: Level, game: Game, x: number, y: number) {
+    super();
+
     this.level = level;
     this.x = x;
     this.y = y;
@@ -180,6 +183,8 @@ export class Enemy {
   };
   tick = () => {};
   drawTopLayer = () => {
+    this.drawableY = this.y - this.drawY;
+
     this.healthBar.draw(this.health, this.maxHealth, this.x, this.y, true);
     this.drawX += -0.5 * this.drawX;
     this.drawY += -0.5 * this.drawY;

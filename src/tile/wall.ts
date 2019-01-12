@@ -21,20 +21,7 @@ export class Wall extends Tile {
   };
 
   draw = () => {
-    if (this.type === 0) {
-      Game.drawTile(
-        2,
-        this.skin,
-        1,
-        1,
-        this.x,
-        this.y,
-        1,
-        1,
-        this.level.shadeColor,
-        this.shadeAmount()
-      );
-    } else if (this.type === 1) {
+    if (this.type === 1) {
       Game.drawTile(
         5,
         this.skin,

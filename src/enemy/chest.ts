@@ -69,5 +69,7 @@ export class Chest extends Enemy {
     }
   };
 
-  drawTopLayer = () => {};
+  drawTopLayer = () => {
+    this.drawableY = this.y;
+  };
 }

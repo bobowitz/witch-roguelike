@@ -4,8 +4,9 @@ import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
 import { Level } from "../level";
 import { Sound } from "../sound";
+import { Drawable } from "../drawable";
 
-export class Item {
+export class Item extends Drawable {
   x: number;
   y: number;
   w: number;
@@ -23,9 +24,12 @@ export class Item {
   scaleFactor: number;
 
   constructor(level: Level, x: number, y: number) {
+    super();
+
     this.level = level;
     this.x = x;
     this.y = y;
+    this.drawableY = y;
     this.w = 1;
     this.h = 2;
     this.tileX = 0;

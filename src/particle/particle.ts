@@ -1,5 +1,5 @@
-export class Particle {
+import { Drawable } from "../drawable";
+
+export class Particle extends Drawable {
   dead: boolean;
-  drawBehind = () => {}; // drawing behind player and such
-  draw = () => {}; // drawing on top of player and such
 }
