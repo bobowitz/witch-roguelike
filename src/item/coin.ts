@@ -15,4 +15,8 @@ export class Coin extends Item {
 
     this.stackable = true;
   }
+
+  pickupSound = () => {
+    Sound.pickupCoin();
+  };
 }

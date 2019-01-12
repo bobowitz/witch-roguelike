@@ -51,7 +51,7 @@ export class Map {
 
     Game.ctx.globalAlpha = 1;
     for (const level of this.game.levels) {
-      if (this.game.level.depth === level.depth) {
+      if (this.game.level.group === level.group) {
         Game.ctx.fillStyle = "black";
         if (level.type === RoomType.UPLADDER) Game.ctx.fillStyle = "#101460";
         if (level.type === RoomType.DOWNLADDER) Game.ctx.fillStyle = "#601410";

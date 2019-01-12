@@ -44,6 +44,7 @@ export class Player {
   inventory: Inventory;
   missProb: number;
   sightRadius: number;
+  defaultSightRadius: number;
   guiHeartFrame: number;
   map: Map;
   openVendingMachine: VendingMachine;
@@ -85,7 +86,8 @@ export class Player {
 
     this.missProb = 0.1;
 
-    this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
+    this.defaultSightRadius = 6;
+    this.sightRadius = this.defaultSightRadius;
 
     this.map = new Map(this.game);
   }
@@ -209,9 +211,8 @@ export class Player {
             pushedEnemies.length === 0 &&
             (this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
           ) {
-            return;
-            /*if (e.destroyable) {
-            e.kill();
+            if (e.destroyable) {
+              e.kill();
               Sound.hit();
               this.drawX = 0.5 * (this.x - e.x);
               this.drawY = 0.5 * (this.y - e.y);
@@ -219,7 +220,7 @@ export class Player {
               this.game.level.tick();
               this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
               return;
-            }*/
+            }
           } else {
             Sound.push();
             // here pushedEnemies may still be []

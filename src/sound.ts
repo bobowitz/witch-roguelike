@@ -39,7 +39,7 @@ export class Sound {
     Sound.enemySpawnSound.volume = 1.0;
 
     Sound.chestSounds = new Array<HTMLAudioElement>();
-    [1, 2, 3].forEach(i => Sound.chestSounds.push(new Audio("res/SFX/items/chest" + i + ".wav")));
+    [1, 2, 3].forEach(i => Sound.chestSounds.push(new Audio("res/SFX/chest/chest" + i + ".wav")));
     for (let f of Sound.chestSounds) f.volume = 1.0;
 
     Sound.coinPickupSounds = new Array<HTMLAudioElement>();

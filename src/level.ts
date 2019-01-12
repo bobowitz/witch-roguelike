@@ -98,6 +98,7 @@ export class Level {
   height: number;
   type: RoomType;
   depth: number;
+  group: number;
   name: string;
   message: string;
   turn: TurnState;
@@ -404,7 +405,9 @@ export class Level {
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
             break;
           case 2:
-            this.enemies.push(new SkullEnemy(this, this.game, x, y));
+            let s = new SkullEnemy(this, this.game, x, y);
+            s.skipNextTurns = 1;
+            this.enemies.push(s);
             break;
           case 3:
             this.enemies.push(new WizardEnemy(this, this.game, x, y));
@@ -484,7 +487,7 @@ export class Level {
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     let numEnemies = Math.ceil(
-      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1])
+      numEmptyTiles * (this.depth * 0.25 + 0.5) * Game.randTable([0.01, 0.05, 0.05, 0.06, 0.07, 0.1])
     );
     this.addEnemies(numEnemies);
     if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
@@ -660,14 +663,12 @@ export class Level {
     if (factor < 26) this.addFingers();
     if (factor % 4 === 0) this.addChasms();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
 
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
     let numEmptyTiles = this.getEmptyTiles().length;
     let numEnemies = Math.ceil(
-      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0, 0.07, 0.08, 0.09, 0.1, 0.15])
+      numEmptyTiles * (this.depth * 0.2 + 0.5) * Game.randTable([0.03, 0.04, 0.06, 0.07, 0.08])
     );
-    //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
     this.addEnemies(numEnemies);
     this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 11, 12]));
   };
@@ -741,7 +742,8 @@ export class Level {
     w: number,
     h: number,
     type: RoomType,
-    difficulty: number
+    difficulty: number,
+    group: number,
   ) {
     this.game = game;
     this.x = x;
@@ -750,6 +752,7 @@ export class Level {
     this.height = h;
     this.type = type;
     this.depth = difficulty;
+    this.group = group;
 
     this.entered = false;
     this.turn = TurnState.playerTurn;

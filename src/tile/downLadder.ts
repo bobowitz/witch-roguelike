@@ -20,7 +20,11 @@ export class DownLadder extends Tile {
   generate = () => {
     // called by Game during transition
     if (!this.linkedLadder) {
-      this.linkedLadder = this.game.levelgen.generate(this.game, this.level.depth + 1, this.isRope);
+      this.linkedLadder = this.game.levelgen.generate(
+        this.game,
+        this.level.depth + (this.isRope ? 0 : 1),
+        this.isRope
+      );
       this.linkedLadder.linkedLadder = this;
     }
   };

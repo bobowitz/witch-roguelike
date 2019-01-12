@@ -14,6 +14,10 @@ export class Equippable extends Item {
     return true;
   };
 
+  toggleEquip = () => {
+    this.equipped = !this.equipped;
+  };
+
   drawEquipped = (x: number, y: number) => {
     Game.drawItem(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
   };

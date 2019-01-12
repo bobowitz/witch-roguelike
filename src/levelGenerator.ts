@@ -4,7 +4,7 @@ import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { LevelConstants } from "./levelConstants";
 
-let ROOM_SIZE = [5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 13];
+let ROOM_SIZE = [3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 13];
 
 class N {
   // Node
@@ -97,6 +97,7 @@ export class LevelGenerator {
   levels = [];
   upLadder = null;
   game: Game;
+  group: number;
 
   noCollisions = r => {
     for (const room of this.rooms) {
@@ -215,9 +216,25 @@ export class LevelGenerator {
           r.y = -2;
           r.w = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
           r.h = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          if (thisNode.type === RoomType.UPLADDER) {
+            r.w = 5;
+            r.h = 5;
+          } else if (thisNode.type === RoomType.ROPECAVE) {
+            r.w = 3;
+            r.h = 4;
+          }
         }
         if (this.noCollisions(r)) {
-          let level = new Level(this.game, r.x, r.y, r.w, r.h, thisNode.type, thisNode.difficulty);
+          let level = new Level(
+            this.game,
+            r.x,
+            r.y,
+            r.w,
+            r.h,
+            thisNode.type,
+            thisNode.difficulty,
+            this.group
+          );
           if (level.upLadder) this.upLadder = level.upLadder;
           this.levels.push(level);
           if (parentLevel) {
@@ -303,6 +320,10 @@ export class LevelGenerator {
     ]);*/
 
     this.game = game;
+
+    if (this.game.levels.length > 0)
+      this.group = this.game.levels[this.game.levels.length - 1].group + 1;
+    else this.group = 0;
 
     let success = false;
     do {

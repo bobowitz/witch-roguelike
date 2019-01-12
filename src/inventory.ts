@@ -17,6 +17,9 @@ import { Level } from "./level";
 import { Usable } from "./item/usable";
 import { Shotgun } from "./weapon/shotgun";
 import { DualDagger } from "./weapon/dualdagger";
+import { Candle } from "./item/candle";
+import { Torch } from "./item/torch";
+import { Lantern } from "./item/lantern";
 
 let OPEN_TIME = 100; // milliseconds
 let FILL_COLOR = "#5a595b";
@@ -28,7 +31,7 @@ export class Inventory {
   items: Array<Item>;
   equipped: Array<Equippable>;
   rows = 2;
-  cols = 4;
+  cols = 5;
   selX = 0;
   selY = 0;
   game: Game;
@@ -56,6 +59,9 @@ export class Inventory {
     this.addItem(new Shotgun({ game: this.game } as Level, 0, 0));
     this.addItem(new Armor({ game: this.game } as Level, 0, 0));
     this.addItem(new DualDagger({ game: this.game } as Level, 0, 0));
+    this.addItem(new Candle({ game: this.game } as Level, 0, 0));
+    this.addItem(new Torch({ game: this.game } as Level, 0, 0));
+    this.addItem(new Lantern({ game: this.game } as Level, 0, 0));
   }
 
   open = () => {
@@ -93,7 +99,7 @@ export class Inventory {
 
     if (this.items[i] instanceof Equippable) {
       let e = this.items[i] as Equippable;
-      e.equipped = !e.equipped; // toggle
+      e.toggleEquip();
       if (e instanceof Weapon) {
         if (e.equipped) this.weapon = e;
         else this.weapon = null;
@@ -286,7 +292,7 @@ export class Inventory {
       let s = Math.min(18, (18 * (Date.now() - this.openTime)) / OPEN_TIME); // size of box
       let b = 2; // border
       let g = -2; // gap
-      let hg = 3; // highlighted growth
+      let hg = 3 + Math.round(0.5 * Math.sin(Date.now() * 0.01) + 0.5); // highlighted growth
       let ob = 1; // outer border
       let width = this.cols * (s + 2 * b + g) - g;
       let height = this.rows * (s + 2 * b + g) - g;

@@ -582,7 +582,7 @@ var Sound = /** @class */ (function () {
         Sound.enemySpawnSound = new Audio("res/SFX/attacks/enemyspawn.wav");
         Sound.enemySpawnSound.volume = 1.0;
         Sound.chestSounds = new Array();
-        [1, 2, 3].forEach(function (i) { return Sound.chestSounds.push(new Audio("res/SFX/items/chest" + i + ".wav")); });
+        [1, 2, 3].forEach(function (i) { return Sound.chestSounds.push(new Audio("res/SFX/chest/chest" + i + ".wav")); });
         for (var _f = 0, _g = Sound.chestSounds; _f < _g.length; _f++) {
             var f = _g[_f];
             f.volume = 1.0;
@@ -826,7 +826,7 @@ var levelConstants_1 = __webpack_require__(7);
 var GameConstants = /** @class */ (function () {
     function GameConstants() {
     }
-    GameConstants.VERSION = "v0.4.9";
+    GameConstants.VERSION = "v0.4.10";
     GameConstants.FPS = 60;
     GameConstants.TILESIZE = 16;
     GameConstants.SCALE = 2;
@@ -1174,10 +1174,14 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var item_1 = __webpack_require__(6);
+var sound_1 = __webpack_require__(2);
 var Coin = /** @class */ (function (_super) {
     __extends(Coin, _super);
     function Coin(level, x, y) {
         var _this = _super.call(this, level, x, y) || this;
+        _this.pickupSound = function () {
+            sound_1.Sound.pickupCoin();
+        };
         _this.tileX = 19;
         _this.tileY = 0;
         _this.stackable = true;
@@ -1305,6 +1309,9 @@ var Equippable = /** @class */ (function (_super) {
         var _this = _super.call(this, level, x, y) || this;
         _this.coEquippable = function (other) {
             return true;
+        };
+        _this.toggleEquip = function () {
+            _this.equipped = !_this.equipped;
         };
         _this.drawEquipped = function (x, y) {
             game_1.Game.drawItem(_this.tileX, _this.tileY, 1, 2, x, y - 1, _this.w, _this.h);
@@ -2652,7 +2659,7 @@ var TurnState;
 // LevelGenerator -> Level()
 // Level.generate()
 var Level = /** @class */ (function () {
-    function Level(game, x, y, w, h, type, difficulty) {
+    function Level(game, x, y, w, h, type, difficulty, group) {
         var _this = this;
         this.shadeColor = "black";
         this.tileInside = function (tileX, tileY) {
@@ -2675,7 +2682,7 @@ var Level = /** @class */ (function () {
             if (factor > 15)
                 _this.addSpikeTraps(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
-            var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0, 0.05, 0.05, 0.06, 0.07, 0.1]));
+            var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.25 + 0.5) * game_1.Game.randTable([0.01, 0.05, 0.05, 0.06, 0.07, 0.1]));
             _this.addEnemies(numEnemies);
             if (numEnemies > 0)
                 _this.addObstacles(numEnemies / game_1.Game.rand(1, 2));
@@ -2809,12 +2816,10 @@ var Level = /** @class */ (function () {
             if (factor % 4 === 0)
                 _this.addChasms();
             _this.fixWalls();
-            _this.addTorches(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
             if (factor > 15)
                 _this.addSpikeTraps(game_1.Game.randTable([0, 0, 0, 1, 1, 2, 5]));
             var numEmptyTiles = _this.getEmptyTiles().length;
-            var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.5 + 0.5) * game_1.Game.randTable([0, 0.07, 0.08, 0.09, 0.1, 0.15]));
-            //if (Game.rand(1, 100) > numEmptyTiles) numEnemies = 0;
+            var numEnemies = Math.ceil(numEmptyTiles * (_this.depth * 0.2 + 0.5) * game_1.Game.randTable([0.03, 0.04, 0.06, 0.07, 0.08]));
             _this.addEnemies(numEnemies);
             _this.addResources(game_1.Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 11, 12]));
         };
@@ -3274,6 +3279,7 @@ var Level = /** @class */ (function () {
         this.height = h;
         this.type = type;
         this.depth = difficulty;
+        this.group = group;
         this.entered = false;
         this.turn = TurnState.playerTurn;
         this.playerTurnTime = Date.now();
@@ -3625,7 +3631,9 @@ var Level = /** @class */ (function () {
                         this.enemies.push(new knightEnemy_1.KnightEnemy(this, this.game, x, y));
                         break;
                     case 2:
-                        this.enemies.push(new skullEnemy_1.SkullEnemy(this, this.game, x, y));
+                        var s = new skullEnemy_1.SkullEnemy(this, this.game, x, y);
+                        s.skipNextTurns = 1;
+                        this.enemies.push(s);
                         break;
                     case 3:
                         this.enemies.push(new wizardEnemy_1.WizardEnemy(this, this.game, x, y));
@@ -4033,7 +4041,7 @@ var DownLadder = /** @class */ (function (_super) {
         _this.generate = function () {
             // called by Game during transition
             if (!_this.linkedLadder) {
-                _this.linkedLadder = _this.game.levelgen.generate(_this.game, _this.level.depth + 1, _this.isRope);
+                _this.linkedLadder = _this.game.levelgen.generate(_this.game, _this.level.depth + (_this.isRope ? 0 : 1), _this.isRope);
                 _this.linkedLadder.linkedLadder = _this;
             }
         };
@@ -4200,6 +4208,7 @@ var lockedDoor_1 = __webpack_require__(43);
 var sound_1 = __webpack_require__(2);
 var levelConstants_1 = __webpack_require__(7);
 var map_1 = __webpack_require__(46);
+var slashParticle_1 = __webpack_require__(19);
 var healthbar_1 = __webpack_require__(28);
 var sidedoor_1 = __webpack_require__(73);
 var PlayerDirection;
@@ -4329,17 +4338,16 @@ var Player = /** @class */ (function () {
                         // here, (nextX, nextY) is the position immediately after the end of the train
                         if (pushedEnemies.length === 0 &&
                             (_this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)) {
-                            return;
-                            /*if (e.destroyable) {
-                            e.kill();
-                              Sound.hit();
-                              this.drawX = 0.5 * (this.x - e.x);
-                              this.drawY = 0.5 * (this.y - e.y);
-                              this.game.level.particles.push(new SlashParticle(e.x, e.y));
-                              this.game.level.tick();
-                              this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
-                              return;
-                            }*/
+                            if (e.destroyable) {
+                                e.kill();
+                                sound_1.Sound.hit();
+                                _this.drawX = 0.5 * (_this.x - e.x);
+                                _this.drawY = 0.5 * (_this.y - e.y);
+                                _this.game.level.particles.push(new slashParticle_1.SlashParticle(e.x, e.y));
+                                _this.game.level.tick();
+                                _this.game.shakeScreen(10 * _this.drawX, 10 * _this.drawY);
+                                return;
+                            }
                         }
                         else {
                             sound_1.Sound.push();
@@ -4552,7 +4560,8 @@ var Player = /** @class */ (function () {
         this.guiHeartFrame = 0;
         this.inventory = new inventory_1.Inventory(game);
         this.missProb = 0.1;
-        this.sightRadius = 8; // maybe can be manipulated by items? e.g. better torch
+        this.defaultSightRadius = 6;
+        this.sightRadius = this.defaultSightRadius;
         this.map = new map_1.Map(this.game);
     }
     return Player;
@@ -4618,6 +4627,9 @@ var dagger_1 = __webpack_require__(42);
 var usable_1 = __webpack_require__(29);
 var shotgun_1 = __webpack_require__(20);
 var dualdagger_1 = __webpack_require__(78);
+var candle_1 = __webpack_require__(79);
+var torch_1 = __webpack_require__(80);
+var lantern_1 = __webpack_require__(81);
 var OPEN_TIME = 100; // milliseconds
 var FILL_COLOR = "#5a595b";
 var OUTLINE_COLOR = "#292c36";
@@ -4627,7 +4639,7 @@ var Inventory = /** @class */ (function () {
     function Inventory(game) {
         var _this = this;
         this.rows = 2;
-        this.cols = 4;
+        this.cols = 5;
         this.selX = 0;
         this.selY = 0;
         this.open = function () {
@@ -4666,7 +4678,7 @@ var Inventory = /** @class */ (function () {
             }
             if (_this.items[i] instanceof equippable_1.Equippable) {
                 var e = _this.items[i];
-                e.equipped = !e.equipped; // toggle
+                e.toggleEquip();
                 if (e instanceof weapon_1.Weapon) {
                     if (e.equipped)
                         _this.weapon = e;
@@ -4841,7 +4853,7 @@ var Inventory = /** @class */ (function () {
                 var s = Math.min(18, (18 * (Date.now() - _this.openTime)) / OPEN_TIME); // size of box
                 var b = 2; // border
                 var g = -2; // gap
-                var hg = 3; // highlighted growth
+                var hg = 3 + Math.round(0.5 * Math.sin(Date.now() * 0.01) + 0.5); // highlighted growth
                 var ob = 1; // outer border
                 var width = _this.cols * (s + 2 * b + g) - g;
                 var height = _this.rows * (s + 2 * b + g) - g;
@@ -4952,6 +4964,9 @@ var Inventory = /** @class */ (function () {
         this.addItem(new shotgun_1.Shotgun({ game: this.game }, 0, 0));
         this.addItem(new armor_1.Armor({ game: this.game }, 0, 0));
         this.addItem(new dualdagger_1.DualDagger({ game: this.game }, 0, 0));
+        this.addItem(new candle_1.Candle({ game: this.game }, 0, 0));
+        this.addItem(new torch_1.Torch({ game: this.game }, 0, 0));
+        this.addItem(new lantern_1.Lantern({ game: this.game }, 0, 0));
     }
     return Inventory;
 }());
@@ -5124,7 +5139,7 @@ var Map = /** @class */ (function () {
             game_1.Game.ctx.globalAlpha = 1;
             for (var _i = 0, _a = _this.game.levels; _i < _a.length; _i++) {
                 var level = _a[_i];
-                if (_this.game.level.depth === level.depth) {
+                if (_this.game.level.group === level.group) {
                     game_1.Game.ctx.fillStyle = "black";
                     if (level.type === level_1.RoomType.UPLADDER)
                         game_1.Game.ctx.fillStyle = "#101460";
@@ -7320,7 +7335,7 @@ exports.SideDoor = SideDoor;
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(0);
 var level_1 = __webpack_require__(32);
-var ROOM_SIZE = [5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 13];
+var ROOM_SIZE = [3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 13];
 var N = /** @class */ (function () {
     function N(type, difficulty, children) {
         this.type = type;
@@ -7497,9 +7512,17 @@ var LevelGenerator = /** @class */ (function () {
                         r.y = -2;
                         r.w = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
                         r.h = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+                        if (thisNode.type === level_1.RoomType.UPLADDER) {
+                            r.w = 5;
+                            r.h = 5;
+                        }
+                        else if (thisNode.type === level_1.RoomType.ROPECAVE) {
+                            r.w = 3;
+                            r.h = 4;
+                        }
                     }
                     if (_this.noCollisions(r)) {
-                        var level = new level_1.Level(_this.game, r.x, r.y, r.w, r.h, thisNode.type, thisNode.difficulty);
+                        var level = new level_1.Level(_this.game, r.x, r.y, r.w, r.h, thisNode.type, thisNode.difficulty, _this.group);
                         if (level.upLadder)
                             _this.upLadder = level.upLadder;
                         _this.levels.push(level);
@@ -7589,6 +7612,10 @@ var LevelGenerator = /** @class */ (function () {
               ]),
             ]);*/
             _this.game = game;
+            if (_this.game.levels.length > 0)
+                _this.group = _this.game.levels[_this.game.levels.length - 1].group + 1;
+            else
+                _this.group = 0;
             var success = false;
             do {
                 _this.rooms.splice(0);
@@ -7763,6 +7790,156 @@ var DualDagger = /** @class */ (function (_super) {
     return DualDagger;
 }(weapon_1.Weapon));
 exports.DualDagger = DualDagger;
+
+
+/***/ }),
+/* 79 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var equippable_1 = __webpack_require__(11);
+var torch_1 = __webpack_require__(80);
+var lantern_1 = __webpack_require__(81);
+var Candle = /** @class */ (function (_super) {
+    __extends(Candle, _super);
+    function Candle(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.coEquippable = function (other) {
+            return !(other instanceof Candle || other instanceof torch_1.Torch || other instanceof lantern_1.Lantern);
+        };
+        _this.toggleEquip = function () {
+            _this.equipped = !_this.equipped;
+            if (_this.equipped) {
+                _this.level.game.player.sightRadius = 9;
+            }
+            else
+                _this.level.game.player.sightRadius = _this.level.game.player.defaultSightRadius;
+        };
+        _this.getDescription = function () {
+            return "CANDLE";
+        };
+        _this.tileX = 27;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Candle;
+}(equippable_1.Equippable));
+exports.Candle = Candle;
+
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var equippable_1 = __webpack_require__(11);
+var candle_1 = __webpack_require__(79);
+var lantern_1 = __webpack_require__(81);
+var Torch = /** @class */ (function (_super) {
+    __extends(Torch, _super);
+    function Torch(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.coEquippable = function (other) {
+            return !(other instanceof candle_1.Candle || other instanceof Torch || other instanceof lantern_1.Lantern);
+        };
+        _this.toggleEquip = function () {
+            _this.equipped = !_this.equipped;
+            if (_this.equipped) {
+                _this.level.game.player.sightRadius = 12;
+            }
+            else
+                _this.level.game.player.sightRadius = _this.level.game.player.defaultSightRadius;
+        };
+        _this.getDescription = function () {
+            return "TORCH";
+        };
+        _this.tileX = 28;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Torch;
+}(equippable_1.Equippable));
+exports.Torch = Torch;
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var equippable_1 = __webpack_require__(11);
+var candle_1 = __webpack_require__(79);
+var torch_1 = __webpack_require__(80);
+var Lantern = /** @class */ (function (_super) {
+    __extends(Lantern, _super);
+    function Lantern(level, x, y) {
+        var _this = _super.call(this, level, x, y) || this;
+        _this.coEquippable = function (other) {
+            return !(other instanceof candle_1.Candle || other instanceof torch_1.Torch || other instanceof Lantern);
+        };
+        _this.toggleEquip = function () {
+            _this.equipped = !_this.equipped;
+            if (_this.equipped) {
+                _this.level.game.player.sightRadius = 20;
+            }
+            else
+                _this.level.game.player.sightRadius = _this.level.game.player.defaultSightRadius;
+        };
+        _this.getDescription = function () {
+            return "LANTERN";
+        };
+        _this.tileX = 29;
+        _this.tileY = 0;
+        return _this;
+    }
+    return Lantern;
+}(equippable_1.Equippable));
+exports.Lantern = Lantern;
 
 
 /***/ })
