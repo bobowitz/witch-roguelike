@@ -62,6 +62,7 @@ export class Player {
     this.direction = PlayerDirection.UP;
 
     Input.iListener = this.iListener;
+    Input.qListener = this.qListener;
     Input.leftListener = this.leftListener;
     Input.rightListener = this.rightListener;
     Input.upListener = this.upListener;
@@ -97,6 +98,11 @@ export class Player {
   };
   iListener = () => {
     this.inventory.open();
+  };
+  qListener = () => {
+    if (this.inventory.isOpen) {
+      this.inventory.drop();
+    }
   };
   leftListener = () => {
     if (this.inventory.isOpen) {

@@ -11,6 +11,8 @@ export const Input = {
   iUpListener: function() {},
   mListener: function() {},
   mUpListener: function() {},
+  qListener: function() {},
+  qUpListener: function() {},
   leftListener: function() {},
   rightListener: function() {},
   upListener: function() {},
@@ -33,31 +35,32 @@ export const Input = {
   mouseY: 0,
 
   lastPressTime: 0,
-  lastPressKeyCode: 0,
+  lastPressKeyCode: "",
 
-  SPACE: 32,
-  LEFT: 37,
-  UP: 38,
-  RIGHT: 39,
-  DOWN: 40,
-  W: 87,
-  A: 65,
-  S: 83,
-  D: 68,
-  M: 77,
-  N: 78,
-  I: 73,
+  SPACE: "Space",
+  LEFT: "ArrowLeft",
+  UP: "ArrowUp",
+  RIGHT: "ArrowRight",
+  DOWN: "ArrowDown",
+  W: "KeyW",
+  A: "KeyA",
+  S: "KeyS",
+  D: "KeyD",
+  M: "KeyM",
+  N: "KeyN",
+  I: "KeyI",
+  Q: "KeyQ",
 
-  isDown: function(keyCode: number) {
+  isDown: function(keyCode: string) {
     return this._pressed[keyCode];
   },
 
   onKeydown: (event: KeyboardEvent) => {
     if (event.repeat) return; // ignore repeat keypresses
     Input.lastPressTime = Date.now();
-    Input.lastPressKeyCode = event.keyCode;
-    Input._pressed[event.keyCode] = true;
-    switch (event.keyCode) {
+    Input.lastPressKeyCode = event.code;
+    Input._pressed[event.code] = true;
+    switch (event.code) {
       case Input.A:
       case Input.LEFT:
         Input.leftListener();
@@ -83,17 +86,21 @@ export const Input = {
       case Input.I:
         Input.iListener();
         break;
+      case Input.Q:
+        Input.qListener();
+        break;
     }
   },
 
   onKeyup: function(event: KeyboardEvent) {
-    delete this._pressed[event.keyCode];
-    if (event.keyCode === this.lastPressKeyCode) {
+    delete this._pressed[event.code];
+    if (event.code === this.lastPressKeyCode) {
       this.lastPressTime = 0;
       this.lastPressKeyCode = 0;
     }
-    if (event.keyCode === 77) Input.mUpListener();
-    if (event.keyCode === 73) Input.iUpListener();
+    if (event.code === Input.M) Input.mUpListener();
+    if (event.code === Input.I) Input.iUpListener();
+    if (event.code === Input.Q) Input.qUpListener();
   },
 
   mouseClickListener: function(event: MouseEvent) {

@@ -187,7 +187,7 @@ export class Game {
       Input.lastPressTime !== 0 &&
       Date.now() - Input.lastPressTime > GameConstants.KEY_REPEAT_TIME
     ) {
-      Input.onKeydown({ repeat: false, keyCode: Input.lastPressKeyCode } as KeyboardEvent);
+      Input.onKeydown({ repeat: false, code: Input.lastPressKeyCode } as KeyboardEvent);
     }
 
     if (this.levelState === LevelState.TRANSITIONING) {
