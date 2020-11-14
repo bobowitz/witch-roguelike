@@ -9,6 +9,7 @@ import { BottomDoor } from "./tile/bottomDoor";
 import { Input } from "./input";
 import { DownLadder } from "./tile/downLadder";
 import { SideDoor } from "./tile/sidedoor";
+import { io } from "socket.io-client";
 
 export enum LevelState {
   IN_LEVEL,
@@ -35,6 +36,7 @@ export class Game {
   transitioningLadder: any;
   screenShakeX: number;
   screenShakeY: number;
+  socket;
   static scale;
   static tileset: HTMLImageElement;
   static objset: HTMLImageElement;
@@ -47,17 +49,19 @@ export class Game {
   static mobsetShadow: HTMLImageElement;
 
   // [min, max] inclusive
-  static rand = (min: number, max: number): number => {
+  static rand = (min: number, max: number, rand = Math.random): number => {
     if (max < min) return min;
-    return Math.floor(Math.random() * (max - min + 1) + min);
+    return Math.floor(rand() * (max - min + 1) + min);
   };
 
-  static randTable = (table: any[]): any => {
-    return table[Game.rand(0, table.length - 1)];
+  static randTable = (table: any[], rand = Math.random): any => {
+    return table[Game.rand(0, table.length - 1, rand)];
   };
 
   constructor() {
     window.addEventListener("load", () => {
+      this.socket = io("http://localhost:3000", {'transports' : ['websocket']});
+
       let canvas = document.getElementById("gameCanvas");
       Game.ctx = (canvas as HTMLCanvasElement).getContext("2d", {
         alpha: false,
@@ -94,7 +98,7 @@ export class Game {
 
       this.levels = Array<Level>();
       this.levelgen = new LevelGenerator();
-      this.levelgen.generate(this, 0);
+      this.levelgen.generate(this, 0, "hamburger");
       this.level = this.levels[0];
       this.level.enterLevel();
 

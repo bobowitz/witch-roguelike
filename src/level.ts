@@ -203,18 +203,18 @@ export class Level {
     }
   }
 
-  private addWallBlocks() {
+  private addWallBlocks(rand: () => number) {
     // put some random wall blocks in the room
-    let numBlocks = Game.randTable([0, 1, 1, 2, 2, 2, 2, 3, 3]);
+    let numBlocks = Game.randTable([0, 1, 1, 2, 2, 2, 2, 3, 3], rand);
     for (let i = 0; i < numBlocks; i++) {
       let blockW = Math.min(
-        Game.randTable([2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 9]),
+        Game.randTable([2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 9], rand),
         this.width - 2
       );
-      let blockH = Math.min(blockW + Game.rand(-1, 1), this.height - 3);
+      let blockH = Math.min(blockW + Game.rand(-1, 1, rand), this.height - 3);
 
-      let x = Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 2);
-      let y = Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2);
+      let x = Game.rand(this.roomX + 1, this.roomX + this.width - blockW - 2, rand);
+      let y = Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2, rand);
 
       for (let xx = x; xx < x + blockW; xx++) {
         for (let yy = y; yy < y + blockH; yy++) {
@@ -224,24 +224,24 @@ export class Level {
     }
   }
 
-  private addFingers() {
+  private addFingers(rand: () => number) {
     // add "finger" blocks extending from ring walls inward
-    let numFingers = Game.randTable([0, 1, 1, 2, 2, 3, 4, 5]);
-    if (Game.rand(1, 13) > this.width) numFingers += this.width * 0.3;
+    let numFingers = Game.randTable([0, 1, 1, 2, 2, 3, 4, 5], rand);
+    if (Game.rand(1, 13, rand) > this.width) numFingers += this.width * 0.3;
     for (let i = 0; i < numFingers; i++) {
       let x = 0;
       let y = 0;
       let blockW = 0;
       let blockH = 0;
-      if (Game.rand(0, 1) === 0) {
+      if (Game.rand(0, 1, rand) === 0) {
         // horizontal
-        blockW = Game.rand(1, this.width - 1);
+        blockW = Game.rand(1, this.width - 1, rand);
         blockH = 1;
 
-        if (Game.rand(0, 1) === 0) {
+        if (Game.rand(0, 1, rand) === 0) {
           // left
           x = this.roomX;
-          y = Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2);
+          y = Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2, rand);
           for (let xx = x; xx < x + blockW + 1; xx++) {
             for (let yy = y - 2; yy < y + blockH + 2; yy++) {
               this.levelArray[xx][yy] = new Floor(this, xx, yy);
@@ -254,7 +254,7 @@ export class Level {
           }
         } else {
           x = this.roomX + this.width - blockW;
-          y = Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2);
+          y = Game.rand(this.roomY + 2, this.roomY + this.height - blockH - 2, rand);
           for (let xx = x - 1; xx < x + blockW; xx++) {
             for (let yy = y - 2; yy < y + blockH + 2; yy++) {
               this.levelArray[xx][yy] = new Floor(this, xx, yy);
@@ -268,12 +268,12 @@ export class Level {
         }
       } else {
         blockW = 1;
-        blockH = Game.rand(1, this.height - 4);
+        blockH = Game.rand(1, this.height - 4, rand);
 
-        if (Game.rand(0, 1) === 0) {
+        if (Game.rand(0, 1, rand) === 0) {
           // top
           y = this.roomY + 2;
-          x = Game.rand(this.roomX + 2, this.roomX + this.width - 3);
+          x = Game.rand(this.roomX + 2, this.roomX + this.width - 3, rand);
           for (let xx = x - 1; xx < x + blockW + 1; xx++) {
             for (let yy = y + 1; yy < y + blockH + 2; yy++) {
               this.levelArray[xx][yy] = new Floor(this, xx, yy);
@@ -286,7 +286,7 @@ export class Level {
           }
         } else {
           y = this.roomY + this.height - blockH - 1;
-          x = Game.rand(this.roomX + 2, this.roomX + this.width - 3);
+          x = Game.rand(this.roomX + 2, this.roomX + this.width - 3, rand);
           for (let xx = x - 1; xx < x + blockW + 1; xx++) {
             for (let yy = y - 2; yy < y + blockH; yy++) {
               this.levelArray[xx][yy] = new Floor(this, xx, yy);
@@ -302,7 +302,7 @@ export class Level {
     }
   }
 
-  private addTorches(numTorches: number) {
+  private addTorches(numTorches: number, rand: () => number) {
     let walls = [];
     for (let xx = 0; xx < this.levelArray.length; xx++) {
       for (let yy = 0; yy < this.levelArray[0].length; yy++) {
@@ -314,24 +314,24 @@ export class Level {
     for (let i = 0; i < numTorches; i++) {
       let t, x, y;
       if (walls.length == 0) return;
-      t = walls.splice(Game.rand(0, walls.length - 1), 1)[0];
+      t = walls.splice(Game.rand(0, walls.length - 1, rand), 1)[0];
       x = t.x;
       y = t.y;
       this.levelArray[x][y] = new WallSideTorch(this, x, y);
     }
   }
 
-  private addChasms() {
+  private addChasms(rand: () => number) {
     // add chasms
-    let w = Game.rand(2, 4);
-    let h = Game.rand(2, 4);
+    let w = Game.rand(2, 4, rand);
+    let h = Game.rand(2, 4, rand);
     let xmin = this.roomX + 1;
     let xmax = this.roomX + this.width - w - 1;
     let ymin = this.roomY + 2;
     let ymax = this.roomY + this.height - h - 1;
     if (xmax < xmin || ymax < ymin) return;
-    let x = Game.rand(xmin, xmax);
-    let y = Game.rand(ymin, ymax);
+    let x = Game.rand(xmin, xmax, rand);
+    let y = Game.rand(ymin, ymax, rand);
 
     for (let xx = x - 1; xx < x + w + 1; xx++) {
       for (let yy = y - 1; yy < y + h + 1; yy++) {
@@ -352,24 +352,24 @@ export class Level {
     }
   }
 
-  private addChests(numChests: number) {
+  private addChests(numChests: number, rand: () => number) {
     // add chests
     let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numChests; i++) {
       let t, x, y;
       if (tiles.length == 0) return;
-      t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       x = t.x;
       y = t.y;
       this.enemies.push(new Chest(this, this.game, x, y));
     }
   }
 
-  private addSpikeTraps(numSpikes: number) {
+  private addSpikeTraps(numSpikes: number, rand: () => number) {
     // add spikes
     let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numSpikes; i++) {
-      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      let t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
@@ -378,11 +378,11 @@ export class Level {
     }
   }
 
-  private addSpikes(numSpikes: number) {
+  private addSpikes(numSpikes: number, rand: () => number) {
     // add spikes
     let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numSpikes; i++) {
-      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      let t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
@@ -391,15 +391,15 @@ export class Level {
     }
   }
 
-  private addEnemies(numEnemies: number) {
+  private addEnemies(numEnemies: number, rand: () => number) {
     let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numEnemies; i++) {
-      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      let t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
       if (this.depth !== 0) {
-        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3, 4, 4]));
+        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3, 4, 4], rand));
         switch (d) {
           case 1:
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
@@ -423,15 +423,15 @@ export class Level {
     }
   }
 
-  private addObstacles(numObstacles: number) {
+  private addObstacles(numObstacles: number, rand: () => number) {
     // add crates/barrels
     let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numObstacles; i++) {
-      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      let t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
-      switch (Game.randTable([1, 1, 2])) {
+      switch (Game.randTable([1, 1, 2], rand)) {
         case 1:
           this.enemies.push(new Crate(this, this.game, x, y));
           break;
@@ -442,10 +442,10 @@ export class Level {
     }
   }
 
-  private addPlants(numPlants: number) {
+  private addPlants(numPlants: number, rand: () => number) {
     let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numPlants; i++) {
-      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      let t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
@@ -454,15 +454,15 @@ export class Level {
     }
   }
 
-  private addResources(numResources: number) {
+  private addResources(numResources: number, rand: () => number) {
     let tiles = this.getEmptyMiddleTiles();
     for (let i = 0; i < numResources; i++) {
-      let t = tiles.splice(Game.rand(0, tiles.length - 1), 1)[0];
+      let t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       if (tiles.length == 0) return;
       let x = t.x;
       let y = t.y;
 
-      let r = Math.random();
+      let r = rand();
       if (r <= (10 - this.depth ** 3) / 10)
         this.enemies.push(new CoalResource(this, this.game, x, y));
       else if (r <= (10 - (this.depth - 2) ** 3) / 10)
@@ -471,52 +471,52 @@ export class Level {
     }
   }
 
-  generateDungeon = () => {
+  generateDungeon = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
-    let factor = Game.rand(1, 36);
+    let factor = Game.rand(1, 36, rand);
 
     this.buildEmptyRoom();
-    if (factor < 30) this.addWallBlocks();
-    if (factor < 26) this.addFingers();
-    if (factor % 4 === 0) this.addChasms();
+    if (factor < 30) this.addWallBlocks(rand);
+    if (factor < 26) this.addFingers(rand);
+    if (factor % 4 === 0) this.addChasms(rand);
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
 
-    if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
-    if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
+    if (factor % 3 === 0) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
+    if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5], rand), rand);
     let numEmptyTiles = this.getEmptyTiles().length;
     let numEnemies = Math.ceil(
-      numEmptyTiles * (this.depth * 0.25 + 0.5) * Game.randTable([0.01, 0.05, 0.05, 0.06, 0.07, 0.1])
+      numEmptyTiles * (this.depth * 0.25 + 0.5) * Game.randTable([0.01, 0.05, 0.05, 0.06, 0.07, 0.1], rand)
     );
-    this.addEnemies(numEnemies);
-    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
-    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+    this.addEnemies(numEnemies, rand);
+    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2, rand), rand);
+    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5], rand), rand);
   };
-  generateBigDungeon = () => {
+  generateBigDungeon = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
-    if (Game.rand(1, 4) === 1) this.addChasms();
+    if (Game.rand(1, 4, rand) === 1) this.addChasms(rand);
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
 
-    if (Game.rand(1, 4) === 1) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
-    if (Game.rand(1, 3) === 1) this.addSpikeTraps(Game.randTable([3, 5, 7, 8]));
+    if (Game.rand(1, 4, rand) === 1) this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
+    if (Game.rand(1, 3, rand) === 1) this.addSpikeTraps(Game.randTable([3, 5, 7, 8], rand), rand);
     let numEmptyTiles = this.getEmptyTiles().length;
     let numEnemies = Math.ceil(
-      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0.05, 0.05, 0.06, 0.07, 0.1])
+      numEmptyTiles * (this.depth * 0.5 + 0.5) * Game.randTable([0.05, 0.05, 0.06, 0.07, 0.1], rand)
     );
-    this.addEnemies(numEnemies);
-    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2));
-    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5]));
+    this.addEnemies(numEnemies, rand);
+    if (numEnemies > 0) this.addObstacles(numEnemies / Game.rand(1, 2, rand), rand);
+    else this.addObstacles(Game.randTable([0, 0, 1, 1, 2, 3, 5], rand), rand);
   };
-  generateSpawner = () => {
+  generateSpawner = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
 
     this.enemies.push(
       new Spawner(
@@ -527,12 +527,12 @@ export class Level {
       )
     );
   };
-  generateKeyRoom = () => {
+  generateKeyRoom = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
 
     this.items.push(
       new GoldenKey(
@@ -542,12 +542,12 @@ export class Level {
       )
     );
   };
-  generateFountain = () => {
+  generateFountain = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
 
     let centerX = Math.floor(this.roomX + this.width / 2);
     let centerY = Math.floor(this.roomY + this.height / 2);
@@ -557,18 +557,18 @@ export class Level {
       }
     }
 
-    this.addPlants(Game.randTable([0, 0, 1, 2]));
+    this.addPlants(Game.randTable([0, 0, 1, 2], rand), rand);
   };
   placeCoffin = (x: number, y: number) => {
     this.levelArray[x][y] = new CoffinTile(this, x, y, 0);
     this.levelArray[x][y + 1] = new CoffinTile(this, x, y + 1, 1);
   };
-  generateCoffin = () => {
+  generateCoffin = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
 
     this.placeCoffin(
       Math.floor(this.roomX + this.width / 2 - 2),
@@ -583,7 +583,7 @@ export class Level {
       Math.floor(this.roomY + this.height / 2)
     );
   };
-  generatePuzzle = () => {
+  generatePuzzle = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
@@ -600,8 +600,8 @@ export class Level {
       }
     }
 
-    let x = Game.rand(this.roomX, this.roomX + this.width - 1);
-    let y = Game.rand(this.roomY + Math.floor(this.height / 2) + 3, this.roomY + this.height - 2);
+    let x = Game.rand(this.roomX, this.roomX + this.width - 1, rand);
+    let y = Game.rand(this.roomY + Math.floor(this.height / 2) + 3, this.roomY + this.height - 2, rand);
 
     this.levelArray[x][y] = new Button(this, x, y, d);
 
@@ -612,95 +612,95 @@ export class Level {
         t.y >= this.roomY + Math.floor(this.height / 2) + 3 &&
         t.y <= this.roomY + this.height - 2
     );
-    let numCrates = Game.randTable([1, 2, 2, 3, 4]);
+    let numCrates = Game.randTable([1, 2, 2, 3, 4], rand);
 
     for (let i = 0; i < numCrates; i++) {
-      let t = crateTiles.splice(Game.rand(0, crateTiles.length - 1), 1)[0];
+      let t = crateTiles.splice(Game.rand(0, crateTiles.length - 1, rand), 1)[0];
 
       this.enemies.push(new Crate(this, this.game, t.x, t.y));
     }
     this.fixWalls();
-    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addPlants(Game.randTable([0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
   };
-  generateSpikeCorridor = () => {
+  generateSpikeCorridor = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
 
     for (let x = this.roomX; x < this.roomX + this.width; x++) {
       for (let y = this.roomY + 1; y < this.roomY + this.height - 1; y++) {
-        this.levelArray[x][y] = new SpikeTrap(this, x, y, Game.rand(0, 3));
+        this.levelArray[x][y] = new SpikeTrap(this, x, y, Game.rand(0, 3, rand));
       }
     }
 
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
   };
-  generateTreasure = () => {
+  generateTreasure = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
-    this.addWallBlocks();
+    this.addWallBlocks(rand);
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 1, 1, 2, 2, 3, 4]));
+    this.addTorches(Game.randTable([0, 1, 1, 2, 2, 3, 4], rand), rand);
 
-    this.addChests(Game.randTable([3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 6]));
-    this.addPlants(Game.randTable([0, 1, 2, 4, 5, 6]));
+    this.addChests(Game.randTable([3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 6], rand), rand);
+    this.addPlants(Game.randTable([0, 1, 2, 4, 5, 6], rand), rand);
   };
-  generateChessboard = () => {
+  generateChessboard = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
   };
-  generateCave = () => {
+  generateCave = (rand: () => number) => {
     this.skin = SkinType.CAVE;
 
-    let factor = Game.rand(1, 36);
+    let factor = Game.rand(1, 36, rand);
 
     this.buildEmptyRoom();
-    if (factor < 30) this.addWallBlocks();
-    if (factor < 26) this.addFingers();
-    if (factor % 4 === 0) this.addChasms();
+    if (factor < 30) this.addWallBlocks(rand);
+    if (factor < 26) this.addFingers(rand);
+    if (factor % 4 === 0) this.addChasms(rand);
     this.fixWalls();
 
-    if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5]));
+    if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5], rand), rand);
     let numEmptyTiles = this.getEmptyTiles().length;
     let numEnemies = Math.ceil(
-      numEmptyTiles * (this.depth * 0.2 + 0.5) * Game.randTable([0.03, 0.04, 0.06, 0.07, 0.08])
+      numEmptyTiles * (this.depth * 0.2 + 0.5) * Game.randTable([0.03, 0.04, 0.06, 0.07, 0.08], rand)
     );
-    this.addEnemies(numEnemies);
-    this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 11, 12]));
+    this.addEnemies(numEnemies, rand);
+    this.addResources(Game.randTable([1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 11, 12], rand), rand);
   };
-  generateUpLadder = () => {
+  generateUpLadder = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2], rand), rand);
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
     this.upLadder = new UpLadder(this, this.game, cX, cY);
     this.levelArray[cX][cY] = this.upLadder;
   };
-  generateDownLadder = () => {
+  generateDownLadder = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2], rand), rand);
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
     this.levelArray[cX][cY] = new DownLadder(this, this.game, cX, cY);
   };
-  generateRopeHole = () => {
+  generateRopeHole = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2]));
+    this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2], rand), rand);
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
@@ -708,7 +708,7 @@ export class Level {
     d.isRope = true;
     this.levelArray[cX][cY] = d;
   };
-  generateRopeCave = () => {
+  generateRopeCave = (rand: () => number) => {
     this.skin = SkinType.CAVE;
 
     this.buildEmptyRoom();
@@ -720,12 +720,12 @@ export class Level {
     this.upLadder.isRope = true;
     this.levelArray[cX][cY] = this.upLadder;
   };
-  generateShop = () => {
+  generateShop = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
 
     this.buildEmptyRoom();
     this.fixWalls();
-    this.addTorches(2);
+    this.addTorches(2, rand);
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
@@ -744,6 +744,7 @@ export class Level {
     type: RoomType,
     difficulty: number,
     group: number,
+    rand = Math.random
   ) {
     this.game = game;
     this.x = x;
@@ -788,53 +789,53 @@ export class Level {
     this.name = "";
     switch (this.type) {
       case RoomType.DUNGEON:
-        this.generateDungeon();
+        this.generateDungeon(rand);
         break;
       case RoomType.BIGDUNGEON:
-        this.generateBigDungeon();
+        this.generateBigDungeon(rand);
         break;
       case RoomType.FOUNTAIN:
-        this.generateFountain();
+        this.generateFountain(rand);
         break;
       case RoomType.COFFIN:
-        this.generateCoffin();
+        this.generateCoffin(rand);
         break;
       case RoomType.PUZZLE:
-        this.generatePuzzle();
+        this.generatePuzzle(rand);
         break;
       case RoomType.SPIKECORRIDOR:
-        this.generateSpikeCorridor();
+        this.generateSpikeCorridor(rand);
         break;
       case RoomType.TREASURE:
-        this.generateTreasure();
+        this.generateTreasure(rand);
         break;
       case RoomType.CHESSBOARD: // TODO
-        this.generateChessboard();
+        this.generateChessboard(rand);
         break;
       case RoomType.KEYROOM:
-        this.generateKeyRoom();
+        this.generateKeyRoom(rand);
         break;
       case RoomType.GRASS:
-        this.generateDungeon();
+        this.generateDungeon(rand);
         break;
       case RoomType.BIGCAVE:
-        this.generateCave();
+        this.generateCave(rand);
       case RoomType.CAVE:
-        this.generateCave();
+        this.generateCave(rand);
         break;
       case RoomType.UPLADDER:
-        this.generateUpLadder();
+        this.generateUpLadder(rand);
         this.name = "FLOOR " + -this.depth;
         break;
       case RoomType.DOWNLADDER:
-        this.generateDownLadder();
+        this.generateDownLadder(rand);
         this.name = "FLOOR " + -this.depth;
         break;
       case RoomType.ROPEHOLE:
-        this.generateRopeHole();
+        this.generateRopeHole(rand);
         break;
       case RoomType.ROPECAVE:
-        this.generateRopeCave();
+        this.generateRopeCave(rand);
         break;
       case RoomType.SHOP:
         /* shop rates:
@@ -849,10 +850,10 @@ export class Level {
          * weapons
          */
 
-        this.generateShop();
+        this.generateShop(rand);
         break;
       case RoomType.SPAWNER:
-        this.generateSpawner();
+        this.generateSpawner(rand);
     }
   }
 
@@ -964,6 +965,12 @@ export class Level {
         break;
     }
     this.doors.push(d);
+    if (this.levelArray[d.x] == undefined) {
+      console.log('UNDEFINED at ' + d.x + ' levelArray.length was ' + this.levelArray.length);
+      console.log('location ' + location);
+      console.log(this.roomX, this.roomY);
+      console.log(this.width, this.height);
+    }
     this.levelArray[d.x][d.y] = d;
 
     return d;
