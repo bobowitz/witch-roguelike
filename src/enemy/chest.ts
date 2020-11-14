@@ -32,19 +32,19 @@ export class Chest extends Enemy {
 
     switch (drop) {
       case 1:
-        this.game.level.items.push(new Coin(this.level, this.x, this.y));
+        this.level.items.push(new Coin(this.level, this.x, this.y));
         break;
       case 2:
-        this.game.level.items.push(new Heart(this.level, this.x, this.y));
+        this.level.items.push(new Heart(this.level, this.x, this.y));
         break;
       case 3:
-        this.game.level.items.push(new GreenGem(this.level, this.x, this.y));
+        this.level.items.push(new GreenGem(this.level, this.x, this.y));
         break;
       case 3:
-        this.game.level.items.push(new Key(this.level, this.x, this.y));
+        this.level.items.push(new Key(this.level, this.x, this.y));
         break;
       case 4:
-        this.game.level.items.push(new Armor(this.level, this.x, this.y));
+        this.level.items.push(new Armor(this.level, this.x, this.y));
         break;
     }
   };

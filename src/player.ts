@@ -34,6 +34,7 @@ export class Player {
   frame: number;
   direction: PlayerDirection;
   game: Game;
+  levelID: number; // which room we're in (level[levelID])
   flashing: boolean;
   flashingFrame: number;
   health: number;
@@ -51,6 +52,8 @@ export class Player {
 
   constructor(game: Game, x: number, y: number) {
     this.game = game;
+
+    this.levelID = 0;
 
     this.x = x;
     this.y = y;
@@ -171,7 +174,7 @@ export class Player {
 
   tryMove = (x: number, y: number) => {
     // TODO don't move if hit by enemy
-    this.game.level.catchUp();
+    this.game.levels[this.levelID].catchUp();
 
     if (this.dead) return;
 
@@ -179,7 +182,7 @@ export class Player {
       return;
     }
 
-    for (let e of this.game.level.enemies) {
+    for (let e of this.game.levels[this.levelID].enemies) {
       if (this.tryCollide(e, x, y)) {
         if (e.pushable) {
           // pushing a crate or barrel
@@ -194,7 +197,7 @@ export class Player {
           let pushedEnemies = [];
           while (true) {
             foundEnd = true;
-            for (const f of this.game.level.enemies) {
+            for (const f of this.game.levels[this.levelID].enemies) {
               if (f.x === nextX && f.y === nextY) {
                 if (!f.chainPushable) {
                   enemyEnd = true;
@@ -215,15 +218,15 @@ export class Player {
           // here, (nextX, nextY) is the position immediately after the end of the train
           if (
             pushedEnemies.length === 0 &&
-            (this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
+            (this.game.levels[this.levelID].levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
           ) {
             if (e.destroyable) {
               e.kill();
               Sound.hit();
               this.drawX = 0.5 * (this.x - e.x);
               this.drawY = 0.5 * (this.y - e.y);
-              this.game.level.particles.push(new SlashParticle(e.x, e.y));
-              this.game.level.tick();
+              this.game.levels[this.levelID].particles.push(new SlashParticle(e.x, e.y));
+              this.game.levels[this.levelID].tick();
               this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
               return;
             }
@@ -237,14 +240,14 @@ export class Player {
               f.drawY = dy;
               f.skipNextTurns = 1; // skip next turn, so they don't move while we're pushing them
             }
-            if (this.game.level.levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
+            if (this.game.levels[this.levelID].levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
               pushedEnemies[pushedEnemies.length - 1].killNoBones();
             e.x += dx;
             e.y += dy;
             e.drawX = dx;
             e.drawY = dy;
             this.move(x, y);
-            this.game.level.tick();
+            this.game.levels[this.levelID].tick();
             return;
           }
         } else {
@@ -256,7 +259,7 @@ export class Player {
         }
       }
     }
-    let other = this.game.level.levelArray[x][y];
+    let other = this.game.levels[this.levelID].levelArray[x][y];
     if (!other.isSolid()) {
       this.move(x, y);
       other.onCollide(this);
@@ -268,13 +271,13 @@ export class Player {
           other instanceof SideDoor
         )
       )
-        this.game.level.tick();
+        this.game.levels[this.levelID].tick();
     } else {
       if (other instanceof LockedDoor) {
         this.drawX = (this.x - x) * 0.5;
         this.drawY = (this.y - y) * 0.5;
         other.unlock(this);
-        this.game.level.tick();
+        this.game.levels[this.levelID].tick();
       }
     }
   };
@@ -299,13 +302,13 @@ export class Player {
     this.x = x;
     this.y = y;
 
-    for (let i of this.game.level.items) {
+    for (let i of this.game.levels[this.levelID].items) {
       if (i.x === x && i.y === y) {
         i.onPickup(this);
       }
     }
 
-    this.game.level.updateLighting();
+    this.game.levels[this.levelID].updateLighting();
   };
 
   doneMoving = (): boolean => {
@@ -323,13 +326,13 @@ export class Player {
     this.x = x;
     this.y = y;
 
-    for (let i of this.game.level.items) {
+    for (let i of this.game.levels[this.levelID].items) {
       if (i.x === x && i.y === y) {
         i.onPickup(this);
       }
     }
 
-    this.game.level.updateLighting();
+    this.game.levels[this.levelID].updateLighting();
   };
 
   moveNoSmooth = (x: number, y: number) => {

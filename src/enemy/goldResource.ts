@@ -29,7 +29,7 @@ export class GoldResource extends Resource {
 
     this.dead = true;
 
-    this.game.level.items.push(new Gold(this.level, this.x, this.y));
+    this.level.items.push(new Gold(this.level, this.x, this.y));
 
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#fbf236");
   };

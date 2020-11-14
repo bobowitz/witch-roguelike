@@ -149,12 +149,18 @@ export class Game {
     this.level.exitLevel();
     this.level = newLevel;
     this.level.enterLevel();
+
+    return this.levels.indexOf(newLevel);
   };
 
   changeLevelThroughLadder = (ladder: any) => {
     this.levelState = LevelState.TRANSITIONING_LADDER;
     this.transitionStartTime = Date.now();
     this.transitioningLadder = ladder;
+    
+    if (this.transitioningLadder instanceof DownLadder) this.transitioningLadder.generate();
+
+    return this.levels.indexOf(ladder.linkedLadder.level);
   };
 
   changeLevelThroughDoor = (door: any, side?: number) => {
@@ -177,6 +183,8 @@ export class Game {
     this.sideTransitionDirection = side;
     if (door instanceof SideDoor) this.sideTransition = true;
     else if (door instanceof BottomDoor) this.upwardTransition = true;
+
+    return this.levels.indexOf(door.level);
   };
 
   run = () => {
@@ -206,7 +214,7 @@ export class Game {
     }
 
     this.player.update();
-    this.level.update();
+    //this.level.update();
   };
 
   lerp = (a: number, b: number, t: number): number => {
@@ -396,7 +404,6 @@ export class Game {
         if (this.transitioningLadder) {
           this.prevLevel = this.level;
           this.level.exitLevel();
-          if (this.transitioningLadder instanceof DownLadder) this.transitioningLadder.generate();
           this.level = this.transitioningLadder.linkedLadder.level;
 
           this.level.enterLevelThroughLadder(this.transitioningLadder.linkedLadder);

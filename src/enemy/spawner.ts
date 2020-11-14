@@ -81,6 +81,6 @@ export class Spawner extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new BlueGem(this.level, this.x, this.y));
+    this.level.items.push(new BlueGem(this.level, this.x, this.y));
   };
 }

@@ -134,6 +134,6 @@ export class KnightEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new Coin(this.level, this.x, this.y));
+    this.level.items.push(new Coin(this.level, this.x, this.y));
   };
 }

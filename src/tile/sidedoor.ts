@@ -23,7 +23,7 @@ export class SideDoor extends Tile {
 
   onCollide = (player: Player) => {
     this.opened = true;
-    this.game.changeLevelThroughDoor(
+    player.levelID = this.game.changeLevelThroughDoor(
       this.linkedDoor,
       this.linkedDoor.level.x - this.level.x > 0 ? 1 : -1
     );

@@ -162,6 +162,6 @@ export class AStarSkullEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    this.game.level.items.push(new GreenGem(this.level, this.x, this.y));
+    this.level.items.push(new GreenGem(this.level, this.x, this.y));
   };
 }

@@ -180,7 +180,7 @@ export class SkullEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    if (Math.random() < 0.02) this.game.level.items.push(new RedGem(this.level, this.x, this.y));
-    else this.game.level.items.push(new Coin(this.level, this.x, this.y));
+    if (Math.random() < 0.02) this.level.items.push(new RedGem(this.level, this.x, this.y));
+    else this.level.items.push(new Coin(this.level, this.x, this.y));
   };
 }

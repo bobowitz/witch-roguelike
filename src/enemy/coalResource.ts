@@ -32,7 +32,7 @@ export class CoalResource extends Resource {
 
     this.dead = true;
 
-    this.game.level.items.push(new Coal(this.level, this.x, this.y));
+    this.level.items.push(new Coal(this.level, this.x, this.y));
   };
   killNoBones = () => {
     this.kill();

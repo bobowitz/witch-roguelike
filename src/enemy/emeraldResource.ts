@@ -31,7 +31,7 @@ export class EmeraldResource extends Resource {
 
     this.dead = true;
 
-    this.game.level.items.push(new GreenGem(this.level, this.x, this.y));
+    this.level.items.push(new GreenGem(this.level, this.x, this.y));
   };
   killNoBones = () => {
     this.kill();
