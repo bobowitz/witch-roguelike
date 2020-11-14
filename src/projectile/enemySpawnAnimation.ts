@@ -50,9 +50,11 @@ export class EnemySpawnAnimation extends Projectile {
     this.dead = true;
     this.enemy.skipNextTurns = 1;
     this.level.enemies.push(this.enemy);
-    if (this.level.game.player.x === this.x && this.level.game.player.y === this.y) {
-      this.level.game.player.hurt(0.5);
-      this.level.game.player.move(this.knockbackX, this.knockbackY);
+    for (const i in this.level.game.players) {
+      if (this.level.game.players[i].x === this.x && this.level.game.players[i].y === this.y) {
+        this.level.game.players[i].hurt(0.5);
+        this.level.game.players[i].move(this.knockbackX, this.knockbackY);
+      }
     }
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");

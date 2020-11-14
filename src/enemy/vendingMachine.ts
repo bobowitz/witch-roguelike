@@ -62,26 +62,26 @@ export class VendingMachine extends Enemy {
     if (this.isInf || this.quantity > 0) {
       this.open = true;
       this.openTime = Date.now();
-      if (this.game.player.openVendingMachine && this.game.player.openVendingMachine !== this)
-        this.game.player.openVendingMachine.close();
-      this.game.player.openVendingMachine = this;
+      if (this.game.players[this.game.localPlayerID].openVendingMachine && this.game.players[this.game.localPlayerID].openVendingMachine !== this)
+        this.game.players[this.game.localPlayerID].openVendingMachine.close();
+      this.game.players[this.game.localPlayerID].openVendingMachine = this;
     }
   };
 
   close = () => {
     this.open = false;
-    this.game.player.openVendingMachine = null;
+    this.game.players[this.game.localPlayerID].openVendingMachine = null;
   };
 
   space = () => {
     if (this.open) {
       // check if player can pay
       for (const i of this.costItems) {
-        if (!this.game.player.inventory.hasItemCount(i)) return;
+        if (!this.game.players[this.game.localPlayerID].inventory.hasItemCount(i)) return;
       }
 
       for (const i of this.costItems) {
-        this.game.player.inventory.subtractItemCount(i);
+        this.game.players[this.game.localPlayerID].inventory.subtractItemCount(i);
       }
 
       let xs = [this.x - 1, this.x + 1, this.x];
@@ -89,7 +89,7 @@ export class VendingMachine extends Enemy {
       let i = 0;
       do {
         i = Game.rand(0, xs.length - 1);
-      } while (xs[i] === this.game.player.x && ys[i] === this.game.player.y);
+      } while (xs[i] === this.game.players[this.game.localPlayerID].x && ys[i] === this.game.players[this.game.localPlayerID].y);
 
       let newItem = new (this.item.constructor as { new (): Item })();
       newItem = newItem.constructor(this.level, xs[i], ys[i]);
@@ -184,7 +184,7 @@ export class VendingMachine extends Enemy {
 
           if (i < this.costItems.length) {
             let a = 1;
-            if (!this.game.player.inventory.hasItemCount(this.costItems[i])) a = 0.15;
+            if (!this.game.players[this.game.localPlayerID].inventory.hasItemCount(this.costItems[i])) a = 0.15;
             this.costItems[i].drawIcon(drawXScaled, drawYScaled, a);
           } else if (i === this.costItems.length) {
             Game.drawFX(0, 1, 1, 1, drawXScaled, drawYScaled, 1, 1);

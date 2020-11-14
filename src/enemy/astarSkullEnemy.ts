@@ -85,15 +85,15 @@ export class AStarSkullEnemy extends Enemy {
           this.moves = astar.AStar.search(
             this.level.levelArray,
             this,
-            this.game.player,
+            this.game.players[this.game.localPlayerID],
             disablePositions
           );
           if (this.moves.length > 0) {
             if (
-              this.game.player.x === this.moves[0].pos.x &&
-              this.game.player.y === this.moves[0].pos.y
+              this.game.players[this.game.localPlayerID].x === this.moves[0].pos.x &&
+              this.game.players[this.game.localPlayerID].y === this.moves[0].pos.y
             ) {
-              this.game.player.hurt(this.hit());
+              this.game.players[this.game.localPlayerID].hurt(this.hit());
             } else {
               this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
             }
@@ -131,7 +131,7 @@ export class AStarSkullEnemy extends Enemy {
 
       this.drawX += -0.5 * this.drawX;
       this.drawY += -0.5 * this.drawY;
-      if (this.health === 2 && this.doneMoving() && this.game.player.doneMoving())
+      if (this.health === 2 && this.doneMoving() && this.game.players[this.game.localPlayerID].doneMoving())
         this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(

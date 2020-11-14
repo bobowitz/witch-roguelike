@@ -73,16 +73,16 @@ export class SkullEnemy extends Enemy {
           this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;
-          if (this.game.player.x > this.x) this.dx++;
-          if (this.game.player.x < this.x) this.dx--;
-          if (this.game.player.y > this.y) this.dy++;
-          if (this.game.player.y < this.y) this.dy--;
+          if (this.game.players[this.game.localPlayerID].x > this.x) this.dx++;
+          if (this.game.players[this.game.localPlayerID].x < this.x) this.dx--;
+          if (this.game.players[this.game.localPlayerID].y > this.y) this.dy++;
+          if (this.game.players[this.game.localPlayerID].y < this.y) this.dy--;
           let moveX = this.x;
           let moveY = this.y;
           if (
             Math.abs(this.dx) > Math.abs(this.dy) ||
             (this.dx === this.dy &&
-              Math.abs(this.game.player.x - this.x) >= Math.abs(this.game.player.y - this.y))
+              Math.abs(this.game.players[this.game.localPlayerID].x - this.x) >= Math.abs(this.game.players[this.game.localPlayerID].y - this.y))
           ) {
             if (this.dx > 0) {
               moveX++;
@@ -101,12 +101,12 @@ export class SkullEnemy extends Enemy {
             }
           }
 
-          if (this.game.player.x === moveX && this.game.player.y === moveY) {
-            this.game.player.hurt(this.hit());
+          if (this.game.players[this.game.localPlayerID].x === moveX && this.game.players[this.game.localPlayerID].y === moveY) {
+            this.game.players[this.game.localPlayerID].hurt(this.hit());
             this.dx = 0;
             this.dy = 0;
-            this.drawX = 0.5 * (this.x - this.game.player.x);
-            this.drawY = 0.5 * (this.y - this.game.player.y);
+            this.drawX = 0.5 * (this.x - this.game.players[this.game.localPlayerID].x);
+            this.drawY = 0.5 * (this.y - this.game.players[this.game.localPlayerID].y);
             this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
           } else {
             this.tryMove(moveX, moveY);
@@ -150,7 +150,7 @@ export class SkullEnemy extends Enemy {
       this.frame += 0.1;
       if (this.frame >= 4) this.frame = 0;
 
-      if (this.health > 1 && this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
+      if (this.health > 1 && this.doneMoving() && this.game.players[this.game.localPlayerID].doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(
           0,

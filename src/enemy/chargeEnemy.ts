@@ -69,16 +69,16 @@ export class ChargeEnemy extends Enemy {
           let blocked = false;
           let dx = 0;
           let dy = 0;
-          if (this.x === this.game.player.x) {
-            if (this.y < this.game.player.y) dy = 1;
+          if (this.x === this.game.players[this.game.localPlayerID].x) {
+            if (this.y < this.game.players[this.game.localPlayerID].y) dy = 1;
             else dy = -1;
-            for (let yy = this.y; yy !== this.game.player.y; yy += dy) {
+            for (let yy = this.y; yy !== this.game.players[this.game.localPlayerID].y; yy += dy) {
               if (!this.canMoveOver(this.x, yy)) blocked = true;
             }
-          } else if (this.y === this.game.player.y) {
-            if (this.x < this.game.player.x) dx = 1;
+          } else if (this.y === this.game.players[this.game.localPlayerID].y) {
+            if (this.x < this.game.players[this.game.localPlayerID].x) dx = 1;
             else dx = -1;
-            for (let xx = this.x; xx !== this.game.player.x; xx += dx) {
+            for (let xx = this.x; xx !== this.game.players[this.game.localPlayerID].x; xx += dx) {
               if (!this.canMoveOver(xx, this.y)) blocked = true;
             }
           }
@@ -90,11 +90,11 @@ export class ChargeEnemy extends Enemy {
               this.targetX += dx;
               this.targetY += dy;
               if (
-                (this.targetX === this.game.player.x && this.targetY === this.game.player.y) ||
-                (this.targetX === this.game.player.x - 1 && this.targetY === this.game.player.y) ||
-                (this.targetX === this.game.player.x + 1 && this.targetY === this.game.player.y) ||
-                (this.targetX === this.game.player.x && this.targetY === this.game.player.y - 1) ||
-                (this.targetX === this.game.player.x && this.targetY === this.game.player.y + 1)
+                (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y) ||
+                (this.targetX === this.game.players[this.game.localPlayerID].x - 1 && this.targetY === this.game.players[this.game.localPlayerID].y) ||
+                (this.targetX === this.game.players[this.game.localPlayerID].x + 1 && this.targetY === this.game.players[this.game.localPlayerID].y) ||
+                (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y - 1) ||
+                (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y + 1)
               )
                 this.level.projectiles.push(new HitWarning(this.game, this.targetX, this.targetY));
             }
@@ -103,14 +103,14 @@ export class ChargeEnemy extends Enemy {
           this.state = ChargeEnemyState.CHARGING;
 
           if (
-            (this.y === this.game.player.y &&
-              ((this.x < this.game.player.x && this.game.player.x <= this.targetX) ||
-                (this.targetX <= this.game.player.x && this.game.player.x < this.x))) ||
-            (this.x === this.game.player.x &&
-              ((this.y < this.game.player.y && this.game.player.y <= this.targetY) ||
-                (this.targetY <= this.game.player.y && this.game.player.y < this.y)))
+            (this.y === this.game.players[this.game.localPlayerID].y &&
+              ((this.x < this.game.players[this.game.localPlayerID].x && this.game.players[this.game.localPlayerID].x <= this.targetX) ||
+                (this.targetX <= this.game.players[this.game.localPlayerID].x && this.game.players[this.game.localPlayerID].x < this.x))) ||
+            (this.x === this.game.players[this.game.localPlayerID].x &&
+              ((this.y < this.game.players[this.game.localPlayerID].y && this.game.players[this.game.localPlayerID].y <= this.targetY) ||
+                (this.targetY <= this.game.players[this.game.localPlayerID].y && this.game.players[this.game.localPlayerID].y < this.y)))
           ) {
-            this.game.player.hurt(0.5);
+            this.game.players[this.game.localPlayerID].hurt(0.5);
           }
 
           this.drawX = this.targetX - this.x;
@@ -147,7 +147,7 @@ export class ChargeEnemy extends Enemy {
         );
       }
 
-      //if (this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
+      //if (this.doneMoving() && this.game.players[this.game.localPlayerID].doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(
           0,

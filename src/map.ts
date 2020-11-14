@@ -69,8 +69,8 @@ export class Map {
     }
     Game.ctx.fillStyle = GameConstants.RED;
     Game.ctx.fillRect(
-      this.game.level.x - this.game.level.roomX + this.game.player.x,
-      this.game.level.y - this.game.level.roomY + this.game.player.y,
+      this.game.level.x - this.game.level.roomX + this.game.players[this.game.localPlayerID].x,
+      this.game.level.y - this.game.level.roomY + this.game.players[this.game.localPlayerID].y,
       1,
       1
     );

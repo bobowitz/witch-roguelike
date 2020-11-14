@@ -23,16 +23,16 @@ export class HitWarning extends Projectile {
 
   draw = () => {
     if (
-      (this.x === this.game.player.x && Math.abs(this.y - this.game.player.y) <= 1) ||
-      (this.y === this.game.player.y && Math.abs(this.x - this.game.player.x) <= 1)
+      (this.x === this.game.players[this.game.localPlayerID].x && Math.abs(this.y - this.game.players[this.game.localPlayerID].y) <= 1) ||
+      (this.y === this.game.players[this.game.localPlayerID].y && Math.abs(this.x - this.game.players[this.game.localPlayerID].x) <= 1)
     )
       Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
   };
 
   drawTopLayer = () => {
     if (
-      (this.x === this.game.player.x && Math.abs(this.y - this.game.player.y) <= 1) ||
-      (this.y === this.game.player.y && Math.abs(this.x - this.game.player.x) <= 1)
+      (this.x === this.game.players[this.game.localPlayerID].x && Math.abs(this.y - this.game.players[this.game.localPlayerID].y) <= 1) ||
+      (this.y === this.game.players[this.game.localPlayerID].y && Math.abs(this.x - this.game.players[this.game.localPlayerID].x) <= 1)
     )
       Game.drawFX(18 + Math.floor(HitWarning.frame), 5, 1, 1, this.x, this.y, 1, 1);
   };

@@ -27,8 +27,10 @@ export class SpikeTrap extends Tile {
     this.on = this.tickCount === 0;
 
     if (this.on) {
-      if (this.level.game.player.x === this.x && this.level.game.player.y === this.y)
-        this.level.game.player.hurt(1);
+      for (const i in this.level.game.players) {
+        if (this.level.game.players[i].x === this.x && this.level.game.players[i].y === this.y)
+          this.level.game.players[i].hurt(1);
+      }
     }
 
     if (this.tickCount === 3)

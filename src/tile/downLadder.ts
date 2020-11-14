@@ -23,7 +23,6 @@ export class DownLadder extends Tile {
       this.linkedLadder = this.game.levelgen.generate(
         this.game,
         this.level.depth + (this.isRope ? 0 : 1),
-        "hamburger",
         this.isRope
       );
       this.linkedLadder.linkedLadder = this;
@@ -31,7 +30,7 @@ export class DownLadder extends Tile {
   };
 
   onCollide = (player: Player) => {
-    player.levelID = this.game.changeLevelThroughLadder(this);
+    player.levelID = this.game.changeLevelThroughLadder(player, this);
   };
 
   draw = () => {

@@ -47,7 +47,7 @@ export class WizardEnemy extends Enemy {
 
   withinAttackingRangeOfPlayer = (): boolean => {
     return (
-      (this.x - this.game.player.x) ** 2 + (this.y - this.game.player.y) ** 2 <=
+      (this.x - this.game.players[this.game.localPlayerID].x) ** 2 + (this.y - this.game.players[this.game.localPlayerID].y) ** 2 <=
       this.ATTACK_RADIUS ** 2
     );
   };
@@ -115,7 +115,7 @@ export class WizardEnemy extends Enemy {
             for (let t of emptyTiles) {
               let newPos = t;
               let dist =
-                Math.abs(newPos.x - this.game.player.x) + Math.abs(newPos.y - this.game.player.y);
+                Math.abs(newPos.x - this.game.players[this.game.localPlayerID].x) + Math.abs(newPos.y - this.game.players[this.game.localPlayerID].y);
               if (Math.abs(dist - optimalDist) < Math.abs(min - optimalDist)) {
                 min = dist;
                 bestPos = newPos;

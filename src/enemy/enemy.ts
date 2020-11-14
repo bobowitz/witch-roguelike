@@ -73,7 +73,7 @@ export class Enemy extends Drawable {
         return;
       }
     }
-    if (this.game.player.x === x && this.game.player.y === y) {
+    if (this.game.players[this.game.localPlayerID].x === x && this.game.players[this.game.localPlayerID].y === y) {
       return;
     }
     if (!this.level.levelArray[x][y].isSolid()) {
@@ -133,14 +133,14 @@ export class Enemy extends Drawable {
   seesPlayer = (): boolean => {
     let RADIUS = 4;
     return (
-      Math.abs(this.x - this.game.player.x) <= RADIUS &&
-      Math.abs(this.y - this.game.player.y) <= RADIUS
+      Math.abs(this.x - this.game.players[this.game.localPlayerID].x) <= RADIUS &&
+      Math.abs(this.y - this.game.players[this.game.localPlayerID].y) <= RADIUS
     );
   };
 
   facePlayer = () => {
-    let dx = this.game.player.x - this.x;
-    let dy = this.game.player.y - this.y;
+    let dx = this.game.players[this.game.localPlayerID].x - this.x;
+    let dy = this.game.players[this.game.localPlayerID].y - this.y;
     if (Math.abs(dx) === Math.abs(dy)) {
       // just moved, already facing player
     } else if (Math.abs(dx) > Math.abs(dy)) {

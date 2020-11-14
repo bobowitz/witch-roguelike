@@ -98,6 +98,7 @@ export class LevelGenerator {
   levels = [];
   upLadder = null;
   game: Game;
+  seed: () => number;
   group: number;
 
   noCollisions = r => {
@@ -259,9 +260,12 @@ export class LevelGenerator {
     return false;
   };
 
-  generate = (game: Game, depth: number, seed: string, cave = false) => {
-    let seedIter = Random.xmur3(seed);
-    let rand = Random.sfc32(seedIter(), seedIter(), seedIter(), seedIter());
+  setSeed = (seed: string) => {
+    this.seed = Random.xmur3(seed);
+  };
+
+  generate = (game: Game, depth: number, cave = false) => {
+    let rand = Random.sfc32(this.seed(), this.seed(), this.seed(), this.seed());
     
     let d = depth;
     let node;

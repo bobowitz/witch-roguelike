@@ -20,8 +20,8 @@ export class Candle extends Equippable {
   toggleEquip = () => {
     this.equipped = !this.equipped;
     if (this.equipped) {
-      this.level.game.player.sightRadius = 9;
-    } else this.level.game.player.sightRadius = this.level.game.player.defaultSightRadius;
+      this.level.game.players[this.level.game.localPlayerID].sightRadius = 9;
+    } else this.level.game.players[this.level.game.localPlayerID].sightRadius = this.level.game.players[this.level.game.localPlayerID].defaultSightRadius;
   };
 
   getDescription = () => {

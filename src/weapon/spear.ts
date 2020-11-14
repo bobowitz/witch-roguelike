@@ -15,7 +15,7 @@ export class Spear extends Weapon {
   }
 
   weaponMove = (newX: number, newY: number): boolean => {
-    let newX2 = 2 * newX - this.game.player.x;
+    /*let newX2 = 2 * newX - this.game.player.x;
     let newY2 = 2 * newY - this.game.player.y;
     let flag = false;
     let enemyHitCandidates = [];
@@ -52,7 +52,8 @@ export class Spear extends Weapon {
       this.game.level.tick();
       this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
     }
-    return !flag;
+    return !flag;*/
+    return true;
   };
 
   getDescription = (): string => {

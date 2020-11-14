@@ -44,7 +44,9 @@ export class Button extends Tile {
 
   tickEnd = () => {
     this.unpress();
-    if (this.level.game.player.x === this.x && this.level.game.player.y === this.y) this.press();
+    for (const i in this.level.game.players) {
+      if (this.level.game.players[i].x === this.x && this.level.game.players[i].y === this.y) this.press();
+    }
     for (const e of this.level.enemies) {
       if (e.x === this.x && e.y === this.y) this.press();
     }

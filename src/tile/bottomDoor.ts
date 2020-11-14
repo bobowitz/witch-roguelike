@@ -20,7 +20,7 @@ export class BottomDoor extends Tile {
   };
 
   onCollide = (player: Player) => {
-    player.levelID = this.game.changeLevelThroughDoor(this.linkedDoor);
+    player.levelID = this.game.changeLevelThroughDoor(player, this.linkedDoor);
   };
 
   drawAbovePlayer = () => {

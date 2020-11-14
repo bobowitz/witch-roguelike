@@ -49,8 +49,9 @@ export class Player {
   guiHeartFrame: number;
   map: Map;
   openVendingMachine: VendingMachine;
+  isLocalPlayer: boolean;
 
-  constructor(game: Game, x: number, y: number) {
+  constructor(game: Game, x: number, y: number, isLocalPlayer: boolean) {
     this.game = game;
 
     this.levelID = 0;
@@ -64,18 +65,21 @@ export class Player {
 
     this.direction = PlayerDirection.UP;
 
-    Input.iListener = this.iListener;
-    Input.qListener = this.qListener;
-    Input.leftListener = this.leftListener;
-    Input.rightListener = this.rightListener;
-    Input.upListener = this.upListener;
-    Input.downListener = this.downListener;
-    Input.spaceListener = this.spaceListener;
-    Input.leftSwipeListener = this.leftListener;
-    Input.rightSwipeListener = this.rightListener;
-    Input.upSwipeListener = this.upListener;
-    Input.downSwipeListener = this.downListener;
-    Input.tapListener = this.tapListener;
+    this.isLocalPlayer = isLocalPlayer;
+    if (isLocalPlayer) {
+      Input.iListener = this.iListener;
+      Input.qListener = this.qListener;
+      Input.leftListener = this.leftListener;
+      Input.rightListener = this.rightListener;
+      Input.upListener = this.upListener;
+      Input.downListener = this.downListener;
+      Input.spaceListener = this.spaceListener;
+      Input.leftSwipeListener = this.leftListener;
+      Input.rightSwipeListener = this.rightListener;
+      Input.upSwipeListener = this.upListener;
+      Input.downSwipeListener = this.downListener;
+      Input.tapListener = this.tapListener;
+    }
 
     this.health = 2;
     this.maxHealth = 2;
@@ -113,13 +117,8 @@ export class Player {
       return;
     }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      /*if (Input.isDown(Input.SPACE)) {
-        GenericParticle.spawnCluster(this.game.level, this.x - 1 + 0.5, this.y + 0.5, "#ff00ff");
-        this.healthBar.hurt();
-        this.game.level.items.push(new Coal(this.game.level, this.x - 1, this.y));
-      } else */
-      this.tryMove(this.x - 1, this.y);
-      this.direction = PlayerDirection.LEFT;
+      this.game.socket.emit('tick', this.game.localPlayerID, 0);
+      this.left();
     }
   };
   rightListener = () => {
@@ -128,8 +127,8 @@ export class Player {
       return;
     }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      this.tryMove(this.x + 1, this.y);
-      this.direction = PlayerDirection.RIGHT;
+      this.game.socket.emit('tick', this.game.localPlayerID, 1);
+      this.right();
     }
   };
   upListener = () => {
@@ -138,8 +137,8 @@ export class Player {
       return;
     }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      this.tryMove(this.x, this.y - 1);
-      this.direction = PlayerDirection.UP;
+      this.game.socket.emit('tick', this.game.localPlayerID, 2);
+      this.up();
     }
   };
   downListener = () => {
@@ -148,8 +147,8 @@ export class Player {
       return;
     }
     if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      this.tryMove(this.x, this.y + 1);
-      this.direction = PlayerDirection.DOWN;
+      this.game.socket.emit('tick', this.game.localPlayerID, 3);
+      this.down();
     }
   };
   spaceListener = () => {
@@ -160,6 +159,22 @@ export class Player {
     if (this.openVendingMachine) {
       this.openVendingMachine.space();
     }
+  };
+  left = () => {
+    this.tryMove(this.x - 1, this.y);
+    this.direction = PlayerDirection.LEFT;
+  };
+  right = () => {
+    this.tryMove(this.x + 1, this.y);
+    this.direction = PlayerDirection.RIGHT;
+  };
+  up = () => {
+    this.tryMove(this.x, this.y - 1);
+    this.direction = PlayerDirection.UP;
+  };
+  down = () => {
+    this.tryMove(this.x, this.y + 1);
+    this.direction = PlayerDirection.DOWN;
   };
 
   hit = (): number => {
@@ -226,7 +241,7 @@ export class Player {
               this.drawX = 0.5 * (this.x - e.x);
               this.drawY = 0.5 * (this.y - e.y);
               this.game.levels[this.levelID].particles.push(new SlashParticle(e.x, e.y));
-              this.game.levels[this.levelID].tick();
+              this.game.levels[this.levelID].tick(this);
               this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
               return;
             }
@@ -247,13 +262,13 @@ export class Player {
             e.drawX = dx;
             e.drawY = dy;
             this.move(x, y);
-            this.game.levels[this.levelID].tick();
+            this.game.levels[this.levelID].tick(this);
             return;
           }
         } else {
           // if we're trying to hit an enemy, check if it's destroyable
           if (!e.dead) {
-            if (e.interactable) e.interact();
+            if (e.interactable && this.isLocalPlayer) e.interact();
             return;
           }
         }
@@ -271,13 +286,13 @@ export class Player {
           other instanceof SideDoor
         )
       )
-        this.game.levels[this.levelID].tick();
+        this.game.levels[this.levelID].tick(this);
     } else {
       if (other instanceof LockedDoor) {
         this.drawX = (this.x - x) * 0.5;
         this.drawY = (this.y - y) * 0.5;
         other.unlock(this);
-        this.game.levels[this.levelID].tick();
+        this.game.levels[this.levelID].tick(this);
       }
     }
   };

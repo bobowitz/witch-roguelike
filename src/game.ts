@@ -25,7 +25,8 @@ export class Game {
   level: Level;
   levels: Array<Level>;
   levelgen: LevelGenerator;
-  player: Player;
+  localPlayerID: number;
+  players: Record<number, Player>;
   levelState: LevelState;
   transitionStartTime: number;
   transitionX: number;
@@ -61,6 +62,44 @@ export class Game {
   constructor() {
     window.addEventListener("load", () => {
       this.socket = io("http://localhost:3000", {'transports' : ['websocket']});
+      this.socket.on('welcome', (seed: string, pid: number) => {
+        this.localPlayerID = pid;
+        this.players = {};
+        this.players[this.localPlayerID] = new Player(this, 0, 0, true);
+
+        this.levels = Array<Level>();
+        this.levelgen = new LevelGenerator();
+        this.levelgen.setSeed(seed);
+        this.levelgen.generate(this, 0);
+        this.level = this.levels[0];
+        this.level.enterLevel(this.players[this.localPlayerID]);
+
+        this.screenShakeX = 0;
+        this.screenShakeY = 0;
+
+        this.levelState = LevelState.IN_LEVEL;
+
+        setInterval(this.run, 1000.0 / GameConstants.FPS);
+        this.onResize();
+        window.addEventListener("resize", this.onResize);
+      });
+      this.socket.on('tick', (tickPlayerID: number, dir: number) => {
+        if (!(tickPlayerID in this.players)) {
+          this.players[tickPlayerID] = new Player(this, 0, 0, false);
+          this.levels[0].enterLevel(this.players[tickPlayerID]);
+        }
+        if (dir === 0) this.players[tickPlayerID].left();
+        if (dir === 1) this.players[tickPlayerID].right();
+        if (dir === 2) this.players[tickPlayerID].up();
+        if (dir === 3) this.players[tickPlayerID].down();
+      });
+      this.socket.on('player connected', (connectedPlayerID: number) => {
+        this.players[connectedPlayerID] = new Player(this, 0, 0, false);
+        this.levels[0].enterLevel(this.players[connectedPlayerID]);
+      });
+      this.socket.on('player disconnected', (disconnectPlayerID: number) => {
+        delete this.players[disconnectPlayerID];
+      });
 
       let canvas = document.getElementById("gameCanvas");
       Game.ctx = (canvas as HTMLCanvasElement).getContext("2d", {
@@ -93,23 +132,6 @@ export class Game {
 
       Sound.loadSounds();
       Sound.playMusic(); // loops forever
-
-      this.player = new Player(this, 0, 0);
-
-      this.levels = Array<Level>();
-      this.levelgen = new LevelGenerator();
-      this.levelgen.generate(this, 0, "hamburger");
-      this.level = this.levels[0];
-      this.level.enterLevel();
-
-      this.screenShakeX = 0;
-      this.screenShakeY = 0;
-
-      this.levelState = LevelState.IN_LEVEL;
-
-      setInterval(this.run, 1000.0 / GameConstants.FPS);
-      this.onResize();
-      window.addEventListener("resize", this.onResize);
 
       document.addEventListener(
         "touchstart",
@@ -145,44 +167,54 @@ export class Game {
     });
   }
 
-  changeLevel = (newLevel: Level) => {
-    this.level.exitLevel();
-    this.level = newLevel;
-    this.level.enterLevel();
+  changeLevel = (player: Player, newLevel: Level) => {
+    if (this.players[this.localPlayerID] === player) {
+      //this.level.exitLevel();
+      this.level = newLevel;
+    }
+    newLevel.enterLevel(player);
 
     return this.levels.indexOf(newLevel);
   };
 
-  changeLevelThroughLadder = (ladder: any) => {
-    this.levelState = LevelState.TRANSITIONING_LADDER;
-    this.transitionStartTime = Date.now();
-    this.transitioningLadder = ladder;
-    
-    if (this.transitioningLadder instanceof DownLadder) this.transitioningLadder.generate();
+  changeLevelThroughLadder = (player: Player, ladder: any) => {
+    if (ladder instanceof DownLadder) ladder.generate();
+
+    if (this.players[this.localPlayerID] === player) {
+      this.levelState = LevelState.TRANSITIONING_LADDER;
+      this.transitionStartTime = Date.now();
+      this.transitioningLadder = ladder;
+    } else {
+      this.level.enterLevelThroughLadder(player, ladder.linkedLadder); // since it's not a local player, don't wait for transition
+    }
 
     return this.levels.indexOf(ladder.linkedLadder.level);
   };
 
-  changeLevelThroughDoor = (door: any, side?: number) => {
-    this.levelState = LevelState.TRANSITIONING;
-    this.transitionStartTime = Date.now();
+  changeLevelThroughDoor = (player: Player, door: any, side?: number) => {
+    if (this.players[this.localPlayerID] === player) {
+      this.levelState = LevelState.TRANSITIONING;
+      this.transitionStartTime = Date.now();
 
-    this.transitionX = this.player.x;
-    this.transitionY = this.player.y;
+      this.transitionX = this.players[this.localPlayerID].x;
+      this.transitionY = this.players[this.localPlayerID].y;
 
-    this.prevLevel = this.level;
-    this.level.exitLevel();
-    this.level = door.level;
-    this.level.enterLevelThroughDoor(door, side);
+      this.prevLevel = this.level;
+      //this.level.exitLevel();
+      this.level = door.level;
+      door.level.enterLevelThroughDoor(player, door, side);
 
-    this.transitionX = (this.player.x - this.transitionX) * GameConstants.TILESIZE;
-    this.transitionY = (this.player.y - this.transitionY) * GameConstants.TILESIZE;
+      this.transitionX = (this.players[this.localPlayerID].x - this.transitionX) * GameConstants.TILESIZE;
+      this.transitionY = (this.players[this.localPlayerID].y - this.transitionY) * GameConstants.TILESIZE;
 
-    this.upwardTransition = false;
-    this.sideTransition = false;
-    this.sideTransitionDirection = side;
-    if (door instanceof SideDoor) this.sideTransition = true;
-    else if (door instanceof BottomDoor) this.upwardTransition = true;
+      this.upwardTransition = false;
+      this.sideTransition = false;
+      this.sideTransitionDirection = side;
+      if (door instanceof SideDoor) this.sideTransition = true;
+      else if (door instanceof BottomDoor) this.upwardTransition = true;
+    } else {
+      door.level.enterLevelThroughDoor(player, door, side);
+    }
 
     return this.levels.indexOf(door.level);
   };
@@ -213,7 +245,9 @@ export class Game {
       }
     }
 
-    this.player.update();
+    for (const i in this.players) {
+      this.players[i].update();
+    }
     //this.level.update();
   };
 
@@ -287,8 +321,8 @@ export class Game {
       let playerOffsetX = levelOffsetX - this.transitionX;
       let playerOffsetY = levelOffsetY - this.transitionY;
 
-      let playerCX = (this.player.x - this.player.drawX + 0.5) * GameConstants.TILESIZE;
-      let playerCY = (this.player.y - this.player.drawY + 0.5) * GameConstants.TILESIZE;
+      let playerCX = (this.players[this.localPlayerID].x - this.players[this.localPlayerID].drawX + 0.5) * GameConstants.TILESIZE;
+      let playerCY = (this.players[this.localPlayerID].y - this.players[this.localPlayerID].drawY + 0.5) * GameConstants.TILESIZE;
 
       Game.ctx.translate(
         -Math.round(playerCX + playerOffsetX - 0.5 * GameConstants.WIDTH),
@@ -329,6 +363,7 @@ export class Game {
       Game.ctx.translate(levelOffsetX, levelOffsetY);
       this.prevLevel.draw();
       this.prevLevel.drawEntitiesBehindPlayer();
+      for (let i in this.players) if (this.prevLevel === this.levels[this.players[i].levelID] && this.players[i] !== this.players[this.localPlayerID]) this.players[i].draw();
       this.prevLevel.drawEntitiesInFrontOfPlayer();
       for (
         let x = this.prevLevel.roomX - 1;
@@ -348,6 +383,7 @@ export class Game {
       Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
       this.level.draw();
       this.level.drawEntitiesBehindPlayer();
+      for (let i in this.players) if (this.level === this.levels[this.players[i].levelID] && this.players[i] !== this.players[this.localPlayerID]) this.players[i].draw();
       this.level.drawEntitiesInFrontOfPlayer();
       for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
         for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
@@ -357,7 +393,7 @@ export class Game {
       Game.ctx.translate(-newLevelOffsetX, -newLevelOffsetY);
 
       Game.ctx.translate(playerOffsetX, playerOffsetY);
-      this.player.draw();
+      this.players[this.localPlayerID].draw();
       Game.ctx.translate(-playerOffsetX, -playerOffsetY);
 
       Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
@@ -370,11 +406,11 @@ export class Game {
         Math.round(playerCY + playerOffsetY - 0.5 * GameConstants.HEIGHT)
       );
 
-      this.player.drawGUI();
-      this.player.updateDrawXY();
+      this.players[this.localPlayerID].drawGUI();
+      for (const i in this.players) this.players[i].updateDrawXY();
     } else if (this.levelState === LevelState.TRANSITIONING_LADDER) {
-      let playerCX = (this.player.x - this.player.drawX + 0.5) * GameConstants.TILESIZE;
-      let playerCY = (this.player.y - this.player.drawY + 0.5) * GameConstants.TILESIZE;
+      let playerCX = (this.players[this.localPlayerID].x - this.players[this.localPlayerID].drawX + 0.5) * GameConstants.TILESIZE;
+      let playerCY = (this.players[this.localPlayerID].y - this.players[this.localPlayerID].drawY + 0.5) * GameConstants.TILESIZE;
 
       Game.ctx.translate(
         -Math.round(playerCX - 0.5 * GameConstants.WIDTH),
@@ -390,7 +426,7 @@ export class Game {
       if (ditherFrame < 7) {
         this.level.draw();
         this.level.drawEntitiesBehindPlayer();
-        this.player.draw();
+        for (let i in this.players) if (this.level === this.levels[this.players[i].levelID]) this.players[i].draw();
         this.level.drawEntitiesInFrontOfPlayer();
         this.level.drawShade();
         this.level.drawOverShade();
@@ -406,13 +442,13 @@ export class Game {
           this.level.exitLevel();
           this.level = this.transitioningLadder.linkedLadder.level;
 
-          this.level.enterLevelThroughLadder(this.transitioningLadder.linkedLadder);
+          this.level.enterLevelThroughLadder(this.players[this.localPlayerID], this.transitioningLadder.linkedLadder);
           this.transitioningLadder = null;
         }
 
         this.level.draw();
         this.level.drawEntitiesBehindPlayer();
-        this.player.draw();
+        for (let i in this.players) if (this.level === this.levels[this.players[i].levelID]) this.players[i].draw();
         this.level.drawEntitiesInFrontOfPlayer();
         this.level.drawShade();
         this.level.drawOverShade();
@@ -427,23 +463,23 @@ export class Game {
         Math.round(playerCY - 0.5 * GameConstants.HEIGHT)
       );
 
-      this.player.drawGUI();
-      this.player.updateDrawXY();
+      this.players[this.localPlayerID].drawGUI();
+      for (const i in this.players) this.players[i].updateDrawXY();
     } else {
       this.screenShakeX *= -0.8;
       this.screenShakeY *= -0.8;
 
-      let playerDrawX = this.player.drawX;
-      let playerDrawY = this.player.drawY;
+      let playerDrawX = this.players[this.localPlayerID].drawX;
+      let playerDrawY = this.players[this.localPlayerID].drawY;
 
       Game.ctx.translate(
         -Math.round(
-          (this.player.x - playerDrawX + 0.5) * GameConstants.TILESIZE -
+          (this.players[this.localPlayerID].x - playerDrawX + 0.5) * GameConstants.TILESIZE -
             0.5 * GameConstants.WIDTH -
             this.screenShakeX
         ),
         -Math.round(
-          (this.player.y - playerDrawY + 0.5) * GameConstants.TILESIZE -
+          (this.players[this.localPlayerID].y - playerDrawY + 0.5) * GameConstants.TILESIZE -
             0.5 * GameConstants.HEIGHT -
             this.screenShakeY
         )
@@ -451,28 +487,28 @@ export class Game {
 
       this.level.draw();
       this.level.drawEntitiesBehindPlayer();
-      this.player.draw();
+      for (let i in this.players) if (this.level === this.levels[this.players[i].levelID]) this.players[i].draw();
       this.level.drawEntitiesInFrontOfPlayer();
       this.level.drawShade();
       this.level.drawOverShade();
-      this.player.drawTopLayer();
+      this.players[this.localPlayerID].drawTopLayer();
 
       Game.ctx.translate(
         Math.round(
-          (this.player.x - playerDrawX + 0.5) * GameConstants.TILESIZE -
+          (this.players[this.localPlayerID].x - playerDrawX + 0.5) * GameConstants.TILESIZE -
             0.5 * GameConstants.WIDTH -
             this.screenShakeX
         ),
         Math.round(
-          (this.player.y - playerDrawY + 0.5) * GameConstants.TILESIZE -
+          (this.players[this.localPlayerID].y - playerDrawY + 0.5) * GameConstants.TILESIZE -
             0.5 * GameConstants.HEIGHT -
             this.screenShakeY
         )
       );
 
       this.level.drawTopLayer();
-      this.player.drawGUI();
-      this.player.updateDrawXY();
+      this.players[this.localPlayerID].drawGUI();
+      for (const i in this.players) this.players[i].updateDrawXY();
     }
 
     // game version

@@ -17,6 +17,10 @@ export const Input = {
   rightListener: function() {},
   upListener: function() {},
   downListener: function() {},
+  aListener: function() { Input.leftListener(); },
+  dListener: function() { Input.rightListener(); },
+  wListener: function() { Input.upListener(); },
+  sListener: function() { Input.downListener(); },
   spaceListener: function() {},
   leftSwipeListener: function() {},
   rightSwipeListener: function() {},
@@ -61,21 +65,29 @@ export const Input = {
     Input.lastPressKeyCode = event.code;
     Input._pressed[event.code] = true;
     switch (event.code) {
-      case Input.A:
       case Input.LEFT:
         Input.leftListener();
         break;
-      case Input.D:
+      case Input.A:
+        Input.aListener();
+        break;
       case Input.RIGHT:
         Input.rightListener();
         break;
-      case Input.W:
+      case Input.D:
+        Input.dListener();
+        break;
       case Input.UP:
         Input.upListener();
         break;
-      case Input.S:
+      case Input.W:
+        Input.wListener();
+        break;
       case Input.DOWN:
         Input.downListener();
+        break;
+      case Input.S:
+        Input.sListener();
         break;
       case Input.SPACE:
         Input.spaceListener();

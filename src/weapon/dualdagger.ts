@@ -36,12 +36,12 @@ export class DualDagger extends Weapon {
     }
     if (flag) {
       Sound.hit();
-      this.game.player.drawX = 0.5 * (this.game.player.x - newX);
-      this.game.player.drawY = 0.5 * (this.game.player.y - newY);
+      //this.game.player.drawX = 0.5 * (this.game.player.x - newX);
+      //this.game.player.drawY = 0.5 * (this.game.player.y - newY);
       this.game.level.particles.push(new SlashParticle(newX, newY));
       if (this.firstAttack) this.game.level.enemies = this.game.level.enemies.filter(e => !e.dead);
-      else this.game.level.tick();
-      this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
+      //else this.game.level.tick();
+      //this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
 
       if (this.firstAttack) this.firstAttack = false;
     }

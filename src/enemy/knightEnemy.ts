@@ -68,17 +68,17 @@ export class KnightEnemy extends Enemy {
           this.moves = astar.AStar.search(
             this.level.levelArray,
             this,
-            this.game.player,
+            this.game.players[this.game.localPlayerID],
             disablePositions
           );
           if (this.moves.length > 0) {
             if (
-              this.game.player.x === this.moves[0].pos.x &&
-              this.game.player.y === this.moves[0].pos.y
+              this.game.players[this.game.localPlayerID].x === this.moves[0].pos.x &&
+              this.game.players[this.game.localPlayerID].y === this.moves[0].pos.y
             ) {
-              this.game.player.hurt(this.hit());
-              this.drawX = 0.5 * (this.x - this.game.player.x);
-              this.drawY = 0.5 * (this.y - this.game.player.y);
+              this.game.players[this.game.localPlayerID].hurt(this.hit());
+              this.drawX = 0.5 * (this.x - this.game.players[this.game.localPlayerID].x);
+              this.drawY = 0.5 * (this.y - this.game.players[this.game.localPlayerID].y);
               this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
             } else {
               this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
@@ -104,7 +104,7 @@ export class KnightEnemy extends Enemy {
     if (!this.dead) {
       this.frame += 0.1;
       if (this.frame >= 4) this.frame = 0;
-      if (this.doneMoving() && this.game.player.doneMoving()) this.facePlayer();
+      if (this.doneMoving() && this.game.players[this.game.localPlayerID].doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(
           0,

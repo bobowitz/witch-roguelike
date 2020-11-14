@@ -48,6 +48,7 @@ import { Heart } from "./item/heart";
 import { Spear } from "./weapon/spear";
 import { SideDoor } from "./tile/sidedoor";
 import { Drawable } from "./drawable";
+import { Player } from "./player";
 
 export enum RoomType {
   DUNGEON,
@@ -103,6 +104,7 @@ export class Level {
   message: string;
   turn: TurnState;
   playerTurnTime: number;
+  playerTicked: Player;
   skin: SkinType;
   entered: boolean; // has the player entered this level
   upLadder: UpLadder;
@@ -986,9 +988,9 @@ export class Level {
     // if (this.env === 3) LevelConstants.LEVEL_TEXT_COLOR = "black";
   };
 
-  enterLevel = () => {
+  enterLevel = (player: Player) => {
     this.updateLevelTextColor();
-    this.game.player.moveSnap(
+    player.moveSnap(
       this.roomX + Math.floor(this.width / 2),
       this.roomY + this.height - 1
     );
@@ -998,15 +1000,15 @@ export class Level {
     this.message = this.name;
   };
 
-  enterLevelThroughDoor = (door: any, side?: number) => {
+  enterLevelThroughDoor = (player: Player, door: any, side?: number) => {
     this.updateLevelTextColor();
     if (door instanceof Door) {
       (door as Door).opened = true;
-      this.game.player.moveNoSmooth(door.x, door.y + 1);
+      player.moveNoSmooth(door.x, door.y + 1);
     } else if (door instanceof BottomDoor) {
-      this.game.player.moveNoSmooth(door.x, door.y - 1);
+      player.moveNoSmooth(door.x, door.y - 1);
     } else if (door instanceof SideDoor) {
-      this.game.player.moveNoSmooth(door.x + side, door.y);
+      player.moveNoSmooth(door.x + side, door.y);
     }
 
     this.updateLighting();
@@ -1014,10 +1016,10 @@ export class Level {
     this.message = this.name;
   };
 
-  enterLevelThroughLadder = (ladder: any) => {
+  enterLevelThroughLadder = (player: Player, ladder: any) => {
     this.updateLevelTextColor();
 
-    this.game.player.moveSnap(ladder.x, ladder.y + 1);
+    player.moveSnap(ladder.x, ladder.y + 1);
 
     this.updateLighting();
     this.entered = true;
@@ -1091,9 +1093,9 @@ export class Level {
     for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
       this.castShadowsAtAngle(
         i,
-        this.game.player.x + 0.5,
-        this.game.player.y + 0.5,
-        this.game.player.sightRadius - this.depth
+        this.game.players[this.game.localPlayerID].x + 0.5,
+        this.game.players[this.game.localPlayerID].y + 0.5,
+        this.game.players[this.game.localPlayerID].sightRadius - this.depth
       );
     }
     for (const l of this.lightSources) {
@@ -1171,7 +1173,7 @@ export class Level {
     if (this.turn === TurnState.computerTurn) this.computerTurn(); // player skipped computer's turn, catch up
   };
 
-  tick = () => {
+  tick = (player: Player) => {
     this.enemies = this.enemies.filter(e => !e.dead);
     this.updateLighting();
 
@@ -1187,6 +1189,7 @@ export class Level {
 
     this.turn = TurnState.computerTurn;
     this.playerTurnTime = Date.now();
+    this.playerTicked = player;
   };
 
   update = () => {
@@ -1208,8 +1211,10 @@ export class Level {
 
     for (const p of this.projectiles) {
       if (this.levelArray[p.x][p.y].isSolid()) p.dead = true;
-      if (p.x === this.game.player.x && p.y === this.game.player.y) {
-        p.hitPlayer(this.game.player);
+      for (const i in this.game.players) {
+        if (p.x === this.game.players[i].x && p.y === this.game.players[i].y) {
+          p.hitPlayer(this.game.players[i]);
+        }
       }
       for (const e of this.enemies) {
         if (p.x === e.x && p.y === e.y) {
@@ -1224,7 +1229,7 @@ export class Level {
       }
     }
 
-    this.game.player.finishTick();
+    this.playerTicked.finishTick();
     this.turn = TurnState.playerTurn;
   };
 
@@ -1265,7 +1270,7 @@ export class Level {
     });
 
     for (const d of drawables) {
-      if (d.drawableY <= this.game.player.y) d.draw();
+      if (d.drawableY <= this.game.players[this.game.localPlayerID].y) d.draw();
     }
   };
   drawEntitiesInFrontOfPlayer = () => {
@@ -1290,7 +1295,7 @@ export class Level {
     });
 
     for (const d of drawables) {
-      if (d.drawableY > this.game.player.y) d.draw();
+      if (d.drawableY > this.game.players[this.game.localPlayerID].y) d.draw();
     }
 
     for (const i of this.items) {
@@ -1299,7 +1304,7 @@ export class Level {
   };
 
   drawShade = () => {
-    let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / this.game.player.sightRadius));
+    let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / this.game.players[this.game.localPlayerID].sightRadius));
     Game.ctx.globalAlpha = shadingAlpha;
     //Game.ctx.fillStyle = "#400a0e";
     Game.ctx.fillStyle = this.shadeColor;

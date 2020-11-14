@@ -16,7 +16,7 @@ export class Shotgun extends Weapon {
   }
 
   weaponMove = (newX: number, newY: number): boolean => {
-    let newX2 = 2 * newX - this.game.player.x;
+    /*let newX2 = 2 * newX - this.game.player.x;
     let newY2 = 2 * newY - this.game.player.y;
     let newX3 = 3 * newX - 2 * this.game.player.x;
     let newY3 = 3 * newY - 2 * this.game.player.y;
@@ -128,6 +128,7 @@ export class Shotgun extends Weapon {
 
       return false;
     }
+    return true;*/
     return true;
   };
 

@@ -93,7 +93,7 @@ export class Inventory {
     let i = this.selX + this.selY * this.cols;
 
     if (this.items[i] instanceof Usable) {
-      (this.items[i] as Usable).onUse(this.game.player);
+      (this.items[i] as Usable).onUse(this.game.players[this.game.localPlayerID]);
       this.items.splice(i, 1);
     }
 
