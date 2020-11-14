@@ -89,7 +89,7 @@ export class Enemy extends Drawable {
 
   hurtCallback = () => {};
 
-  hurt = (damage: number) => {
+  hurt = (playerHitBy: Player, damage: number) => {
     this.healthBar.hurt();
 
     this.health -= damage;
@@ -128,6 +128,26 @@ export class Enemy extends Drawable {
   doneMoving = (): boolean => {
     let EPSILON = 0.01;
     return Math.abs(this.drawX) < EPSILON && Math.abs(this.drawY) < EPSILON;
+  };
+
+  nearestPlayer = (): [number, Player] | false => {
+    const maxDistance = 138291380921; // pulled this straight outta my ass
+    let closestDistance = maxDistance;
+    let closestPlayer = null;
+    for (const i in this.game.players) {
+      if (this.game.levels[this.game.players[i].levelID] === this.level) {
+        let distance = Math.max(Math.abs(this.x - this.game.players[i].x), Math.abs(this.y - this.game.players[i].y));
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestPlayer = this.game.players[i];
+        }
+      }
+    }
+
+    if (closestDistance === maxDistance)
+      return false;
+    else
+      return [closestDistance, closestPlayer];
   };
 
   seesPlayer = (): boolean => {

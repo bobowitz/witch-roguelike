@@ -87,7 +87,7 @@ export class Shotgun extends Weapon {
         else e.hurt(1);
       }
 
-      Sound.hit();
+      if (this.wielder.game.levels[this.wielder.levelID] === this.wielder.game.level) Sound.hit();
       this.game.player.drawX = 0.5 * (this.game.player.x - newX);
       this.game.player.drawY = 0.5 * (this.game.player.y - newY);
       GenericParticle.shotgun(

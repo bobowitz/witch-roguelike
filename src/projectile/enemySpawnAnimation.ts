@@ -45,7 +45,7 @@ export class EnemySpawnAnimation extends Projectile {
   }
 
   tick = () => {
-    Sound.enemySpawn();
+    if (this.level === this.level.game.level) Sound.enemySpawn();
 
     this.dead = true;
     this.enemy.skipNextTurns = 1;

@@ -28,7 +28,7 @@ export class SpikeTrap extends Tile {
 
     if (this.on) {
       for (const i in this.level.game.players) {
-        if (this.level.game.players[i].x === this.x && this.level.game.players[i].y === this.y)
+        if (this.level === this.level.game.levels[this.level.game.players[i].levelID] && this.level.game.players[i].x === this.x && this.level.game.players[i].y === this.y)
           this.level.game.players[i].hurt(1);
       }
     }
@@ -41,14 +41,14 @@ export class SpikeTrap extends Tile {
     if (this.on) {
       for (const e of this.level.enemies) {
         if (e.x === this.x && e.y === this.y) {
-          e.hurt(1);
+          e.hurt(null, 1);
         }
       }
     }
   };
 
   onCollideEnemy = (enemy: Enemy) => {
-    if (this.on && !(enemy instanceof Crate || enemy instanceof Barrel)) enemy.hurt(1);
+    if (this.on && !(enemy instanceof Crate || enemy instanceof Barrel)) enemy.hurt(null, 1);
   };
 
   draw = () => {

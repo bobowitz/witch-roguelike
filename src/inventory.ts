@@ -20,6 +20,7 @@ import { DualDagger } from "./weapon/dualdagger";
 import { Candle } from "./item/candle";
 import { Torch } from "./item/torch";
 import { Lantern } from "./item/lantern";
+import { Player } from "./player";
 
 let OPEN_TIME = 100; // milliseconds
 let FILL_COLOR = "#5a595b";
@@ -28,6 +29,7 @@ let EQUIP_COLOR = "#85a8e6";
 let FULL_OUTLINE = "white";
 
 export class Inventory {
+  player: Player;
   items: Array<Item>;
   equipped: Array<Equippable>;
   rows = 2;
@@ -41,8 +43,9 @@ export class Inventory {
   equipAnimAmount: Array<number>;
   weapon: Weapon;
 
-  constructor(game: Game) {
+  constructor(game: Game, player: Player) {
     this.game = game;
+    this.player = player;
     this.items = new Array<Item>();
     this.equipped = new Array<Equippable>();
     this.equipAnimAmount = [];
@@ -55,13 +58,18 @@ export class Inventory {
 
     this.weapon = null;
 
-    this.addItem(new Dagger({ game: this.game } as Level, 0, 0));
-    this.addItem(new Shotgun({ game: this.game } as Level, 0, 0));
-    this.addItem(new Armor({ game: this.game } as Level, 0, 0));
-    this.addItem(new DualDagger({ game: this.game } as Level, 0, 0));
-    this.addItem(new Candle({ game: this.game } as Level, 0, 0));
-    this.addItem(new Torch({ game: this.game } as Level, 0, 0));
-    this.addItem(new Lantern({ game: this.game } as Level, 0, 0));
+    let a = (i: Item) => {
+      if (i instanceof Weapon) i.setWielder(this.player);
+      this.addItem(i);
+    };
+
+    a(new Dagger({ game: this.game } as Level, 0, 0));
+    a(new Shotgun({ game: this.game } as Level, 0, 0));
+    a(new Armor({ game: this.game } as Level, 0, 0));
+    a(new DualDagger({ game: this.game } as Level, 0, 0));
+    a(new Candle({ game: this.game } as Level, 0, 0));
+    a(new Torch({ game: this.game } as Level, 0, 0));
+    a(new Lantern({ game: this.game } as Level, 0, 0));
   }
 
   open = () => {

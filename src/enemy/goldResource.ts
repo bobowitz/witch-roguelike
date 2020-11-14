@@ -21,11 +21,11 @@ export class GoldResource extends Resource {
   }
 
   hurtCallback = () => {
-    Sound.mine();
+    if (this.level === this.game.level) Sound.mine();
   };
 
   kill = () => {
-    Sound.breakRock();
+    if (this.level === this.game.level) Sound.breakRock();
 
     this.dead = true;
 

@@ -24,6 +24,7 @@ export class SkullEnemy extends Enemy {
   flashingFrame: number;
   dx: number;
   dy: number;
+  targetPlayer: Player;
   readonly REGEN_TICKS = 5;
 
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -46,7 +47,8 @@ export class SkullEnemy extends Enemy {
     return 1;
   };
 
-  hurt = (damage: number) => {
+  hurt = (playerHitBy: Player, damage: number) => {
+    if (playerHitBy) this.targetPlayer = playerHitBy;
     this.ticksSinceFirstHit = 0;
     this.health -= damage;
     this.healthBar.hurt();
@@ -69,20 +71,29 @@ export class SkullEnemy extends Enemy {
           this.health = 2;
         }
       } else {
-        if (this.seenPlayer || this.seesPlayer()) {
-          this.seenPlayer = true;
+        if (!this.seenPlayer) {
+          let p = this.nearestPlayer();
+          if (p !== false) {
+            let [distance, player] = p;
+            if (distance <= 4) {
+              this.targetPlayer = player;
+              this.seenPlayer = true;
+            }
+          }
+        }
+        if (this.seenPlayer) {
           let oldX = this.x;
           let oldY = this.y;
-          if (this.game.players[this.game.localPlayerID].x > this.x) this.dx++;
-          if (this.game.players[this.game.localPlayerID].x < this.x) this.dx--;
-          if (this.game.players[this.game.localPlayerID].y > this.y) this.dy++;
-          if (this.game.players[this.game.localPlayerID].y < this.y) this.dy--;
+          if (this.targetPlayer.x > this.x) this.dx++;
+          if (this.targetPlayer.x < this.x) this.dx--;
+          if (this.targetPlayer.y > this.y) this.dy++;
+          if (this.targetPlayer.y < this.y) this.dy--;
           let moveX = this.x;
           let moveY = this.y;
           if (
             Math.abs(this.dx) > Math.abs(this.dy) ||
             (this.dx === this.dy &&
-              Math.abs(this.game.players[this.game.localPlayerID].x - this.x) >= Math.abs(this.game.players[this.game.localPlayerID].y - this.y))
+              Math.abs(this.targetPlayer.x - this.x) >= Math.abs(this.targetPlayer.y - this.y))
           ) {
             if (this.dx > 0) {
               moveX++;
@@ -101,14 +112,19 @@ export class SkullEnemy extends Enemy {
             }
           }
 
-          if (this.game.players[this.game.localPlayerID].x === moveX && this.game.players[this.game.localPlayerID].y === moveY) {
-            this.game.players[this.game.localPlayerID].hurt(this.hit());
-            this.dx = 0;
-            this.dy = 0;
-            this.drawX = 0.5 * (this.x - this.game.players[this.game.localPlayerID].x);
-            this.drawY = 0.5 * (this.y - this.game.players[this.game.localPlayerID].y);
-            this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
-          } else {
+          let hitPlayer = false;
+          for (const i in this.game.players) {
+            if (this.game.levels[this.game.players[i].levelID] === this.level && this.game.players[i].x === moveX && this.game.players[i].y === moveY) {
+              this.game.players[i].hurt(this.hit());
+              this.dx = 0;
+              this.dy = 0;
+              this.drawX = 0.5 * (this.x - this.game.players[this.game.localPlayerID].x);
+              this.drawY = 0.5 * (this.y - this.game.players[this.game.localPlayerID].y);
+              if (this.game.players[i] === this.game.players[this.game.localPlayerID])
+                this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
+            }
+          }
+          if (!hitPlayer) {
             this.tryMove(moveX, moveY);
             if (this.x === oldX && this.y === oldY) {
               // didn't move

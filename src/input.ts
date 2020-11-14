@@ -1,6 +1,18 @@
 import { GameConstants } from "./gameConstants";
 import { Game } from "./game";
 
+export enum InputEnum {
+  I,
+  M,
+  M_UP,
+  Q,
+  LEFT,
+  RIGHT,
+  UP,
+  DOWN,
+  SPACE
+}
+
 export const Input = {
   _pressed: {},
 
@@ -8,11 +20,9 @@ export const Input = {
   tapStartTime: null,
   IS_TAP_HOLD_THRESH: 100,
   iListener: function() {},
-  iUpListener: function() {},
   mListener: function() {},
   mUpListener: function() {},
   qListener: function() {},
-  qUpListener: function() {},
   leftListener: function() {},
   rightListener: function() {},
   upListener: function() {},
@@ -111,8 +121,6 @@ export const Input = {
       this.lastPressKeyCode = 0;
     }
     if (event.code === Input.M) Input.mUpListener();
-    if (event.code === Input.I) Input.iUpListener();
-    if (event.code === Input.Q) Input.qUpListener();
   },
 
   mouseClickListener: function(event: MouseEvent) {

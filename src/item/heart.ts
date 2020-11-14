@@ -16,7 +16,7 @@ export class Heart extends Usable {
 
   onUse = (player: Player) => {
     player.health = Math.min(player.maxHealth, player.health + 1);
-    Sound.heal();
+    if (this.level.game.levels[player.levelID] === this.level.game.level) Sound.heal();
     this.level.items = this.level.items.filter(x => x !== this); // removes itself from the level
   };
 

@@ -52,7 +52,7 @@ export class Item extends Drawable {
   };
 
   pickupSound = () => {
-    Sound.genericPickup();
+    if (this.level === this.level.game.level) Sound.genericPickup();
   };
 
   onPickup = (player: Player) => {

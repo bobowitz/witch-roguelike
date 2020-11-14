@@ -1,4 +1,4 @@
-import { Input } from "./input";
+import { Input, InputEnum } from "./input";
 import { GameConstants } from "./gameConstants";
 import { Game, LevelState } from "./game";
 import { Door } from "./tile/door";
@@ -67,18 +67,18 @@ export class Player {
 
     this.isLocalPlayer = isLocalPlayer;
     if (isLocalPlayer) {
-      Input.iListener = this.iListener;
-      Input.qListener = this.qListener;
-      Input.leftListener = this.leftListener;
-      Input.rightListener = this.rightListener;
-      Input.upListener = this.upListener;
-      Input.downListener = this.downListener;
-      Input.spaceListener = this.spaceListener;
-      Input.leftSwipeListener = this.leftListener;
-      Input.rightSwipeListener = this.rightListener;
-      Input.upSwipeListener = this.upListener;
-      Input.downSwipeListener = this.downListener;
-      Input.tapListener = this.tapListener;
+      Input.iListener = () => this.inputHandler(InputEnum.I);
+      Input.qListener = () => this.inputHandler(InputEnum.Q);
+      Input.leftListener = () => this.inputHandler(InputEnum.LEFT);
+      Input.rightListener = () => this.inputHandler(InputEnum.RIGHT);
+      Input.upListener = () => this.inputHandler(InputEnum.UP);
+      Input.downListener = () => this.inputHandler(InputEnum.DOWN);
+      Input.spaceListener = () => this.inputHandler(InputEnum.SPACE);
+      //Input.leftSwipeListener = () => this.inputHandler(InputEnum.I);
+      //Input.rightSwipeListener = () => this.inputHandler(InputEnum.I);
+      //Input.upSwipeListener = () => this.inputHandler(InputEnum.I);
+      //Input.downSwipeListener = () => this.inputHandler(InputEnum.I);
+      //Input.tapListener = () => this.inputHandler(InputEnum.I);
     }
 
     this.health = 2;
@@ -90,7 +90,7 @@ export class Player {
     this.lastTickHealth = this.health;
     this.guiHeartFrame = 0;
 
-    this.inventory = new Inventory(game);
+    this.inventory = new Inventory(game, this);
 
     this.missProb = 0.1;
 
@@ -99,6 +99,35 @@ export class Player {
 
     this.map = new Map(this.game);
   }
+
+  inputHandler = (input: InputEnum) => {
+    switch(input) {
+      case InputEnum.I:
+        this.game.socket.emit('input', this.game.localPlayerID, input);
+        this.iListener();
+        break;
+      case InputEnum.Q:
+        this.game.socket.emit('input', this.game.localPlayerID, input);
+        this.qListener();
+        break;
+      case InputEnum.LEFT:
+        if (this.leftListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        break;
+      case InputEnum.RIGHT:
+        if (this.rightListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        break;
+      case InputEnum.UP:
+        if (this.upListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        break;
+      case InputEnum.DOWN:
+        if (this.downListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        break;
+      case InputEnum.SPACE:
+        this.game.socket.emit('input', this.game.localPlayerID, input);
+        this.spaceListener();
+        break;
+    }
+  };
 
   tapListener = () => {
     this.inventory.open();
@@ -111,45 +140,53 @@ export class Player {
       this.inventory.drop();
     }
   };
-  leftListener = () => {
+  leftListener = (isLocal: boolean): boolean => {
     if (this.inventory.isOpen) {
       this.inventory.left();
-      return;
+      return true;
     }
-    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      this.game.socket.emit('tick', this.game.localPlayerID, 0);
+    if (!this.dead && (!isLocal || this.game.levelState === LevelState.IN_LEVEL)) {
       this.left();
+      return true;
     }
+
+    return false;
   };
-  rightListener = () => {
+  rightListener = (isLocal: boolean): boolean => {
     if (this.inventory.isOpen) {
       this.inventory.right();
-      return;
+      return true;
     }
-    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      this.game.socket.emit('tick', this.game.localPlayerID, 1);
+    if (!this.dead && (!isLocal || this.game.levelState === LevelState.IN_LEVEL)) {
       this.right();
+      return true;
     }
+
+    return false;
   };
-  upListener = () => {
+  upListener = (isLocal: boolean): boolean => {
     if (this.inventory.isOpen) {
       this.inventory.up();
-      return;
+      return true;
     }
-    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      this.game.socket.emit('tick', this.game.localPlayerID, 2);
+    if (!this.dead && (!isLocal || this.game.levelState === LevelState.IN_LEVEL)) {
       this.up();
+      return true;
     }
+
+    return false;
   };
-  downListener = () => {
+  downListener = (isLocal: boolean): boolean => {
     if (this.inventory.isOpen) {
       this.inventory.down();
-      return;
+      return true;
     }
-    if (!this.dead && this.game.levelState === LevelState.IN_LEVEL) {
-      this.game.socket.emit('tick', this.game.localPlayerID, 3);
+    if (!this.dead && (!isLocal || this.game.levelState === LevelState.IN_LEVEL)) {
       this.down();
+      return true;
     }
+
+    return false;
   };
   spaceListener = () => {
     if (this.inventory.isOpen) {
@@ -201,8 +238,6 @@ export class Player {
       if (this.tryCollide(e, x, y)) {
         if (e.pushable) {
           // pushing a crate or barrel
-          let oldEnemyX = e.x;
-          let oldEnemyY = e.y;
           let dx = x - this.x;
           let dy = y - this.y;
           let nextX = x + dx;
@@ -237,7 +272,7 @@ export class Player {
           ) {
             if (e.destroyable) {
               e.kill();
-              Sound.hit();
+              if (this.game.levels[this.levelID] === this.game.level) Sound.hit();
               this.drawX = 0.5 * (this.x - e.x);
               this.drawY = 0.5 * (this.y - e.y);
               this.game.levels[this.levelID].particles.push(new SlashParticle(e.x, e.y));
@@ -246,7 +281,7 @@ export class Player {
               return;
             }
           } else {
-            Sound.push();
+            if (this.game.levels[this.levelID] === this.game.level) Sound.push();
             // here pushedEnemies may still be []
             for (const f of pushedEnemies) {
               f.x += dx;
@@ -268,7 +303,7 @@ export class Player {
         } else {
           // if we're trying to hit an enemy, check if it's destroyable
           if (!e.dead) {
-            if (e.interactable && this.isLocalPlayer) e.interact();
+            if (e.interactable) e.interact();
             return;
           }
         }
@@ -298,7 +333,7 @@ export class Player {
   };
 
   hurt = (damage: number) => {
-    Sound.hurt();
+    if (this.game.levels[this.levelID] === this.game.level) Sound.hurt();
 
     if (this.inventory.getArmor() && this.inventory.getArmor().health > 0) {
       this.inventory.getArmor().hurt(damage);
@@ -332,7 +367,7 @@ export class Player {
   };
 
   move = (x: number, y: number) => {
-    Sound.playerStoneFootstep();
+    if (this.game.levels[this.levelID] === this.game.level) Sound.playerStoneFootstep();
 
     if (this.openVendingMachine) this.openVendingMachine.close();
 

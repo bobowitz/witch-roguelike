@@ -21,7 +21,7 @@ export class Chest extends Enemy {
   }
 
   kill = () => {
-    Sound.chest();
+    if (this.level === this.game.level) Sound.chest();
 
     this.dead = true;
     // DROP TABLES!

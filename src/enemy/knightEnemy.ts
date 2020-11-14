@@ -5,12 +5,14 @@ import { astar } from "../astarclass";
 import { HitWarning } from "../projectile/hitWarning";
 import { SpikeTrap } from "../tile/spiketrap";
 import { Coin } from "../item/coin";
+import { Player } from "../player";
 
 export class KnightEnemy extends Enemy {
   moves: Array<astar.AStarData>;
   ticks: number;
   frame: number;
   seenPlayer: boolean;
+  targetPlayer: Player;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
@@ -25,6 +27,15 @@ export class KnightEnemy extends Enemy {
     this.deathParticleColor = "#ffffff";
   }
 
+  hurt = (playerHitBy: Player, damage: number) => {
+    if (playerHitBy) this.targetPlayer = playerHitBy;
+    this.healthBar.hurt();
+
+    this.health -= damage;
+    if (this.health <= 0) this.kill();
+    else this.hurtCallback();
+  };
+
   hit = (): number => {
     return 1;
   };
@@ -38,14 +49,21 @@ export class KnightEnemy extends Enemy {
       this.ticks++;
       this.tileX = 9;
       this.tileY = 8;
-      if (this.seenPlayer || this.seesPlayer()) {
+      if (!this.seenPlayer) {
+        const result = this.nearestPlayer();
+        if (result !== false) {
+          let [distance, p] = result;
+          if (distance < 4) {
+            this.seenPlayer = true;
+            this.targetPlayer = p;
+          }
+        }
+      }
+      if (this.seenPlayer) {
         if (this.ticks % 2 === 0) {
           this.tileX = 4;
           this.tileY = 0;
-          // visible to player, chase them
 
-          // now that we've seen the player, we can keep chasing them even if we lose line of sight
-          this.seenPlayer = true;
           let oldX = this.x;
           let oldY = this.y;
           let disablePositions = Array<astar.Position>();
@@ -68,19 +86,26 @@ export class KnightEnemy extends Enemy {
           this.moves = astar.AStar.search(
             this.level.levelArray,
             this,
-            this.game.players[this.game.localPlayerID],
+            this.targetPlayer,
             disablePositions
           );
           if (this.moves.length > 0) {
-            if (
-              this.game.players[this.game.localPlayerID].x === this.moves[0].pos.x &&
-              this.game.players[this.game.localPlayerID].y === this.moves[0].pos.y
-            ) {
-              this.game.players[this.game.localPlayerID].hurt(this.hit());
-              this.drawX = 0.5 * (this.x - this.game.players[this.game.localPlayerID].x);
-              this.drawY = 0.5 * (this.y - this.game.players[this.game.localPlayerID].y);
-              this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
-            } else {
+            let hitPlayer = false;
+            for (const i in this.game.players) {
+              if (
+                this.game.levels[this.game.players[i].levelID] === this.level &&
+                this.game.players[i].x === this.moves[0].pos.x &&
+                this.game.players[i].y === this.moves[0].pos.y
+              ) {
+                this.game.players[i].hurt(this.hit());
+                this.drawX = 0.5 * (this.x - this.game.players[i].x);
+                this.drawY = 0.5 * (this.y - this.game.players[i].y);
+                if (this.game.players[i] === this.game.players[this.game.localPlayerID])
+                  this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
+                hitPlayer = true;
+              }
+            }
+            if (!hitPlayer) {
               this.tryMove(this.moves[0].pos.x, this.moves[0].pos.y);
               this.drawX = this.x - oldX;
               this.drawY = this.y - oldY;

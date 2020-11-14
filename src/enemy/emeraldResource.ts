@@ -23,11 +23,11 @@ export class EmeraldResource extends Resource {
   hurtCallback = () => {
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#fbf236");
 
-    Sound.mine();
+    if (this.level === this.game.level) Sound.mine();
   };
 
   kill = () => {
-    Sound.breakRock();
+    if (this.level === this.game.level) Sound.breakRock();
 
     this.dead = true;
 

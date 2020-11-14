@@ -6,7 +6,7 @@ import { Sound } from "./sound";
 import { LevelConstants } from "./levelConstants";
 import { LevelGenerator } from "./levelGenerator";
 import { BottomDoor } from "./tile/bottomDoor";
-import { Input } from "./input";
+import { Input, InputEnum } from "./input";
 import { DownLadder } from "./tile/downLadder";
 import { SideDoor } from "./tile/sidedoor";
 import { io } from "socket.io-client";
@@ -61,7 +61,7 @@ export class Game {
 
   constructor() {
     window.addEventListener("load", () => {
-      this.socket = io("http://localhost:3000", {'transports' : ['websocket']});
+      this.socket = io("http://192.168.1.194:3000", {'transports' : ['websocket']});
       this.socket.on('welcome', (seed: string, pid: number) => {
         this.localPlayerID = pid;
         this.players = {};
@@ -83,15 +83,34 @@ export class Game {
         this.onResize();
         window.addEventListener("resize", this.onResize);
       });
-      this.socket.on('tick', (tickPlayerID: number, dir: number) => {
+      this.socket.on('input', (tickPlayerID: number, input: InputEnum) => {
         if (!(tickPlayerID in this.players)) {
           this.players[tickPlayerID] = new Player(this, 0, 0, false);
           this.levels[0].enterLevel(this.players[tickPlayerID]);
         }
-        if (dir === 0) this.players[tickPlayerID].left();
-        if (dir === 1) this.players[tickPlayerID].right();
-        if (dir === 2) this.players[tickPlayerID].up();
-        if (dir === 3) this.players[tickPlayerID].down();
+        switch(input) {
+          case InputEnum.I:
+            this.players[tickPlayerID].iListener();
+            break;
+          case InputEnum.Q:
+            this.players[tickPlayerID].qListener();
+            break;
+          case InputEnum.LEFT:
+            this.players[tickPlayerID].leftListener(false);
+            break;
+          case InputEnum.RIGHT:
+            this.players[tickPlayerID].rightListener(false);
+            break;
+          case InputEnum.UP:
+            this.players[tickPlayerID].upListener(false);
+            break;
+          case InputEnum.DOWN:
+            this.players[tickPlayerID].downListener(false);
+            break;
+          case InputEnum.SPACE:
+            this.players[tickPlayerID].spaceListener();
+            break;
+        }
       });
       this.socket.on('player connected', (connectedPlayerID: number) => {
         this.players[connectedPlayerID] = new Player(this, 0, 0, false);
@@ -247,8 +266,8 @@ export class Game {
 
     for (const i in this.players) {
       this.players[i].update();
+      this.levels[this.players[i].levelID].update();
     }
-    //this.level.update();
   };
 
   lerp = (a: number, b: number, t: number): number => {

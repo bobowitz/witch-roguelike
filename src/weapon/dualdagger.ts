@@ -23,25 +23,26 @@ export class DualDagger extends Weapon {
 
   weaponMove = (newX: number, newY: number): boolean => {
     let flag = false;
-    for (let e of this.game.level.enemies) {
+    for (let e of this.game.levels[this.wielder.levelID].enemies) {
       if (
         e.destroyable &&
         !(e instanceof Crate || e instanceof Barrel) &&
         e.x === newX &&
         e.y === newY
       ) {
-        e.hurt(1);
+        e.hurt(this.wielder, 1);
         flag = true;
       }
     }
     if (flag) {
-      Sound.hit();
-      //this.game.player.drawX = 0.5 * (this.game.player.x - newX);
-      //this.game.player.drawY = 0.5 * (this.game.player.y - newY);
-      this.game.level.particles.push(new SlashParticle(newX, newY));
-      if (this.firstAttack) this.game.level.enemies = this.game.level.enemies.filter(e => !e.dead);
-      //else this.game.level.tick();
-      //this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
+      if (this.wielder.game.levels[this.wielder.levelID] === this.wielder.game.level) Sound.hit();
+      this.wielder.drawX = 0.5 * (this.wielder.x - newX);
+      this.wielder.drawY = 0.5 * (this.wielder.y - newY);
+      this.game.levels[this.wielder.levelID].particles.push(new SlashParticle(newX, newY));
+      if (this.firstAttack) this.game.levels[this.wielder.levelID].enemies = this.game.levels[this.wielder.levelID].enemies.filter(e => !e.dead);
+      else this.game.levels[this.wielder.levelID].tick(this.wielder);
+      if (this.wielder === this.game.players[this.game.localPlayerID])
+        this.game.shakeScreen(10 * this.wielder.drawX, 10 * this.wielder.drawY);
 
       if (this.firstAttack) this.firstAttack = false;
     }
