@@ -61,7 +61,7 @@ export class Game {
 
   constructor() {
     window.addEventListener("load", () => {
-      this.socket = io("ws://witch-roguelike-server.herokuapp.com");
+      this.socket = io("http://witch-roguelike-server.herokuapp.com");
       this.socket.on('popup', function(msg){
           console.log("hello: ", msg)
       });
