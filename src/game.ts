@@ -10,6 +10,7 @@ import { Input, InputEnum } from "./input";
 import { DownLadder } from "./tile/downLadder";
 import { SideDoor } from "./tile/sidedoor";
 import { io } from "socket.io-client";
+import { ServerAddress } from "./serverAddress";
 
 export enum LevelState {
   IN_LEVEL,
@@ -48,6 +49,13 @@ export class Game {
   static tilesetShadow: HTMLImageElement;
   static objsetShadow: HTMLImageElement;
   static mobsetShadow: HTMLImageElement;
+  static fontsheet: HTMLImageElement;
+
+  static text_rendering_canvas = null;
+  static readonly letters = "abcdefghijklmnopqrstuvwxyz1234567890,.!?:''()%";
+  static readonly letter_widths = [4, 4, 4, 4, 3, 3, 4, 4, 1, 4, 4, 3, 5, 5, 4, 4, 4, 4, 4, 3, 4, 5, 5, 5, 5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 1, 4, 1, 1, 2, 2, 5];
+  static readonly letter_height = 6;
+  static letter_positions = [];
 
   // [min, max] inclusive
   static rand = (min: number, max: number, rand = Math.random): number => {
@@ -61,19 +69,7 @@ export class Game {
 
   constructor() {
     window.addEventListener("load", () => {
-      this.socket = io("witch-roguelike-server.herokuapp.com", {'transports' : ['websocket']});
-      this.socket.on('popup', function(msg){
-          console.log("hello: ", msg)
-      });
-      this.socket.on('connection', function() {
-          console.log("client connected");
-      });
-      this.socket.on('connect_error', function(err) {
-          console.log("client connect_error: ", err);
-      });
-      this.socket.on('connect_timeout', function(err) {
-          console.log("client connect_timeout: ", err);
-      });
+      this.socket = io(ServerAddress.address, { 'transports': ['websocket'] });
       this.socket.on('welcome', (seed: string, pid: number) => {
         this.localPlayerID = pid;
         this.players = {};
@@ -100,7 +96,7 @@ export class Game {
           this.players[tickPlayerID] = new Player(this, 0, 0, false);
           this.levels[0].enterLevel(this.players[tickPlayerID]);
         }
-        switch(input) {
+        switch (input) {
           case InputEnum.I:
             this.players[tickPlayerID].iListener();
             break;
@@ -125,6 +121,11 @@ export class Game {
         }
       });
       this.socket.on('player connected', (connectedPlayerID: number) => {
+        // reset all players
+        for (const i in this.players) {
+          this.players[i] = new Player(this, 0, 0, false);
+          this.levels[0].enterLevel(this.players[i]);
+        }
         this.players[connectedPlayerID] = new Player(this, 0, 0, false);
         this.levels[0].enterLevel(this.players[connectedPlayerID]);
       });
@@ -158,6 +159,8 @@ export class Game {
       Game.objsetShadow.src = "res/objsetShadow.png";
       Game.mobsetShadow = new Image();
       Game.mobsetShadow.src = "res/mobsetShadow.png";
+      Game.fontsheet = new Image();
+      Game.fontsheet.src = "res/font.png";
 
       Game.scale = 1;
 
@@ -166,7 +169,7 @@ export class Game {
 
       document.addEventListener(
         "touchstart",
-        function(e) {
+        function (e) {
           if (e.target == canvas) {
             e.preventDefault();
           }
@@ -175,7 +178,7 @@ export class Game {
       );
       document.addEventListener(
         "touchend",
-        function(e) {
+        function (e) {
           if (e.target == canvas) {
             e.preventDefault();
           }
@@ -184,7 +187,7 @@ export class Game {
       );
       document.addEventListener(
         "touchmove",
-        function(e) {
+        function (e) {
           if (e.target == canvas) {
             e.preventDefault();
           }
@@ -279,6 +282,12 @@ export class Game {
     for (const i in this.players) {
       this.players[i].update();
       this.levels[this.players[i].levelID].update();
+
+      if (this.players[i].dead) {
+        for (const j in this.players) {
+          this.players[j].dead = true;
+        }
+      }
     }
   };
 
@@ -325,8 +334,53 @@ export class Game {
     this.screenShakeY = shakeY;
   };
 
+  static measureText = (text: string): { width: number, height: number } => {
+    let w = 0;
+    for (const letter of text.toLowerCase()) {
+      if (letter === ' ') w += 4;
+      else for (let i = 0; i < Game.letters.length; i++) {
+        if (Game.letters[i] === letter) {
+          w += Game.letter_widths[i] + 1;
+        }
+      }
+    }
+    return { width: w, height: Game.letter_height };
+  }
+
   static fillText = (text: string, x: number, y: number, maxWidth?: number) => {
-    Game.ctx.fillText(text, Math.round(x), Math.round(y), maxWidth);
+    x = Math.floor(x);
+    y = Math.floor(y);
+
+    if (Game.letter_positions.length === 0) {
+      // calculate letter positions
+      for (let i = 0; i < Game.letter_widths.length; i++) {
+        if (i === 0) Game.letter_positions[0] = 0;
+        else Game.letter_positions[i] = Game.letter_positions[i - 1] + Game.letter_widths[i - 1] + 2;
+      }
+    } else {
+      let dimensions = Game.measureText(text);
+      if (dimensions.width > 0) {
+        if (!Game.text_rendering_canvas) Game.text_rendering_canvas = document.createElement('canvas');
+        Game.text_rendering_canvas.width = dimensions.width;
+        Game.text_rendering_canvas.height = dimensions.height;
+        let bx = Game.text_rendering_canvas.getContext('2d');
+
+        let letter_x = 0;
+        for (const letter of text.toLowerCase()) {
+          if (letter === ' ') letter_x += 4;
+          else for (let i = 0; i < Game.letters.length; i++) {
+            if (Game.letters[i] === letter) {
+              bx.drawImage(Game.fontsheet, Game.letter_positions[i] + 1, 0, Game.letter_widths[i], Game.letter_height, letter_x, 0, Game.letter_widths[i], Game.letter_height);
+              letter_x += Game.letter_widths[i] + 1;
+            }
+          }
+        }
+        bx.fillStyle = Game.ctx.fillStyle;
+        bx.globalCompositeOperation = "source-in";
+        bx.fillRect(0, 0, Game.text_rendering_canvas.width, Game.text_rendering_canvas.height);
+        Game.ctx.drawImage(Game.text_rendering_canvas, x, y);
+      }
+    }
   };
 
   draw = () => {
@@ -451,7 +505,7 @@ export class Game {
       let deadFrames = 6;
       let ditherFrame = Math.floor(
         ((7 * 2 + deadFrames) * (Date.now() - this.transitionStartTime)) /
-          LevelConstants.LEVEL_TRANSITION_TIME_LADDER
+        LevelConstants.LEVEL_TRANSITION_TIME_LADDER
       );
 
       if (ditherFrame < 7) {
@@ -506,13 +560,13 @@ export class Game {
       Game.ctx.translate(
         -Math.round(
           (this.players[this.localPlayerID].x - playerDrawX + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.WIDTH -
-            this.screenShakeX
+          0.5 * GameConstants.WIDTH -
+          this.screenShakeX
         ),
         -Math.round(
           (this.players[this.localPlayerID].y - playerDrawY + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.HEIGHT -
-            this.screenShakeY
+          0.5 * GameConstants.HEIGHT -
+          this.screenShakeY
         )
       );
 
@@ -527,13 +581,13 @@ export class Game {
       Game.ctx.translate(
         Math.round(
           (this.players[this.localPlayerID].x - playerDrawX + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.WIDTH -
-            this.screenShakeX
+          0.5 * GameConstants.WIDTH -
+          this.screenShakeX
         ),
         Math.round(
           (this.players[this.localPlayerID].y - playerDrawY + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.HEIGHT -
-            this.screenShakeY
+          0.5 * GameConstants.HEIGHT -
+          this.screenShakeY
         )
       );
 
@@ -549,8 +603,8 @@ export class Game {
     Game.ctx.textBaseline = "top";
     Game.fillText(
       GameConstants.VERSION,
-      GameConstants.WIDTH - Game.ctx.measureText(GameConstants.VERSION).width - 1,
-      -3
+      GameConstants.WIDTH - Game.measureText(GameConstants.VERSION).width - 1,
+      1
     );
     Game.ctx.globalAlpha = 1;
   };
@@ -594,33 +648,33 @@ export class Game {
       for (let yy = 0; yy < 1; yy += 0.25) {
         Game.shCtx.globalAlpha =
           (1 - xx) *
-            (1 - yy) *
-            0.25 *
-            (this.level.softVis[levelX][levelY] +
-              this.level.softVis[levelX - 1][levelY] +
-              this.level.softVis[levelX - 1][levelY - 1] +
-              this.level.softVis[levelX][levelY - 1]) +
+          (1 - yy) *
+          0.25 *
+          (this.level.softVis[levelX][levelY] +
+            this.level.softVis[levelX - 1][levelY] +
+            this.level.softVis[levelX - 1][levelY - 1] +
+            this.level.softVis[levelX][levelY - 1]) +
           xx *
-            (1 - yy) *
-            0.25 *
-            (this.level.softVis[levelX + 1][levelY] +
-              this.level.softVis[levelX][levelY] +
-              this.level.softVis[levelX][levelY - 1] +
-              this.level.softVis[levelX + 1][levelY - 1]) +
+          (1 - yy) *
+          0.25 *
+          (this.level.softVis[levelX + 1][levelY] +
+            this.level.softVis[levelX][levelY] +
+            this.level.softVis[levelX][levelY - 1] +
+            this.level.softVis[levelX + 1][levelY - 1]) +
           (1 - xx) *
-            yy *
-            0.25 *
-            (this.level.softVis[levelX][levelY + 1] +
-              this.level.softVis[levelX - 1][levelY + 1] +
-              this.level.softVis[levelX - 1][levelY] +
-              this.level.softVis[levelX][levelY]) +
+          yy *
+          0.25 *
+          (this.level.softVis[levelX][levelY + 1] +
+            this.level.softVis[levelX - 1][levelY + 1] +
+            this.level.softVis[levelX - 1][levelY] +
+            this.level.softVis[levelX][levelY]) +
           xx *
-            yy *
-            0.25 *
-            (this.level.softVis[levelX + 1][levelY + 1] +
-              this.level.softVis[levelX][levelY + 1] +
-              this.level.softVis[levelX][levelY] +
-              this.level.softVis[levelX + 1][levelY]);
+          yy *
+          0.25 *
+          (this.level.softVis[levelX + 1][levelY + 1] +
+            this.level.softVis[levelX][levelY + 1] +
+            this.level.softVis[levelX][levelY] +
+            this.level.softVis[levelX + 1][levelY]);
         Game.shCtx.fillRect(
           xx * GameConstants.TILESIZE,
           yy * GameConstants.TILESIZE,

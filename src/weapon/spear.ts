@@ -15,45 +15,46 @@ export class Spear extends Weapon {
   }
 
   weaponMove = (newX: number, newY: number): boolean => {
-    /*let newX2 = 2 * newX - this.game.player.x;
-    let newY2 = 2 * newY - this.game.player.y;
+    let newX2 = 2 * newX - this.wielder.x;
+    let newY2 = 2 * newY - this.wielder.y;
     let flag = false;
     let enemyHitCandidates = [];
-    for (let e of this.game.level.enemies) {
+    for (let e of this.game.levels[this.wielder.levelID].enemies) {
       if (e.destroyable) {
         if (e.x === newX && e.y === newY) {
           if (e instanceof Crate || e instanceof Barrel) return true;
           else {
-            e.hurt(1);
+            e.hurt(this.wielder, 1);
             flag = true;
           }
         }
-        if (e.x === newX2 && e.y === newY2 && !this.game.level.levelArray[newX][newY].isSolid()) {
+        if (e.x === newX2 && e.y === newY2 && !this.game.levels[this.wielder.levelID].levelArray[newX][newY].isSolid()) {
           if (!(e instanceof Crate || e instanceof Barrel)) enemyHitCandidates.push(e);
         }
       }
     }
     if (!flag && enemyHitCandidates.length > 0) {
-      for (const e of enemyHitCandidates) e.hurt(1);
-      if (this.wielder.game.levels[this.wielder.levelID] === this.wielder.game.level) Sound.hit();
-      this.game.player.drawX = 0.5 * (this.game.player.x - newX);
-      this.game.player.drawY = 0.5 * (this.game.player.y - newY);
-      this.game.level.particles.push(new SlashParticle(newX, newY));
-      this.game.level.particles.push(new SlashParticle(newX2, newY2));
-      this.game.level.tick();
-      this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
+      for (const e of enemyHitCandidates) e.hurt(this.wielder, 1);
+      if (this.wielder.game.level === this.wielder.game.levels[this.wielder.levelID]) Sound.hit();
+      this.wielder.drawX = 0.5 * (this.wielder.x - newX);
+      this.wielder.drawY = 0.5 * (this.wielder.y - newY);
+      this.game.levels[this.wielder.levelID].particles.push(new SlashParticle(newX, newY));
+      this.game.levels[this.wielder.levelID].particles.push(new SlashParticle(newX2, newY2));
+      this.game.levels[this.wielder.levelID].tick(this.wielder);
+      if (this.wielder === this.game.players[this.game.localPlayerID])
+        this.game.shakeScreen(10 * this.wielder.drawX, 10 * this.wielder.drawY);
       return false;
     }
     if (flag) {
-      if (this.wielder.game.levels[this.wielder.levelID] === this.wielder.game.level) Sound.hit();
-      this.game.player.drawX = 0.5 * (this.game.player.x - newX);
-      this.game.player.drawY = 0.5 * (this.game.player.y - newY);
-      this.game.level.particles.push(new SlashParticle(newX, newY));
-      this.game.level.tick();
-      this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
+      if (this.wielder.game.level === this.wielder.game.levels[this.wielder.levelID]) Sound.hit();
+      this.wielder.drawX = 0.5 * (this.wielder.x - newX);
+      this.wielder.drawY = 0.5 * (this.wielder.y - newY);
+      this.game.levels[this.wielder.levelID].particles.push(new SlashParticle(newX, newY));
+      this.game.levels[this.wielder.levelID].tick(this.wielder);
+      if (this.wielder === this.game.players[this.game.localPlayerID])
+        this.game.shakeScreen(10 * this.wielder.drawX, 10 * this.wielder.drawY);
     }
-    return !flag;*/
-    return true;
+    return !flag;
   };
 
   getDescription = (): string => {

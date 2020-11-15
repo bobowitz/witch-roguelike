@@ -68,12 +68,16 @@ export class Map {
       }
     }
     Game.ctx.fillStyle = GameConstants.RED;
-    Game.ctx.fillRect(
-      this.game.level.x - this.game.level.roomX + this.game.players[this.game.localPlayerID].x,
-      this.game.level.y - this.game.level.roomY + this.game.players[this.game.localPlayerID].y,
-      1,
-      1
-    );
+    for (const i in this.game.players) {
+      if (this.game.levels[this.game.players[i].levelID].group === this.game.level.group) {
+        Game.ctx.fillRect(
+          this.game.levels[this.game.players[i].levelID].x - this.game.levels[this.game.players[i].levelID].roomX + this.game.players[i].x,
+          this.game.levels[this.game.players[i].levelID].y - this.game.levels[this.game.players[i].levelID].roomY + this.game.players[i].y,
+          1,
+          1
+        );
+      }
+    }
     Game.ctx.setTransform(1, 0, 0, 1, 0, 0);
   };
 }

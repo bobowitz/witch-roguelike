@@ -15,6 +15,7 @@ import { SpikeTrap } from "../tile/spiketrap";
 import { GenericParticle } from "../particle/genericParticle";
 import { Coin } from "../item/coin";
 import { RedGem } from "../item/redgem";
+import { Item } from "../item/item";
 
 export class SkullEnemy extends Enemy {
   frame: number;
@@ -26,8 +27,9 @@ export class SkullEnemy extends Enemy {
   dy: number;
   targetPlayer: Player;
   readonly REGEN_TICKS = 5;
+  drop: Item;
 
-  constructor(level: Level, game: Game, x: number, y: number) {
+  constructor(level: Level, game: Game, x: number, y: number, rand: () => number, drop?: Item) {
     super(level, game, x, y);
     this.ticks = 0;
     this.frame = 0;
@@ -41,6 +43,12 @@ export class SkullEnemy extends Enemy {
     this.dx = 0;
     this.dy = 0;
     this.deathParticleColor = "#ffffff";
+
+    if (drop) this.drop = drop;
+    else {
+      if (rand() < 0.02) this.drop = new RedGem(this.level, 0, 0);
+      else this.drop = new Coin(this.level, 0, 0);
+    }
   }
 
   hit = (): number => {
@@ -81,7 +89,7 @@ export class SkullEnemy extends Enemy {
             }
           }
         }
-        if (this.seenPlayer) {
+        if (this.seenPlayer && this.level.playerTicked === this.targetPlayer) {
           let oldX = this.x;
           let oldY = this.y;
           if (this.targetPlayer.x > this.x) this.dx++;
@@ -166,7 +174,6 @@ export class SkullEnemy extends Enemy {
       this.frame += 0.1;
       if (this.frame >= 4) this.frame = 0;
 
-      if (this.health > 1 && this.doneMoving() && this.game.players[this.game.localPlayerID].doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(
           0,
@@ -196,7 +203,6 @@ export class SkullEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    if (Math.random() < 0.02) this.level.items.push(new RedGem(this.level, this.x, this.y));
-    else this.level.items.push(new Coin(this.level, this.x, this.y));
+
   };
 }

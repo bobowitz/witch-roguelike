@@ -44,8 +44,8 @@ export class Item extends Drawable {
     this.offsetY = -0.25;
   }
 
-  tick = () => {};
-  tickInInventory = () => {}; // different tick behavior for when we have the item in our inventory
+  tick = () => { };
+  tickInInventory = () => { }; // different tick behavior for when we have the item in our inventory
 
   getDescription = (): string => {
     return "";
@@ -80,10 +80,10 @@ export class Item extends Drawable {
         2,
         this.x + this.w * (this.scaleFactor * -0.5 + 0.5),
         this.y +
-          Math.sin(this.frame) * 0.07 -
-          1 +
-          this.offsetY +
-          this.h * (this.scaleFactor * -0.5 + 0.5),
+        Math.sin(this.frame) * 0.07 -
+        1 +
+        this.offsetY +
+        this.h * (this.scaleFactor * -0.5 + 0.5),
         this.w * this.scaleFactor,
         this.h * this.scaleFactor,
         this.level.shadeColor,
@@ -110,9 +110,9 @@ export class Item extends Drawable {
     Game.ctx.globalAlpha = 1;
 
     let countText = this.stackCount <= 1 ? "" : "" + this.stackCount;
-    let width = Game.ctx.measureText(countText).width;
-    let countX = 17 - width;
-    let countY = 4;
+    let width = Game.measureText(countText).width;
+    let countX = 16 - width;
+    let countY = 10;
 
     Game.ctx.fillStyle = "black";
     for (let xx = -1; xx <= 1; xx++) {

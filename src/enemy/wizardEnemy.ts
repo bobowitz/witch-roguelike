@@ -14,6 +14,8 @@ import { GreenGem } from "../item/greengem";
 import { Player } from "../player";
 import { Coin } from "../item/coin";
 import { BlueGem } from "../item/bluegem";
+import { Random } from "../random";
+import { Item } from "../item/item";
 
 enum WizardState {
   idle,
@@ -27,9 +29,10 @@ export class WizardEnemy extends Enemy {
   state: WizardState;
   frame: number;
   seenPlayer: boolean;
+  rand: () => number;
   readonly ATTACK_RADIUS = 5;
 
-  constructor(level: Level, game: Game, x: number, y: number) {
+  constructor(level: Level, game: Game, x: number, y: number, rand: () => number, drop?: Item) {
     super(level, game, x, y);
     this.ticks = 0;
     this.health = 1;
@@ -39,6 +42,13 @@ export class WizardEnemy extends Enemy {
     this.state = WizardState.attack;
     this.seenPlayer = false;
     this.deathParticleColor = "#ffffff";
+    this.rand = rand;
+
+    if (drop) this.drop = drop;
+    else {
+      if (this.rand() < 0.02) this.level.items.push(new BlueGem(this.level, this.x, this.y));
+      else this.level.items.push(new Coin(this.level, this.x, this.y));
+    }
   }
 
   hit = (): number => {
@@ -55,7 +65,7 @@ export class WizardEnemy extends Enemy {
   shuffle = a => {
     let j, x, i;
     for (i = a.length - 1; i > 0; i--) {
-      j = Math.floor(Math.random() * (i + 1));
+      j = Math.floor(this.rand() * (i + 1));
       x = a[i];
       a[i] = a[j];
       a[j] = x;
@@ -201,7 +211,6 @@ export class WizardEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    if (Math.random() < 0.02) this.level.items.push(new BlueGem(this.level, this.x, this.y));
-    else this.level.items.push(new Coin(this.level, this.x, this.y));
+
   };
 }

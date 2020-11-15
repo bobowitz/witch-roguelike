@@ -101,30 +101,27 @@ export class Player {
   }
 
   inputHandler = (input: InputEnum) => {
-    switch(input) {
+    switch (input) {
       case InputEnum.I:
         this.game.socket.emit('input', this.game.localPlayerID, input);
-        this.iListener();
         break;
       case InputEnum.Q:
         this.game.socket.emit('input', this.game.localPlayerID, input);
-        this.qListener();
         break;
       case InputEnum.LEFT:
-        if (this.leftListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
         break;
       case InputEnum.RIGHT:
-        if (this.rightListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
         break;
       case InputEnum.UP:
-        if (this.upListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
         break;
       case InputEnum.DOWN:
-        if (this.downListener(true)) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
         break;
       case InputEnum.SPACE:
         this.game.socket.emit('input', this.game.localPlayerID, input);
-        this.spaceListener();
         break;
     }
   };
@@ -139,6 +136,9 @@ export class Player {
     if (this.inventory.isOpen) {
       this.inventory.drop();
     }
+  };
+  ignoreDirectionInput = (): boolean => {
+    return !this.inventory.isOpen && (this.dead || this.game.levelState !== LevelState.IN_LEVEL);
   };
   leftListener = (isLocal: boolean): boolean => {
     if (this.inventory.isOpen) {
@@ -399,7 +399,7 @@ export class Player {
     this.drawY = 0;
   };
 
-  update = () => {};
+  update = () => { };
 
   finishTick = () => {
     this.inventory.tick();
@@ -478,17 +478,11 @@ export class Player {
       if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(this.maxHealth);
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
-      let gameOverString = "Game Over.";
-      Game.ctx.fillText(
+      let gameOverString = "Game Over";
+      Game.fillText(
         gameOverString,
-        GameConstants.WIDTH / 2 - Game.ctx.measureText(gameOverString).width / 2,
-        GameConstants.HEIGHT / 2
-      );
-      let refreshString = "[refresh to restart]";
-      Game.ctx.fillText(
-        refreshString,
-        GameConstants.WIDTH / 2 - Game.ctx.measureText(refreshString).width / 2,
-        GameConstants.HEIGHT / 2 + GameConstants.FONT_SIZE
+        GameConstants.WIDTH / 2 - Game.measureText(gameOverString).width / 2,
+        GameConstants.HEIGHT / 2 - Game.letter_height + 2
       );
     }
     if (Input.isDown(Input.M) || Input.isTapHold) {

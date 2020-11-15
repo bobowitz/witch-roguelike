@@ -231,10 +231,10 @@ export class Inventory {
     let line = "";
 
     while (words.length > 0) {
-      if (Game.ctx.measureText(line + words[0]).width > maxWidth) {
+      if (Game.measureText(line + words[0]).width > maxWidth) {
         Game.fillText(line, x, y);
         line = "";
-        y += 10;
+        y += 8;
       } else {
         if (line !== "") line += " ";
         line += words[0];
@@ -243,7 +243,7 @@ export class Inventory {
     }
     if (line !== " ") {
       Game.fillText(line, x, y);
-      y += 10;
+      y += 8;
     }
     return y;
   };
@@ -255,7 +255,7 @@ export class Inventory {
     Game.drawItem(19, 0, 1, 2, coinX, coinY - 1, 1, 2);
 
     let countText = "" + this.coins;
-    let width = Game.ctx.measureText(countText).width;
+    let width = Game.measureText(countText).width;
     let countX = 4 - width;
     let countY = -1;
 
@@ -319,8 +319,8 @@ export class Inventory {
       Game.ctx.fillRect(
         Math.round(0.5 * GameConstants.WIDTH - 0.5 * width + this.selX * (s + 2 * b + g)) - hg - ob,
         Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height + this.selY * (s + 2 * b + g)) -
-          hg -
-          ob,
+        hg -
+        ob,
         Math.round(s + 2 * b + 2 * hg) + 2 * ob,
         Math.round(s + 2 * b + 2 * hg) + 2 * ob
       );
@@ -359,19 +359,19 @@ export class Inventory {
 
           let drawX = Math.round(
             0.5 * GameConstants.WIDTH -
-              0.5 * width +
-              x * (s + 2 * b + g) +
-              b +
-              Math.floor(0.5 * s) -
-              0.5 * GameConstants.TILESIZE
+            0.5 * width +
+            x * (s + 2 * b + g) +
+            b +
+            Math.floor(0.5 * s) -
+            0.5 * GameConstants.TILESIZE
           );
           let drawY = Math.round(
             0.5 * GameConstants.HEIGHT -
-              0.5 * height +
-              y * (s + 2 * b + g) +
-              b +
-              Math.floor(0.5 * s) -
-              0.5 * GameConstants.TILESIZE
+            0.5 * height +
+            y * (s + 2 * b + g) +
+            b +
+            Math.floor(0.5 * s) -
+            0.5 * GameConstants.TILESIZE
           );
 
           let drawXScaled = drawX / GameConstants.TILESIZE;
@@ -417,19 +417,19 @@ export class Inventory {
 
         let drawX = Math.round(
           0.5 * GameConstants.WIDTH -
-            0.5 * width +
-            this.selX * (s + 2 * b + g) +
-            b +
-            Math.floor(0.5 * s) -
-            0.5 * GameConstants.TILESIZE
+          0.5 * width +
+          this.selX * (s + 2 * b + g) +
+          b +
+          Math.floor(0.5 * s) -
+          0.5 * GameConstants.TILESIZE
         );
         let drawY = Math.round(
           0.5 * GameConstants.HEIGHT -
-            0.5 * height +
-            this.selY * (s + 2 * b + g) +
-            b +
-            Math.floor(0.5 * s) -
-            0.5 * GameConstants.TILESIZE
+          0.5 * height +
+          this.selY * (s + 2 * b + g) +
+          b +
+          Math.floor(0.5 * s) -
+          0.5 * GameConstants.TILESIZE
         );
 
         let drawXScaled = drawX / GameConstants.TILESIZE;
@@ -441,22 +441,20 @@ export class Inventory {
       let i = this.selX + this.selY * this.cols;
 
       if (i < this.items.length) {
-        Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
         Game.ctx.fillStyle = "white";
 
         let topPhrase = "";
         if (this.items[i] instanceof Equippable) {
           let e = this.items[i] as Equippable;
           topPhrase = "[SPACE] to equip";
-          if (e.equipped) topPhrase = "[SPACE] to de-equip";
+          if (e.equipped) topPhrase = "[SPACE] to unequip";
         }
         if (this.items[i] instanceof Usable) {
           topPhrase = "[SPACE] to use";
         }
 
-        Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
         Game.ctx.fillStyle = "white";
-        let w = Game.ctx.measureText(topPhrase).width;
+        let w = Game.measureText(topPhrase).width;
         Game.fillText(topPhrase, 0.5 * (GameConstants.WIDTH - w), 5);
 
         let lines = this.items[i].getDescription().split("\n");
@@ -464,9 +462,8 @@ export class Inventory {
           0.5 * GameConstants.HEIGHT - 0.5 * height + this.rows * (s + 2 * b + g) + b + 2
         );
         for (let j = 0; j < lines.length; j++) {
-          nextY = this.textWrap(lines[j], 5, nextY, GameConstants.WIDTH - 5);
+          nextY = this.textWrap(lines[j], 5, nextY, GameConstants.WIDTH - 10);
         }
-        Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
       }
     }
   };

@@ -16,21 +16,21 @@ export class Shotgun extends Weapon {
   }
 
   weaponMove = (newX: number, newY: number): boolean => {
-    /*let newX2 = 2 * newX - this.game.player.x;
-    let newY2 = 2 * newY - this.game.player.y;
-    let newX3 = 3 * newX - 2 * this.game.player.x;
-    let newY3 = 3 * newY - 2 * this.game.player.y;
+    let newX2 = 2 * newX - this.wielder.x;
+    let newY2 = 2 * newY - this.wielder.y;
+    let newX3 = 3 * newX - 2 * this.wielder.x;
+    let newY3 = 3 * newY - 2 * this.wielder.y;
     let range = 3;
-    if (!this.game.level.tileInside(newX, newY) || this.game.level.levelArray[newX][newY].isSolid())
+    if (!this.game.levels[this.wielder.levelID].tileInside(newX, newY) || this.game.levels[this.wielder.levelID].levelArray[newX][newY].isSolid())
       return true;
     else if (
-      !this.game.level.tileInside(newX2, newY2) ||
-      this.game.level.levelArray[newX2][newY2].isSolid()
+      !this.game.levels[this.wielder.levelID].tileInside(newX2, newY2) ||
+      this.game.levels[this.wielder.levelID].levelArray[newX2][newY2].isSolid()
     )
       range = 1;
     else if (
-      !this.game.level.tileInside(newX3, newY3) ||
-      this.game.level.levelArray[newX3][newY3].isSolid()
+      !this.game.levels[this.wielder.levelID].tileInside(newX3, newY3) ||
+      this.game.levels[this.wielder.levelID].levelArray[newX3][newY3].isSolid()
     )
       range = 2;
 
@@ -38,7 +38,7 @@ export class Shotgun extends Weapon {
     let firstPushable = 4;
     let firstNonPushable = 5;
     let firstNonDestroyable = 5;
-    for (let e of this.game.level.enemies) {
+    for (let e of this.game.levels[this.wielder.levelID].enemies) {
       if (e.pushable) {
         if (e.x === newX && e.y === newY) return true;
         if (e.x === newX2 && e.y === newY2 && range >= 2) {
@@ -83,33 +83,33 @@ export class Shotgun extends Weapon {
       for (const c of enemyHitCandidates) {
         let e = c.enemy;
         let d = c.dist;
-        if (d === 3) e.hurt(0.5);
-        else e.hurt(1);
+        if (d === 3) e.hurt(this.wielder, 0.5);
+        else e.hurt(this.wielder, 1);
       }
 
       if (this.wielder.game.levels[this.wielder.levelID] === this.wielder.game.level) Sound.hit();
-      this.game.player.drawX = 0.5 * (this.game.player.x - newX);
-      this.game.player.drawY = 0.5 * (this.game.player.y - newY);
+      this.wielder.drawX = 0.5 * (this.wielder.x - newX);
+      this.wielder.drawY = 0.5 * (this.wielder.y - newY);
       GenericParticle.shotgun(
-        this.game.level,
-        this.game.player.x + 0.5,
-        this.game.player.y,
+        this.game.levels[this.wielder.levelID],
+        this.wielder.x + 0.5,
+        this.wielder.y,
         targetX + 0.5,
         targetY,
         "black"
       );
       GenericParticle.shotgun(
-        this.game.level,
-        this.game.player.x + 0.5,
-        this.game.player.y,
+        this.game.levels[this.wielder.levelID],
+        this.wielder.x + 0.5,
+        this.wielder.y,
         targetX + 0.5,
         targetY,
         "#ffddff"
       );
       let gp = new GenericParticle(
-        this.game.level,
-        0.5 * (newX + this.game.player.x) + 0.5,
-        0.5 * (newY + this.game.player.y),
+        this.game.levels[this.wielder.levelID],
+        0.5 * (newX + this.wielder.x) + 0.5,
+        0.5 * (newY + this.wielder.y),
         0,
         1,
         0,
@@ -119,16 +119,16 @@ export class Shotgun extends Weapon {
         0
       );
       gp.expirationTimer = 10;
-      this.game.level.particles.push(gp);
-      //this.game.level.particles.push(new SlashParticle(newX, newY));
-      //this.game.level.particles.push(new SlashParticle(newX2, newY2));
-      //this.game.level.particles.push(new SlashParticle(newX3, newY3));
-      this.game.level.tick();
-      this.game.shakeScreen(10 * this.game.player.drawX, 10 * this.game.player.drawY);
+      this.game.levels[this.wielder.levelID].particles.push(gp);
+      //this.game.levels[this.wielder.levelID].particles.push(new SlashParticle(newX, newY));
+      //this.game.levels[this.wielder.levelID].particles.push(new SlashParticle(newX2, newY2));
+      //this.game.levels[this.wielder.levelID].particles.push(new SlashParticle(newX3, newY3));
+      this.game.levels[this.wielder.levelID].tick(this.wielder);
+      if (this.wielder === this.game.players[this.game.localPlayerID])
+        this.game.shakeScreen(10 * this.wielder.drawX, 10 * this.wielder.drawY);
 
       return false;
     }
-    return true;*/
     return true;
   };
 

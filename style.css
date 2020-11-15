@@ -18,6 +18,7 @@ body {
   margin: 0;
   overscroll-behavior-y: contain;
   touch-action: none;
+  filter: none;
 }
 
 html {
@@ -32,7 +33,7 @@ html {
 
 @font-face {
   font-family: Script;
-  src: url("./res/Typecast.ttf");
+  src: url("./res/CWEBL.ttf");
 }
 
 .center-text {

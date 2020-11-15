@@ -22,8 +22,9 @@ export class Spawner extends Enemy {
   ticks: number;
   seenPlayer: boolean;
   enemySpawnType: number;
+  rand: () => number;
 
-  constructor(level: Level, game: Game, x: number, y: number) {
+  constructor(level: Level, game: Game, x: number, y: number, rand: () => number) {
     super(level, game, x, y);
     this.ticks = 0;
     this.health = 4;
@@ -33,6 +34,8 @@ export class Spawner extends Enemy {
     this.seenPlayer = true;
     this.enemySpawnType = Game.randTable([1, 1, 1, 2, 2, 2, 2, 3]);
     this.deathParticleColor = "#ffffff";
+
+    this.rand = rand;
   }
 
   hit = (): number => {
@@ -65,10 +68,10 @@ export class Spawner extends Enemy {
               spawned = new KnightEnemy(this.level, this.game, spawnX, spawnY);
               break;
             case 2:
-              spawned = new SkullEnemy(this.level, this.game, spawnX, spawnY);
+              spawned = new SkullEnemy(this.level, this.game, spawnX, spawnY, this.rand);
               break;
             case 3:
-              spawned = new WizardEnemy(this.level, this.game, spawnX, spawnY);
+              spawned = new WizardEnemy(this.level, this.game, spawnX, spawnY, this.rand);
               break;
           }
           this.level.projectiles.push(

@@ -46,9 +46,6 @@ export class KnightEnemy extends Enemy {
         this.skipNextTurns--;
         return;
       }
-      this.ticks++;
-      this.tileX = 9;
-      this.tileY = 8;
       if (!this.seenPlayer) {
         const result = this.nearestPlayer();
         if (result !== false) {
@@ -59,7 +56,10 @@ export class KnightEnemy extends Enemy {
           }
         }
       }
-      if (this.seenPlayer) {
+      if (this.seenPlayer && this.level.playerTicked === this.targetPlayer) {
+        this.ticks++;
+        this.tileX = 9;
+        this.tileY = 8;
         if (this.ticks % 2 === 0) {
           this.tileX = 4;
           this.tileY = 0;
@@ -129,7 +129,6 @@ export class KnightEnemy extends Enemy {
     if (!this.dead) {
       this.frame += 0.1;
       if (this.frame >= 4) this.frame = 0;
-      if (this.doneMoving() && this.game.players[this.game.localPlayerID].doneMoving()) this.facePlayer();
       if (this.hasShadow)
         Game.drawMob(
           0,

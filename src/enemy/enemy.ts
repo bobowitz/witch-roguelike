@@ -8,6 +8,7 @@ import { Floor } from "../tile/floor";
 import { GenericParticle } from "../particle/genericParticle";
 import { HealthBar } from "../healthbar";
 import { Drawable } from "../drawable";
+import { Item } from "../item/item";
 
 export enum EnemyDirection {
   DOWN = 0,
@@ -40,6 +41,7 @@ export class Enemy extends Drawable {
   interactable: boolean; // can the player interact
   deathParticleColor: string;
   healthBar: HealthBar;
+  drop: Item;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super();
@@ -87,7 +89,7 @@ export class Enemy extends Drawable {
     return 0;
   };
 
-  hurtCallback = () => {};
+  hurtCallback = () => { };
 
   hurt = (playerHitBy: Player, damage: number) => {
     this.healthBar.hurt();
@@ -97,9 +99,9 @@ export class Enemy extends Drawable {
     else this.hurtCallback();
   };
 
-  interact = () => {};
+  interact = () => { };
 
-  dropLoot = () => {};
+  dropLoot = () => { };
 
   kill = () => {
     if (this.level.levelArray[this.x][this.y] instanceof Floor) {
@@ -201,7 +203,7 @@ export class Enemy extends Drawable {
       );
     }
   };
-  tick = () => {};
+  tick = () => { };
   drawTopLayer = () => {
     this.drawableY = this.y - this.drawY;
 

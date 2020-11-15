@@ -407,15 +407,15 @@ export class Level {
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
             break;
           case 2:
-            let s = new SkullEnemy(this, this.game, x, y);
+            let s = new SkullEnemy(this, this.game, x, y, rand);
             s.skipNextTurns = 1;
             this.enemies.push(s);
             break;
           case 3:
-            this.enemies.push(new WizardEnemy(this, this.game, x, y));
+            this.enemies.push(new WizardEnemy(this, this.game, x, y, rand));
             break;
           case 4:
-            this.enemies.push(new Spawner(this, this.game, x, y));
+            this.enemies.push(new Spawner(this, this.game, x, y, rand));
             break;
           case 5:
             this.enemies.push(new ChargeEnemy(this, this.game, x, y));
@@ -525,7 +525,8 @@ export class Level {
         this,
         this.game,
         Math.floor(this.roomX + this.width / 2),
-        Math.floor(this.roomY + this.height / 2)
+        Math.floor(this.roomY + this.height / 2),
+        rand
       )
     );
   };
@@ -1254,7 +1255,7 @@ export class Level {
 
     this.projectiles = this.projectiles.filter(p => !p.dead);
     this.particles = this.particles.filter(p => !p.dead);
-    
+
     let drawables = new Array<Drawable>();
     drawables = drawables.concat(this.enemies, this.projectiles, this.particles, this.items);
     drawables.sort((a, b) => {
@@ -1345,8 +1346,8 @@ export class Level {
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
     Game.fillText(
       this.message,
-      GameConstants.WIDTH / 2 - Game.ctx.measureText(this.name).width / 2,
-      1
+      GameConstants.WIDTH / 2 - Game.measureText(this.name).width / 2,
+      5
     );
     Game.ctx.font = old;
   };

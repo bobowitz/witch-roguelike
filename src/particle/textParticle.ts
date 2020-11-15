@@ -45,7 +45,7 @@ export class TextParticle extends Particle {
       this.time++;
       if (this.time > GameConstants.FPS * TIMEOUT) this.dead = true;
 
-      let width = Game.ctx.measureText(this.text).width;
+      let width = Game.measureText(this.text).width;
 
       for (let xx = -1; xx <= 1; xx++) {
         for (let yy = -1; yy <= 1; yy++) {

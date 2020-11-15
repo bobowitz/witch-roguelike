@@ -64,7 +64,7 @@ class Room {
     return this.doors;
   };
 
-  generateAroundPoint = (rand, p, dir, w?, h?, ) => {
+  generateAroundPoint = (rand, p, dir, w?, h?,) => {
     this.x = 0;
     this.y = 0;
     if (w) {
@@ -220,8 +220,8 @@ export class LevelGenerator {
         } else {
           r.x = -2;
           r.y = -2;
-          r.w = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
-          r.h = 7; //ROOM_SIZE[Math.floor(Math.random() * ROOM_SIZE.length)];
+          r.w = 7;
+          r.h = 7;
           if (thisNode.type === RoomType.UPLADDER) {
             r.w = 5;
             r.h = 5;
@@ -266,7 +266,7 @@ export class LevelGenerator {
 
   generate = (game: Game, depth: number, cave = false) => {
     let rand = Random.sfc32(this.seed(), this.seed(), this.seed(), this.seed());
-    
+
     let d = depth;
     let node;
     if (cave) {
