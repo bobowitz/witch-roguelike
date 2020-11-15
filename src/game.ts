@@ -60,7 +60,9 @@ export class Game {
   };
 
   constructor() {
+    console.log("pogchamp1");
     window.addEventListener("load", () => {
+      console.log("pogchamp2");
       this.socket = io("ws://witch-roguelike-server.herokuapp.com", {'transports' : ['websocket']});
       this.socket.on('popup', function(msg){
           console.log("hello: ", msg)
