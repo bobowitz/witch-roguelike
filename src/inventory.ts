@@ -130,6 +130,7 @@ export class Inventory {
       this.items[i].level = this.game.levels[this.player.levelID];
       this.items[i].x = this.player.x;
       this.items[i].y = this.player.y;
+      this.items[i].pickedUp = false;
       this.game.levels[this.player.levelID].items.push(this.items[i]);
       this.items.splice(i, 1);
     }
