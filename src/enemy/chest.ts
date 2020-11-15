@@ -12,12 +12,16 @@ import { Coin } from "../item/coin";
 import { Sound } from "../sound";
 
 export class Chest extends Enemy {
-  constructor(level: Level, game: Game, x: number, y: number) {
+  rand: () => number;
+
+  constructor(level: Level, game: Game, x: number, y: number, rand: () => number) {
     super(level, game, x, y);
 
     this.tileX = 4;
     this.tileY = 0;
     this.health = 1;
+
+    this.rand = rand;
   }
 
   kill = () => {
@@ -28,7 +32,7 @@ export class Chest extends Enemy {
 
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#fbf236");
 
-    let drop = Game.randTable([1, 1, 1, 2, 2, 3]);
+    let drop = Game.randTable([1, 1, 1, 2, 2, 3], this.rand);
 
     switch (drop) {
       case 1:

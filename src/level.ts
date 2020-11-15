@@ -363,7 +363,7 @@ export class Level {
       t = tiles.splice(Game.rand(0, tiles.length - 1, rand), 1)[0];
       x = t.x;
       y = t.y;
-      this.enemies.push(new Chest(this, this.game, x, y));
+      this.enemies.push(new Chest(this, this.game, x, y, rand));
     }
   }
 
@@ -732,10 +732,10 @@ export class Level {
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
-    this.enemies.push(new VendingMachine(this, this.game, cX - 2, cY - 1, new Shotgun(this, 0, 0)));
-    this.enemies.push(new VendingMachine(this, this.game, cX + 2, cY - 1, new Heart(this, 0, 0)));
-    this.enemies.push(new VendingMachine(this, this.game, cX - 2, cY + 2, new Armor(this, 0, 0)));
-    this.enemies.push(new VendingMachine(this, this.game, cX + 2, cY + 2, new Spear(this, 0, 0)));
+    this.enemies.push(new VendingMachine(this, this.game, cX - 2, cY - 1, new Shotgun(this, 0, 0), rand));
+    this.enemies.push(new VendingMachine(this, this.game, cX + 2, cY - 1, new Heart(this, 0, 0), rand));
+    this.enemies.push(new VendingMachine(this, this.game, cX - 2, cY + 2, new Armor(this, 0, 0), rand));
+    this.enemies.push(new VendingMachine(this, this.game, cX + 2, cY + 2, new Spear(this, 0, 0), rand));
   };
 
   constructor(

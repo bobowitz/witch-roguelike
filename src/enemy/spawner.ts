@@ -32,7 +32,7 @@ export class Spawner extends Enemy {
     this.tileX = 6;
     this.tileY = 4;
     this.seenPlayer = true;
-    this.enemySpawnType = Game.randTable([1, 1, 1, 2, 2, 2, 2, 3]);
+    this.enemySpawnType = Game.randTable([1, 1, 1, 2, 2, 2, 2, 3], rand);
     this.deathParticleColor = "#ffffff";
 
     this.rand = rand;

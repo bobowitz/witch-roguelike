@@ -203,6 +203,8 @@ export class SkullEnemy extends Enemy {
   };
 
   dropLoot = () => {
-
+    this.drop.x = this.x;
+    this.drop.y = this.y;
+    this.level.items.push(this.drop);
   };
 }

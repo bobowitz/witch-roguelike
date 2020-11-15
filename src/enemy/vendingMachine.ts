@@ -14,6 +14,7 @@ import { Armor } from "../item/armor";
 import { Heart } from "../item/heart";
 import { Spear } from "../weapon/spear";
 import { Gold } from "../item/gold";
+import { BlueGem } from "../item/bluegem";
 
 let OPEN_TIME = 150;
 let FILL_COLOR = "#5a595b";
@@ -28,9 +29,12 @@ export class VendingMachine extends Enemy {
   isInf = false;
   quantity = 1;
   buyAnimAmount = 0;
+  rand: () => number;
 
-  constructor(level: Level, game: Game, x: number, y: number, item: Item) {
+  constructor(level: Level, game: Game, x: number, y: number, item: Item, rand: () => number) {
     super(level, game, x, y);
+
+    this.rand = rand;
 
     this.destroyable = false;
     this.pushable = false;
@@ -39,8 +43,8 @@ export class VendingMachine extends Enemy {
 
     this.item = item;
     if (this.item instanceof Shotgun) {
-      let g = new GreenGem(level, 0, 0);
-      g.stackCount = Game.randTable([5, 5, 6, 7]);
+      let g = new BlueGem(level, 0, 0);
+      g.stackCount = Game.randTable([5, 5, 6, 7], this.rand);
       this.costItems = [g];
     } else if (this.item instanceof Heart) {
       let c = new Coin(level, 0, 0);
@@ -49,11 +53,11 @@ export class VendingMachine extends Enemy {
       this.isInf = true;
     } else if (this.item instanceof Spear) {
       let g = new GreenGem(level, 0, 0);
-      g.stackCount = Game.randTable([5, 5, 6, 7]);
+      g.stackCount = Game.randTable([5, 5, 6, 7], this.rand);
       this.costItems = [g];
     } else if (this.item instanceof Armor) {
       let g = new Gold(level, 0, 0);
-      g.stackCount = Game.randTable([5, 5, 6, 7]);
+      g.stackCount = Game.randTable([5, 5, 6, 7], this.rand);
       this.costItems = [g];
     }
   }
@@ -91,7 +95,7 @@ export class VendingMachine extends Enemy {
         i = Game.rand(0, xs.length - 1);
       } while (xs[i] === this.game.players[this.game.localPlayerID].x && ys[i] === this.game.players[this.game.localPlayerID].y);
 
-      let newItem = new (this.item.constructor as { new (): Item })();
+      let newItem = new (this.item.constructor as { new(): Item })();
       newItem = newItem.constructor(this.level, xs[i], ys[i]);
       this.level.items.push(newItem);
 
@@ -169,11 +173,11 @@ export class VendingMachine extends Enemy {
         for (let i = 0; i < this.costItems.length + 2; i++) {
           let drawX = Math.round(
             cx -
-              0.5 * width +
-              i * (s + 2 * b + g) +
-              b +
-              Math.floor(0.5 * s) -
-              0.5 * GameConstants.TILESIZE
+            0.5 * width +
+            i * (s + 2 * b + g) +
+            b +
+            Math.floor(0.5 * s) -
+            0.5 * GameConstants.TILESIZE
           );
           let drawY = Math.round(
             cy - 0.5 * height + b + Math.floor(0.5 * s) - 0.5 * GameConstants.TILESIZE

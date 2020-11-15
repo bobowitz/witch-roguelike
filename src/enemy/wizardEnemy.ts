@@ -46,8 +46,8 @@ export class WizardEnemy extends Enemy {
 
     if (drop) this.drop = drop;
     else {
-      if (this.rand() < 0.02) this.level.items.push(new BlueGem(this.level, this.x, this.y));
-      else this.level.items.push(new Coin(this.level, this.x, this.y));
+      if (this.rand() < 0.02) this.drop = new BlueGem(this.level, this.x, this.y);
+      else this.drop = new Coin(this.level, this.x, this.y);
     }
   }
 
@@ -121,7 +121,7 @@ export class WizardEnemy extends Enemy {
             let min = 100000;
             let bestPos;
             let emptyTiles = this.shuffle(this.level.getEmptyTiles());
-            let optimalDist = Game.randTable([2, 2, 3, 3, 3, 3, 3]);
+            let optimalDist = Game.randTable([2, 2, 3, 3, 3, 3, 3], this.rand);
             for (let t of emptyTiles) {
               let newPos = t;
               let dist =
@@ -211,6 +211,8 @@ export class WizardEnemy extends Enemy {
   };
 
   dropLoot = () => {
-
+    this.drop.x = this.x;
+    this.drop.y = this.y;
+    this.level.items.push(this.drop);
   };
 }

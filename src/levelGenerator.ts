@@ -273,8 +273,7 @@ export class LevelGenerator {
       node = new N(RoomType.ROPECAVE, d, [
         new N(RoomType.BIGCAVE, d, [
           new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
-          new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
-          new N(RoomType.CAVE, d, [new N(RoomType.CAVE, d, [])]),
+          new N(RoomType.CAVE, d, []),
           new N(RoomType.CAVE, d, []),
         ]),
       ]);
@@ -285,18 +284,17 @@ export class LevelGenerator {
         node = new N(RoomType.UPLADDER, d, [
           new N(RoomType.DUNGEON, d, [
             new N(RoomType.DUNGEON, d, [
-              new N(RoomType.DUNGEON, d, [
-                new N(RoomType.DUNGEON, d, [new N(RoomType.TREASURE, d, [])]),
-              ]),
+              new N(RoomType.DUNGEON, d, [new N(RoomType.TREASURE, d, [])]),
             ]),
           ]),
           new N(RoomType.DUNGEON, d, [
             new N(RoomType.DUNGEON, d, [
-              new N(RoomType.DUNGEON, d, [
-                new N(RoomType.DUNGEON, d, [
-                  new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])]),
-                ]),
-              ]),
+              new N(RoomType.DUNGEON, d, [new N(RoomType.TREASURE, d, [])]),
+            ]),
+          ]),
+          new N(RoomType.DUNGEON, d, [
+            new N(RoomType.DUNGEON, d, [
+              new N(RoomType.DUNGEON, d, [new N(RoomType.DOWNLADDER, d, [])]),
             ]),
           ]),
           new N(RoomType.ROPEHOLE, d, []),
