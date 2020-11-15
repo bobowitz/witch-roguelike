@@ -126,11 +126,13 @@ export class Inventory {
   };
   drop = () => {
     let i = this.selX + this.selY * this.cols;
-    this.items[i].level = this.game.levels[this.player.levelID];
-    this.items[i].x = this.player.x;
-    this.items[i].y = this.player.y;
-    this.game.levels[this.player.levelID].items.push(this.items[i]);
-    this.items.splice(i, 1);
+    if (i < this.items.length) {
+      this.items[i].level = this.game.levels[this.player.levelID];
+      this.items[i].x = this.player.x;
+      this.items[i].y = this.player.y;
+      this.game.levels[this.player.levelID].items.push(this.items[i]);
+      this.items.splice(i, 1);
+    }
   };
 
   hasItem = (itemType: any): Item => {
