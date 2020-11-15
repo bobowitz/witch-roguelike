@@ -62,6 +62,18 @@ export class Game {
   constructor() {
     window.addEventListener("load", () => {
       this.socket = io("ws://witch-roguelike-server.herokuapp.com", {'transports' : ['websocket']});
+      this.socket.on('popup', function(msg){
+          console.log("hello: ", msg)
+      });
+      this.socket.on('connection', function() {
+          console.log("client connected");
+      });
+      this.socket.on('connect_error', function(err) {
+          console.log("client connect_error: ", err);
+      });
+      this.socket.on('connect_timeout', function(err) {
+          console.log("client connect_timeout: ", err);
+      });
       this.socket.on('welcome', (seed: string, pid: number) => {
         this.localPlayerID = pid;
         this.players = {};
