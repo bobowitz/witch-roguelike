@@ -61,7 +61,7 @@ export class Game {
 
   constructor() {
     window.addEventListener("load", () => {
-      this.socket = io("http://192.168.1.194:3000", {'transports' : ['websocket']});
+      this.socket = io("ws://witch-roguelike-server.herokuapp.com", {'transports' : ['websocket']});
       this.socket.on('welcome', (seed: string, pid: number) => {
         this.localPlayerID = pid;
         this.players = {};
