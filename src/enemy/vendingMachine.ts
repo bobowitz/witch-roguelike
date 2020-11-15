@@ -99,8 +99,6 @@ export class VendingMachine extends Enemy {
       newItem = newItem.constructor(this.level, xs[i], ys[i]);
       this.level.items.push(newItem);
 
-      console.log(newItem);
-
       if (!this.isInf) {
         this.quantity--;
         if (this.quantity <= 0) this.close();

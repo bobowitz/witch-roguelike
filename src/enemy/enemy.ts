@@ -75,8 +75,10 @@ export class Enemy extends Drawable {
         return;
       }
     }
-    if (this.game.players[this.game.localPlayerID].x === x && this.game.players[this.game.localPlayerID].y === y) {
-      return;
+    for (const i in this.game.players) {
+      if (this.game.players[i].x === x && this.game.players[i].y === y) {
+        return;
+      }
     }
     if (!this.level.levelArray[x][y].isSolid()) {
       this.level.levelArray[x][y].onCollideEnemy(this);

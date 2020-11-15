@@ -126,9 +126,9 @@ export class SkullEnemy extends Enemy {
               this.game.players[i].hurt(this.hit());
               this.dx = 0;
               this.dy = 0;
-              this.drawX = 0.5 * (this.x - this.game.players[this.game.localPlayerID].x);
-              this.drawY = 0.5 * (this.y - this.game.players[this.game.localPlayerID].y);
-              if (this.game.players[i] === this.game.players[this.game.localPlayerID])
+              this.drawX = 0.5 * (this.x - this.game.players[i].x);
+              this.drawY = 0.5 * (this.y - this.game.players[i].y);
+              if (this.game.players[i] === this.game.players[i])
                 this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
             }
           }
