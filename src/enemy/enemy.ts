@@ -101,7 +101,7 @@ export class Enemy extends Drawable {
     else this.hurtCallback();
   };
 
-  interact = () => { };
+  interact = (player: Player) => { };
 
   dropLoot = () => { };
 

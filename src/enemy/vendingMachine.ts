@@ -22,6 +22,7 @@ let OUTLINE_COLOR = "#292c36";
 let FULL_OUTLINE = "white";
 
 export class VendingMachine extends Enemy {
+  playerOpened: Player;
   open = false;
   openTime = 0;
   costItems: Array<Item>;
@@ -62,38 +63,40 @@ export class VendingMachine extends Enemy {
     }
   }
 
-  interact = () => {
+  interact = (player: Player) => {
     if (this.isInf || this.quantity > 0) {
+      if (this.open) this.playerOpened.openVendingMachine = null;
       this.open = true;
+      this.playerOpened = player;
       this.openTime = Date.now();
-      if (this.game.players[this.game.localPlayerID].openVendingMachine && this.game.players[this.game.localPlayerID].openVendingMachine !== this)
-        this.game.players[this.game.localPlayerID].openVendingMachine.close();
-      this.game.players[this.game.localPlayerID].openVendingMachine = this;
+      if (this.playerOpened.openVendingMachine && this.playerOpened.openVendingMachine !== this)
+        this.playerOpened.openVendingMachine.close();
+      this.playerOpened.openVendingMachine = this;
     }
   };
 
   close = () => {
     this.open = false;
-    this.game.players[this.game.localPlayerID].openVendingMachine = null;
+    this.playerOpened.openVendingMachine = null;
   };
 
   space = () => {
     if (this.open) {
       // check if player can pay
       for (const i of this.costItems) {
-        if (!this.game.players[this.game.localPlayerID].inventory.hasItemCount(i)) return;
+        if (!this.playerOpened.inventory.hasItemCount(i)) return;
       }
 
       for (const i of this.costItems) {
-        this.game.players[this.game.localPlayerID].inventory.subtractItemCount(i);
+        this.playerOpened.inventory.subtractItemCount(i);
       }
 
       let xs = [this.x - 1, this.x + 1, this.x];
       let ys = [this.y, this.y, this.y + 1];
       let i = 0;
       do {
-        i = Game.rand(0, xs.length - 1);
-      } while (xs[i] === this.game.players[this.game.localPlayerID].x && ys[i] === this.game.players[this.game.localPlayerID].y);
+        i = Game.rand(0, xs.length - 1, this.rand);
+      } while (xs[i] === this.playerOpened.x && ys[i] === this.playerOpened.y);
 
       let newItem = new (this.item.constructor as { new(): Item })();
       newItem = newItem.constructor(this.level, xs[i], ys[i]);
@@ -105,7 +108,7 @@ export class VendingMachine extends Enemy {
       }
 
       this.buyAnimAmount = 0.99;
-      this.game.shakeScreen(0, 4);
+      if (this.playerOpened === this.game.players[this.game.localPlayerID]) this.game.shakeScreen(0, 4);
     }
   };
 
@@ -129,7 +132,7 @@ export class VendingMachine extends Enemy {
   drawTopLayer = () => {
     this.drawableY = this.y - this.drawY;
 
-    if (this.open) {
+    if (this.open && this.playerOpened === this.game.players[this.game.localPlayerID]) {
       let s = Math.min(18, (18 * (Date.now() - this.openTime)) / OPEN_TIME); // size of box
       let b = 2; // border
       let g = -2; // gap
@@ -186,7 +189,7 @@ export class VendingMachine extends Enemy {
 
           if (i < this.costItems.length) {
             let a = 1;
-            if (!this.game.players[this.game.localPlayerID].inventory.hasItemCount(this.costItems[i])) a = 0.15;
+            if (!this.playerOpened.inventory.hasItemCount(this.costItems[i])) a = 0.15;
             this.costItems[i].drawIcon(drawXScaled, drawYScaled, a);
           } else if (i === this.costItems.length) {
             Game.drawFX(0, 1, 1, 1, drawXScaled, drawYScaled, 1, 1);

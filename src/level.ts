@@ -401,7 +401,7 @@ export class Level {
       let x = t.x;
       let y = t.y;
       if (this.depth !== 0) {
-        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 4, 4], rand));
+        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3, 3, 4, 4], rand));
         switch (d) {
           case 1:
             this.enemies.push(new KnightEnemy(this, this.game, x, y));
@@ -1213,7 +1213,7 @@ export class Level {
     for (const p of this.projectiles) {
       if (this.levelArray[p.x][p.y].isSolid()) p.dead = true;
       for (const i in this.game.players) {
-        if (p.x === this.game.players[i].x && p.y === this.game.players[i].y) {
+        if (this.game.levels[this.game.players[i].levelID] === this && p.x === this.game.players[i].x && p.y === this.game.players[i].y) {
           p.hitPlayer(this.game.players[i]);
         }
       }

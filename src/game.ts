@@ -52,8 +52,8 @@ export class Game {
   static fontsheet: HTMLImageElement;
 
   static text_rendering_canvas = null;
-  static readonly letters = "abcdefghijklmnopqrstuvwxyz1234567890,.!?:''()%";
-  static readonly letter_widths = [4, 4, 4, 4, 3, 3, 4, 4, 1, 4, 4, 3, 5, 5, 4, 4, 4, 4, 4, 3, 4, 5, 5, 5, 5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 1, 4, 1, 1, 2, 2, 5];
+  static readonly letters = "abcdefghijklmnopqrstuvwxyz1234567890,.!?:'()%-";
+  static readonly letter_widths = [4, 4, 4, 4, 3, 3, 4, 4, 1, 4, 4, 3, 5, 5, 4, 4, 4, 4, 4, 3, 4, 5, 5, 5, 5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 1, 4, 1, 1, 2, 2, 5, 3];
   static readonly letter_height = 6;
   static letter_positions = [];
 

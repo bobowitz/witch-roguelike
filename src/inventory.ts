@@ -57,6 +57,7 @@ export class Inventory {
     this.openTime = Date.now();
 
     this.weapon = null;
+    this.coins = 1000;
 
     let a = (i: Item) => {
       if (i instanceof Weapon) i.setWielder(this.player);
@@ -127,6 +128,7 @@ export class Inventory {
   drop = () => {
     let i = this.selX + this.selY * this.cols;
     if (i < this.items.length) {
+      if (this.items[i] instanceof Equippable) (this.items[i] as Equippable).equipped = false;
       this.items[i].level = this.game.levels[this.player.levelID];
       this.items[i].x = this.player.x;
       this.items[i].y = this.player.y;

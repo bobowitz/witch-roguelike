@@ -56,10 +56,14 @@ export class WizardEnemy extends Enemy {
   };
 
   withinAttackingRangeOfPlayer = (): boolean => {
-    return (
-      (this.x - this.game.players[this.game.localPlayerID].x) ** 2 + (this.y - this.game.players[this.game.localPlayerID].y) ** 2 <=
-      this.ATTACK_RADIUS ** 2
-    );
+    let withinRange = false;
+    for (const i in this.game.players) {
+      if ((this.x - this.game.players[i].x) ** 2 + (this.y - this.game.players[i].y) ** 2 <=
+        this.ATTACK_RADIUS ** 2) {
+        withinRange = true;
+      }
+    }
+    return withinRange;
   };
 
   shuffle = a => {
@@ -80,8 +84,16 @@ export class WizardEnemy extends Enemy {
         this.skipNextTurns--;
         return;
       }
-      if (this.seenPlayer || this.seesPlayer()) {
-        this.seenPlayer = true;
+      if (!this.seenPlayer) {
+        let p = this.nearestPlayer();
+        if (p !== false) {
+          let [distance, player] = p;
+          if (distance <= 4) {
+            this.seenPlayer = true;
+          }
+        }
+      }
+      if (this.seenPlayer) {
         switch (this.state) {
           case WizardState.attack:
             this.tileX = 7;
@@ -122,10 +134,14 @@ export class WizardEnemy extends Enemy {
             let bestPos;
             let emptyTiles = this.shuffle(this.level.getEmptyTiles());
             let optimalDist = Game.randTable([2, 2, 3, 3, 3, 3, 3], this.rand);
+            // pick a random player to target
+            let player_ids = [];
+            for (const i in this.game.players) player_ids.push(i);
+            let target_player_id = Game.randTable(player_ids, this.rand);
             for (let t of emptyTiles) {
               let newPos = t;
               let dist =
-                Math.abs(newPos.x - this.game.players[this.game.localPlayerID].x) + Math.abs(newPos.y - this.game.players[this.game.localPlayerID].y);
+                Math.abs(newPos.x - this.game.players[target_player_id].x) + Math.abs(newPos.y - this.game.players[target_player_id].y);
               if (Math.abs(dist - optimalDist) < Math.abs(min - optimalDist)) {
                 min = dist;
                 bestPos = newPos;

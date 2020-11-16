@@ -32,7 +32,7 @@ export class Spawner extends Enemy {
     this.tileX = 6;
     this.tileY = 4;
     this.seenPlayer = true;
-    this.enemySpawnType = Game.randTable([1, 1, 1, 2, 2, 2, 2], rand);
+    this.enemySpawnType = Game.randTable([1, 1, 1, 2, 2, 2, 2, 3], rand);
     this.deathParticleColor = "#ffffff";
 
     this.rand = rand;
@@ -49,14 +49,21 @@ export class Spawner extends Enemy {
         return;
       }
       this.tileX = 6;
-      if (this.seenPlayer || this.level.softVis[this.x][this.y] > 0) {
-        if (this.ticks % 4 === 0) {
+      if (!this.seenPlayer) {
+        let p = this.nearestPlayer();
+        if (p !== false) {
+          let [distance, player] = p;
+          if (distance <= 12) {
+            this.seenPlayer = true;
+          }
+        }
+      }
+      if (this.seenPlayer) {
+        if (this.ticks % 8 === 0) {
           this.tileX = 7;
 
-          this.seenPlayer = true;
-
           let positions = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
-          let position = Game.randTable(positions);
+          let position = Game.randTable(positions, this.rand);
           let spawnX = this.x + position[0];
           let spawnY = this.y + position[1];
           let knockbackX = this.x + position[0] * 2;

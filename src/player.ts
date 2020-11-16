@@ -303,7 +303,7 @@ export class Player {
         } else {
           // if we're trying to hit an enemy, check if it's destroyable
           if (!e.dead) {
-            if (e.interactable) e.interact();
+            if (e.interactable) e.interact(this);
             return;
           }
         }
