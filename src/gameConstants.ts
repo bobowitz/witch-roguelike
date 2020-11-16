@@ -12,6 +12,9 @@ export class GameConstants {
 
   static readonly KEY_REPEAT_TIME = 300; // millseconds
 
+  static readonly CHAT_APPEAR_TIME = 10000;
+  static readonly CHAT_FADE_TIME = 1000;
+
   static readonly DEFAULTWIDTH = 8.5 * GameConstants.TILESIZE;
   static readonly DEFAULTHEIGHT = 8.5 * GameConstants.TILESIZE;
   static WIDTH = LevelConstants.SCREEN_W * GameConstants.TILESIZE;

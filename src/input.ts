@@ -19,28 +19,29 @@ export const Input = {
   isTapHold: false,
   tapStartTime: null,
   IS_TAP_HOLD_THRESH: 100,
-  iListener: function() {},
-  mListener: function() {},
-  mUpListener: function() {},
-  qListener: function() {},
-  leftListener: function() {},
-  rightListener: function() {},
-  upListener: function() {},
-  downListener: function() {},
-  aListener: function() { Input.leftListener(); },
-  dListener: function() { Input.rightListener(); },
-  wListener: function() { Input.upListener(); },
-  sListener: function() { Input.downListener(); },
-  spaceListener: function() {},
-  leftSwipeListener: function() {},
-  rightSwipeListener: function() {},
-  upSwipeListener: function() {},
-  downSwipeListener: function() {},
-  tapListener: function() {},
+  keyDownListener: function (key: string) { },
+  iListener: function () { },
+  mListener: function () { },
+  mUpListener: function () { },
+  qListener: function () { },
+  leftListener: function () { },
+  rightListener: function () { },
+  upListener: function () { },
+  downListener: function () { },
+  aListener: function () { Input.leftListener(); },
+  dListener: function () { Input.rightListener(); },
+  wListener: function () { Input.upListener(); },
+  sListener: function () { Input.downListener(); },
+  spaceListener: function () { },
+  leftSwipeListener: function () { },
+  rightSwipeListener: function () { },
+  upSwipeListener: function () { },
+  downSwipeListener: function () { },
+  tapListener: function () { },
 
   mouseLeftClickListeners: [],
 
-  mouseLeftClickListener: function(x: number, y: number) {
+  mouseLeftClickListener: function (x: number, y: number) {
     for (let i = 0; i < Input.mouseLeftClickListeners.length; i++)
       Input.mouseLeftClickListeners[i](x, y);
   },
@@ -65,11 +66,12 @@ export const Input = {
   I: "KeyI",
   Q: "KeyQ",
 
-  isDown: function(keyCode: string) {
+  isDown: function (keyCode: string) {
     return this._pressed[keyCode];
   },
 
   onKeydown: (event: KeyboardEvent) => {
+    if (event.key) Input.keyDownListener(event.key);
     if (event.repeat) return; // ignore repeat keypresses
     Input.lastPressTime = Date.now();
     Input.lastPressKeyCode = event.code;
@@ -112,9 +114,11 @@ export const Input = {
         Input.qListener();
         break;
     }
+
+    if (event.cancelable) event.preventDefault();
   },
 
-  onKeyup: function(event: KeyboardEvent) {
+  onKeyup: function (event: KeyboardEvent) {
     delete this._pressed[event.code];
     if (event.code === this.lastPressKeyCode) {
       this.lastPressTime = 0;
@@ -123,7 +127,7 @@ export const Input = {
     if (event.code === Input.M) Input.mUpListener();
   },
 
-  mouseClickListener: function(event: MouseEvent) {
+  mouseClickListener: function (event: MouseEvent) {
     if (event.button === 0) {
       let rect = window.document.getElementById("gameCanvas").getBoundingClientRect();
       let x = event.clientX - rect.left;
@@ -132,7 +136,7 @@ export const Input = {
     }
   },
 
-  updateMousePos: function(event: MouseEvent) {
+  updateMousePos: function (event: MouseEvent) {
     let rect = window.document.getElementById("gameCanvas").getBoundingClientRect();
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
@@ -141,7 +145,7 @@ export const Input = {
     Input.mouseY = Math.floor(y / Game.scale);
   },
 
-  getTouches: function(evt) {
+  getTouches: function (evt) {
     return (
       evt.touches || evt.originalEvent.touches // browser API
     ); // jQuery
@@ -153,7 +157,7 @@ export const Input = {
   currentY: 0,
   swiped: false,
 
-  handleTouchStart: function(evt) {
+  handleTouchStart: function (evt) {
     evt.preventDefault();
 
     const firstTouch = Input.getTouches(evt)[0];
@@ -172,7 +176,7 @@ export const Input = {
     Input.swiped = false;
   },
 
-  handleTouchMove: function(evt) {
+  handleTouchMove: function (evt) {
     evt.preventDefault();
 
     Input.currentX = evt.touches[0].clientX;
@@ -210,7 +214,7 @@ export const Input = {
     }
   },
 
-  handleTouchEnd: function(evt) {
+  handleTouchEnd: function (evt) {
     evt.preventDefault();
 
     if (!Input.isTapHold && !Input.swiped) Input.tapListener();
@@ -231,21 +235,21 @@ export const Input = {
     } as MouseEvent);
   },
 
-  checkIsTapHold: function() {
+  checkIsTapHold: function () {
     if (Input.tapStartTime !== null && Date.now() >= Input.tapStartTime + Input.IS_TAP_HOLD_THRESH)
       Input.isTapHold = true;
   },
 };
 window.addEventListener(
   "keyup",
-  function(event) {
+  function (event) {
     Input.onKeyup(event);
   },
   false
 );
 window.addEventListener(
   "keydown",
-  function(event) {
+  function (event) {
     Input.onKeydown(event);
   },
   false

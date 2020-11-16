@@ -18,6 +18,15 @@ export enum LevelState {
   TRANSITIONING_LADDER,
 }
 
+class ChatMessage {
+  message: string;
+  timestamp: number;
+  constructor(message: string) {
+    this.message = message;
+    this.timestamp = Date.now();
+  }
+}
+
 export class Game {
   static ctx: CanvasRenderingContext2D;
   static shImg: HTMLCanvasElement;
@@ -39,6 +48,10 @@ export class Game {
   screenShakeX: number;
   screenShakeY: number;
   socket;
+  chat: Array<ChatMessage>;
+  chatOpen: boolean;
+  chatBox: string;
+  chatBoxCursor: number;
   static scale;
   static tileset: HTMLImageElement;
   static objset: HTMLImageElement;
@@ -122,6 +135,9 @@ export class Game {
             break;
         }
       });
+      this.socket.on('chat message', (message: string) => {
+        this.chat.push(new ChatMessage(message));
+      });
       this.socket.on('player connected', (connectedPlayerID: number) => {
         // reset all players
         for (const i in this.players) {
@@ -140,6 +156,11 @@ export class Game {
       Game.ctx = (canvas as HTMLCanvasElement).getContext("2d", {
         alpha: false,
       }) as CanvasRenderingContext2D;
+
+      this.chat = [];
+      this.chatBox = "";
+      this.chatBoxCursor = 0;
+      this.chatOpen = false;
 
       Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
       Game.ctx.textBaseline = "top";
@@ -201,8 +222,76 @@ export class Game {
       document.addEventListener("touchstart", Input.handleTouchStart, { passive: false });
       document.addEventListener("touchmove", Input.handleTouchMove, { passive: false });
       document.addEventListener("touchend", Input.handleTouchEnd, { passive: false });
+
+      Input.keyDownListener = (key: string) => {
+        this.keyDownListener(key);
+      }
     });
   }
+
+  keyDownListener = (key: string) => {
+    if (!this.chatOpen) {
+      switch (key.toUpperCase()) {
+        case "C":
+          this.chatOpen = true;
+          break;
+        case "ARROWLEFT":
+          this.players[this.localPlayerID].inputHandler(InputEnum.LEFT);
+          break;
+        case "ARROWRIGHT":
+          this.players[this.localPlayerID].inputHandler(InputEnum.RIGHT);
+          break;
+        case "ARROWUP":
+          this.players[this.localPlayerID].inputHandler(InputEnum.UP);
+          break;
+        case "ARROWDOWN":
+          this.players[this.localPlayerID].inputHandler(InputEnum.DOWN);
+          break;
+        case "SPACE":
+          this.players[this.localPlayerID].inputHandler(InputEnum.SPACE);
+          break;
+        case "I":
+          this.players[this.localPlayerID].inputHandler(InputEnum.I);
+          break;
+        case "Q":
+          this.players[this.localPlayerID].inputHandler(InputEnum.Q);
+          break;
+      }
+    }
+    else {
+      if (key.length === 1) {
+        this.chatBox = this.chatBox.substring(0, this.chatBoxCursor) + key + this.chatBox.substring(this.chatBoxCursor, this.chatBox.length);
+        this.chatBoxCursor += 1;
+      }
+      else {
+        switch (key) {
+          case "Backspace":
+            this.chatBox = this.chatBox.substring(0, this.chatBoxCursor - 1) + this.chatBox.substring(this.chatBoxCursor, this.chatBox.length);
+            this.chatBoxCursor = Math.max(0, this.chatBoxCursor - 1);
+            break;
+          case "Delete":
+            this.chatBox = this.chatBox.substring(0, this.chatBoxCursor) + this.chatBox.substring(this.chatBoxCursor + 1, this.chatBox.length);
+            break;
+          case "ArrowLeft":
+            this.chatBoxCursor = Math.max(0, this.chatBoxCursor - 1);
+            break;
+          case "ArrowRight":
+            this.chatBoxCursor = Math.min(this.chatBox.length, this.chatBoxCursor + 1);
+            break;
+          case "Enter":
+            if (this.chatBox.length > 0)
+              this.socket.emit('chat message', this.chatBox);
+            this.chatBox = "";
+            this.chatBoxCursor = 0;
+            this.chatOpen = false;
+            break;
+          case "Escape":
+            this.chatOpen = false;
+            break;
+        }
+      }
+    }
+  };
 
   changeLevel = (player: Player, newLevel: Level) => {
     if (this.players[this.localPlayerID] === player) {
@@ -597,6 +686,42 @@ export class Game {
       this.level.drawTopLayer();
       this.players[this.localPlayerID].drawGUI();
       for (const i in this.players) this.players[i].updateDrawXY();
+    }
+
+    // draw chat
+    let CHAT_X = 10;
+    let CHAT_BOTTOM_Y = GameConstants.HEIGHT - Game.letter_height - 14
+    let CHAT_OPACITY = 0.5;
+    if (this.chatOpen) {
+      Game.ctx.fillStyle = "black";
+      Game.ctx.globalAlpha = 0.5;
+      Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
+
+      Game.ctx.globalAlpha = 1;
+      Game.ctx.fillStyle = "white";
+      Game.fillText(this.chatBox, CHAT_X, CHAT_BOTTOM_Y);
+      let cursorX = Game.measureText(this.chatBox.substring(0, this.chatBoxCursor)).width;
+      Game.ctx.fillRect(CHAT_X + cursorX, CHAT_BOTTOM_Y, 1, Game.letter_height);
+    }
+    for (let i = 0; i < this.chat.length; i++) {
+      Game.ctx.fillStyle = "white";
+      let y = CHAT_BOTTOM_Y - (this.chat.length - 1 - i) * (Game.letter_height + 1);
+      if (this.chatOpen) y -= Game.letter_height + 1;
+
+      let age = Date.now() - this.chat[i].timestamp;
+      if (this.chatOpen) {
+        Game.ctx.globalAlpha = 1;
+      }
+      else {
+        if (age <= GameConstants.CHAT_APPEAR_TIME) {
+          Game.ctx.globalAlpha = CHAT_OPACITY;
+        } else if (age <= GameConstants.CHAT_APPEAR_TIME + GameConstants.CHAT_FADE_TIME) {
+          Game.ctx.globalAlpha = CHAT_OPACITY * (1 - ((age - GameConstants.CHAT_APPEAR_TIME) / GameConstants.CHAT_FADE_TIME));
+        } else {
+          Game.ctx.globalAlpha = 0;
+        }
+      }
+      Game.fillText(this.chat[i].message, CHAT_X, y);
     }
 
     // game version

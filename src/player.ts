@@ -67,13 +67,6 @@ export class Player {
 
     this.isLocalPlayer = isLocalPlayer;
     if (isLocalPlayer) {
-      Input.iListener = () => this.inputHandler(InputEnum.I);
-      Input.qListener = () => this.inputHandler(InputEnum.Q);
-      Input.leftListener = () => this.inputHandler(InputEnum.LEFT);
-      Input.rightListener = () => this.inputHandler(InputEnum.RIGHT);
-      Input.upListener = () => this.inputHandler(InputEnum.UP);
-      Input.downListener = () => this.inputHandler(InputEnum.DOWN);
-      Input.spaceListener = () => this.inputHandler(InputEnum.SPACE);
       Input.leftSwipeListener = () => this.inputHandler(InputEnum.LEFT);
       Input.rightSwipeListener = () => this.inputHandler(InputEnum.RIGHT);
       Input.upSwipeListener = () => this.inputHandler(InputEnum.UP);
@@ -484,7 +477,7 @@ export class Player {
         GameConstants.HEIGHT / 2 - Game.letter_height + 2
       );
     }
-    if (Input.isDown(Input.M) || Input.isTapHold) {
+    if ((Input.isDown(Input.M) || Input.isTapHold) && !this.game.chatOpen) {
       this.map.draw();
     }
   };
