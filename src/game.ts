@@ -235,15 +235,19 @@ export class Game {
         case "C":
           this.chatOpen = true;
           break;
+        case "A":
         case "ARROWLEFT":
           this.players[this.localPlayerID].inputHandler(InputEnum.LEFT);
           break;
+        case "D":
         case "ARROWRIGHT":
           this.players[this.localPlayerID].inputHandler(InputEnum.RIGHT);
           break;
+        case "W":
         case "ARROWUP":
           this.players[this.localPlayerID].inputHandler(InputEnum.UP);
           break;
+        case "S":
         case "ARROWDOWN":
           this.players[this.localPlayerID].inputHandler(InputEnum.DOWN);
           break;
