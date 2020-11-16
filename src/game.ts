@@ -128,6 +128,7 @@ export class Game {
         }
         this.players[connectedPlayerID] = new Player(this, 0, 0, false);
         this.levels[0].enterLevel(this.players[connectedPlayerID]);
+        this.level = this.levels[0];
       });
       this.socket.on('player disconnected', (disconnectPlayerID: number) => {
         delete this.players[disconnectPlayerID];

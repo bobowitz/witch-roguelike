@@ -907,10 +907,16 @@ export class Level {
         );
         break;
       case 6:
+        // clear out WallSide if it's a wall
+        if (this.levelArray[this.roomX][this.roomY + 1] instanceof Wall)
+          this.levelArray[this.roomX][this.roomY + 2] = new Floor(this, this.roomX, this.roomY + 2);
         this.levelArray[this.roomX][this.roomY + 1] = new Floor(this, this.roomX, this.roomY + 1);
         d = new SideDoor(this, this.game, this.roomX - 1, this.roomY + 1, link);
         break;
       case 7:
+        // clear out WallSide if it's a wall
+        if (this.levelArray[this.roomX][this.roomY + Math.floor(this.height / 2)] instanceof Wall)
+          this.levelArray[this.roomX][this.roomY + Math.floor(this.height / 2) + 1] = new Floor(this, this.roomX, this.roomY + Math.floor(this.height / 2) + 1);
         this.levelArray[this.roomX][this.roomY + Math.floor(this.height / 2)] = new Floor(
           this,
           this.roomX,
@@ -933,6 +939,9 @@ export class Level {
         d = new SideDoor(this, this.game, this.roomX - 1, this.roomY + this.height - 1, link);
         break;
       case 9:
+        // clear out WallSide if it's a wall
+        if (this.levelArray[this.roomX + this.width - 1][this.roomY + 1] instanceof Wall)
+          this.levelArray[this.roomX + this.width - 1][this.roomY + 2] = new Floor(this, this.roomX + this.width - 1, this.roomY + 2);
         this.levelArray[this.roomX + this.width - 1][this.roomY + 1] = new Floor(
           this,
           this.roomX + this.width - 1,
@@ -941,9 +950,10 @@ export class Level {
         d = new SideDoor(this, this.game, this.roomX + this.width, this.roomY + 1, link);
         break;
       case 10:
-        this.levelArray[this.roomX + this.width - 1][
-          this.roomY + Math.floor(this.height / 2)
-        ] = new Floor(this, this.roomX + this.width - 1, this.roomY + Math.floor(this.height / 2));
+        // clear out WallSide if it's a wall
+        if (this.levelArray[this.roomX + this.width - 1][this.roomY + Math.floor(this.height / 2)] instanceof Wall)
+          this.levelArray[this.roomX + this.width - 1][this.roomY + Math.floor(this.height / 2) + 1] = new Floor(this, this.roomX + this.width - 1, this.roomY + Math.floor(this.height / 2) + 1);
+        this.levelArray[this.roomX + this.width - 1][this.roomY + Math.floor(this.height / 2)] = new Floor(this, this.roomX + this.width - 1, this.roomY + Math.floor(this.height / 2));
         d = new SideDoor(
           this,
           this.game,
@@ -1179,7 +1189,7 @@ export class Level {
     this.updateLighting();
 
     for (const p of this.projectiles) {
-      p.tick();
+      if (!(p instanceof HitWarning) || player === this.game.players[this.game.localPlayerID]) p.tick();
     }
 
     for (let x = 0; x < this.levelArray.length; x++) {

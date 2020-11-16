@@ -327,7 +327,6 @@ export class Player {
         this.drawX = (this.x - x) * 0.5;
         this.drawY = (this.y - y) * 0.5;
         other.unlock(this);
-        this.game.levels[this.levelID].tick(this);
       }
     }
   };

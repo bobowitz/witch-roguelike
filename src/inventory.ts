@@ -57,7 +57,6 @@ export class Inventory {
     this.openTime = Date.now();
 
     this.weapon = null;
-    this.coins = 1000;
 
     let a = (i: Item) => {
       if (i instanceof Weapon) i.setWielder(this.player);
@@ -102,7 +101,7 @@ export class Inventory {
     let i = this.selX + this.selY * this.cols;
 
     if (this.items[i] instanceof Usable) {
-      (this.items[i] as Usable).onUse(this.game.players[this.game.localPlayerID]);
+      (this.items[i] as Usable).onUse(this.player);
       this.items.splice(i, 1);
     }
 
@@ -133,6 +132,10 @@ export class Inventory {
       this.items[i].x = this.player.x;
       this.items[i].y = this.player.y;
       this.items[i].pickedUp = false;
+      this.equipAnimAmount[i] = 0;
+      this.equipped = this.items.filter(x => x instanceof Equippable && x.equipped) as Array<
+        Equippable
+      >;
       this.game.levels[this.player.levelID].items.push(this.items[i]);
       this.items.splice(i, 1);
     }
@@ -299,6 +302,8 @@ export class Inventory {
           } else {
             this.equipAnimAmount[i] += 0.2 * (0 - this.equipAnimAmount[i]);
           }
+        } else {
+          this.equipAnimAmount[i] = 0;
         }
       }
 

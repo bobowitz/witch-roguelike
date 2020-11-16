@@ -12,7 +12,7 @@ export class LockedDoor extends Tile {
     let k = player.inventory.hasItem(Key);
     if (k !== null) {
       // remove key
-      player.inventory.items = player.inventory.items.filter(x => x !== k);
+      player.inventory.removeItem(k);
       this.level.levelArray[this.x][this.y] = this.unlockedDoor; // replace this door in level
       this.level.doors.push(this.unlockedDoor); // add it to the door list so it can get rendered on the map
     }
