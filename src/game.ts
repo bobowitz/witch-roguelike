@@ -247,7 +247,7 @@ export class Game {
         case "ARROWDOWN":
           this.players[this.localPlayerID].inputHandler(InputEnum.DOWN);
           break;
-        case "SPACE":
+        case " ":
           this.players[this.localPlayerID].inputHandler(InputEnum.SPACE);
           break;
         case "I":
