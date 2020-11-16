@@ -72,6 +72,7 @@ export const Input = {
 
   onKeydown: (event: KeyboardEvent) => {
     if (event.key) Input.keyDownListener(event.key);
+    if (event.cancelable) event.preventDefault();
     if (event.repeat) return; // ignore repeat keypresses
     Input.lastPressTime = Date.now();
     Input.lastPressKeyCode = event.code;
@@ -114,8 +115,6 @@ export const Input = {
         Input.qListener();
         break;
     }
-
-    if (event.cancelable) event.preventDefault();
   },
 
   onKeyup: function (event: KeyboardEvent) {
