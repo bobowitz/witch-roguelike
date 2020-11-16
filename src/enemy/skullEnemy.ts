@@ -16,6 +16,8 @@ import { GenericParticle } from "../particle/genericParticle";
 import { Coin } from "../item/coin";
 import { RedGem } from "../item/redgem";
 import { Item } from "../item/item";
+import { DualDagger } from "../weapon/dualdagger";
+import { Spear } from "../weapon/spear";
 
 export class SkullEnemy extends Enemy {
   frame: number;
@@ -46,7 +48,9 @@ export class SkullEnemy extends Enemy {
 
     if (drop) this.drop = drop;
     else {
-      if (rand() < 0.02) this.drop = new RedGem(this.level, 0, 0);
+      let dropProb = rand();
+      if (dropProb < 0.005) this.drop = new Spear(this.level, 0, 0);
+      else if (dropProb < 0.04) this.drop = new RedGem(this.level, 0, 0);
       else this.drop = new Coin(this.level, 0, 0);
     }
   }

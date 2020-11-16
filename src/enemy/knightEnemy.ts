@@ -6,6 +6,8 @@ import { HitWarning } from "../projectile/hitWarning";
 import { SpikeTrap } from "../tile/spiketrap";
 import { Coin } from "../item/coin";
 import { Player } from "../player";
+import { DualDagger } from "../weapon/dualdagger";
+import { Item } from "../item/item";
 
 export class KnightEnemy extends Enemy {
   moves: Array<astar.AStarData>;
@@ -13,8 +15,10 @@ export class KnightEnemy extends Enemy {
   frame: number;
   seenPlayer: boolean;
   targetPlayer: Player;
+  rand: () => number;
+  drop: Item;
 
-  constructor(level: Level, game: Game, x: number, y: number) {
+  constructor(level: Level, game: Game, x: number, y: number, rand: () => number, drop?: Item) {
     super(level, game, x, y);
     this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
@@ -25,6 +29,14 @@ export class KnightEnemy extends Enemy {
     this.tileY = 8;
     this.seenPlayer = false;
     this.deathParticleColor = "#ffffff";
+
+    this.rand = rand;
+    if (drop) this.drop = drop;
+    else {
+      let dropProb = rand();
+      if (dropProb < 0.005) this.drop = new DualDagger(this.level, 0, 0);
+      else this.drop = new Coin(this.level, 0, 0);
+    }
   }
 
   hurt = (playerHitBy: Player, damage: number) => {
@@ -158,6 +170,9 @@ export class KnightEnemy extends Enemy {
   };
 
   dropLoot = () => {
-    this.level.items.push(new Coin(this.level, this.x, this.y));
+    this.drop.level = this.level;
+    this.drop.x = this.x;
+    this.drop.y = this.y;
+    this.level.items.push(this.drop);
   };
 }

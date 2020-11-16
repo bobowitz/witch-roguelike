@@ -64,12 +64,7 @@ export class Inventory {
     };
 
     a(new Dagger({ game: this.game } as Level, 0, 0));
-    a(new Shotgun({ game: this.game } as Level, 0, 0));
-    a(new Armor({ game: this.game } as Level, 0, 0));
-    a(new DualDagger({ game: this.game } as Level, 0, 0));
-    a(new Candle({ game: this.game } as Level, 0, 0));
     a(new Torch({ game: this.game } as Level, 0, 0));
-    a(new Lantern({ game: this.game } as Level, 0, 0));
   }
 
   open = () => {

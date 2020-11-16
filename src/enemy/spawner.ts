@@ -72,7 +72,7 @@ export class Spawner extends Enemy {
           let spawned;
           switch (this.enemySpawnType) {
             case 1:
-              spawned = new KnightEnemy(this.level, this.game, spawnX, spawnY);
+              spawned = new KnightEnemy(this.level, this.game, spawnX, spawnY, this.rand);
               break;
             case 2:
               spawned = new SkullEnemy(this.level, this.game, spawnX, spawnY, this.rand);

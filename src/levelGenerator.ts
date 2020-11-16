@@ -183,7 +183,7 @@ export class LevelGenerator {
               );
               break;
             case RoomType.BIGCAVE:
-              newLevelDoorDir = r.generateAroundPoint(rand, points[ind], ind, 30, 30);
+              newLevelDoorDir = r.generateAroundPoint(rand, points[ind], ind, 15, 15);
               break;
             case RoomType.UPLADDER:
             case RoomType.DOWNLADDER:

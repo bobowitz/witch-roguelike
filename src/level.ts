@@ -404,7 +404,7 @@ export class Level {
         let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3, 3, 4, 4], rand));
         switch (d) {
           case 1:
-            this.enemies.push(new KnightEnemy(this, this.game, x, y));
+            this.enemies.push(new KnightEnemy(this, this.game, x, y, rand));
             break;
           case 2:
             let s = new SkullEnemy(this, this.game, x, y, rand);
