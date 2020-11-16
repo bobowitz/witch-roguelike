@@ -74,10 +74,10 @@ export class Player {
       Input.upListener = () => this.inputHandler(InputEnum.UP);
       Input.downListener = () => this.inputHandler(InputEnum.DOWN);
       Input.spaceListener = () => this.inputHandler(InputEnum.SPACE);
-      //Input.leftSwipeListener = () => this.inputHandler(InputEnum.I);
-      //Input.rightSwipeListener = () => this.inputHandler(InputEnum.I);
-      //Input.upSwipeListener = () => this.inputHandler(InputEnum.I);
-      //Input.downSwipeListener = () => this.inputHandler(InputEnum.I);
+      Input.leftSwipeListener = () => this.inputHandler(InputEnum.LEFT);
+      Input.rightSwipeListener = () => this.inputHandler(InputEnum.RIGHT);
+      Input.upSwipeListener = () => this.inputHandler(InputEnum.UP);
+      Input.downSwipeListener = () => this.inputHandler(InputEnum.DOWN);
       //Input.tapListener = () => this.inputHandler(InputEnum.I);
     }
 

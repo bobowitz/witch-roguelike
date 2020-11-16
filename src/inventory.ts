@@ -59,7 +59,11 @@ export class Inventory {
     this.weapon = null;
 
     let a = (i: Item) => {
-      if (i instanceof Weapon) i.setWielder(this.player);
+      if (i instanceof Weapon) {
+        i.setWielder(this.player);
+        i.toggleEquip();
+        this.weapon = i;
+      }
       this.addItem(i);
     };
 
