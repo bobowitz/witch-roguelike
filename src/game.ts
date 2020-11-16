@@ -71,6 +71,8 @@ export class Game {
     window.addEventListener("load", () => {
       this.socket = io(ServerAddress.address, { 'transports': ['websocket'] });
       this.socket.on('welcome', (seed: string, pid: number) => {
+        console.log('welcome');
+
         this.localPlayerID = pid;
         this.players = {};
         this.players[this.localPlayerID] = new Player(this, 0, 0, true);
