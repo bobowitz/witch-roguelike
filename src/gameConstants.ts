@@ -26,6 +26,7 @@ export class GameConstants {
   static readonly BIG_FONT_SIZE = 20;
 
   static readonly RED = "#ac3232";
+  static readonly WARNING_RED = "#ff0000";
   static readonly GREEN = "#6abe30";
   static readonly ARMOR_GREY = "#9badb7";
   static readonly OUTLINE = "#222034";

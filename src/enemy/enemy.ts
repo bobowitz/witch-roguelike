@@ -9,6 +9,7 @@ import { GenericParticle } from "../particle/genericParticle";
 import { HealthBar } from "../healthbar";
 import { Drawable } from "../drawable";
 import { Item } from "../item/item";
+import { GameConstants } from "../gameConstants";
 
 export enum EnemyDirection {
   DOWN = 0,
@@ -42,6 +43,9 @@ export class Enemy extends Drawable {
   deathParticleColor: string;
   healthBar: HealthBar;
   drop: Item;
+  sleepingZFrame = 0;
+  alert: boolean;
+  exclamationFrame: number;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super();
@@ -67,6 +71,8 @@ export class Enemy extends Drawable {
     this.interactable = false;
     this.deathParticleColor = "#ff00ff";
     this.healthBar = new HealthBar();
+    this.alert = false;
+    this.exclamationFrame = 0;
   }
 
   tryMove = (x: number, y: number) => {
@@ -213,4 +219,54 @@ export class Enemy extends Drawable {
     this.drawX += -0.5 * this.drawX;
     this.drawY += -0.5 * this.drawY;
   };
+
+  drawSleepingZs = () => {
+    this.sleepingZFrame++;
+
+    let numZs = 2;
+    let t = (this.sleepingZFrame) * 0.01; // 0 <= t < 1
+    t -= Math.floor(t);
+    //let whichway = Math.floor(this.sleepingZFrame * 0.02 / numZs) % 2;
+    for (let off = numZs - 1; off >= 0; off--) {
+      let yoff = (t + off) * 7;
+      let alpha = Math.min(1 - (t + off) / numZs, 2 * (t + off) / numZs);
+
+      let xoff = 0;
+      //if (off !== 1 && t > 0.5) xoff = 1;
+      //if (off === 1 && t > 0.5) xoff = -1;
+      //if (whichway === 1) xoff *= -1;
+
+      let width = Game.measureText('Z').width;
+      Game.ctx.globalAlpha = alpha;
+      Game.fillTextOutline(
+        'Z',
+        (this.x + 0.5) * GameConstants.TILESIZE - width / 2 + xoff,
+        (this.y - 0.75) * GameConstants.TILESIZE - yoff,
+        GameConstants.OUTLINE,
+        "white"
+      );
+      Game.ctx.globalAlpha = 1;
+    }
+  }
+
+  drawExclamation = () => {
+    this.exclamationFrame++;
+
+    let yoff: number | false = 0;
+    let yoffs: Array<number | false> = [0, -1, -2, -3, -5, -7, -4];
+    if (this.exclamationFrame > yoffs.length) yoff = yoffs[yoffs.length - 1];
+    else yoff = yoffs[this.exclamationFrame];
+
+    let width = Game.measureText('!').width;
+    Game.ctx.globalAlpha = 1;
+    if (yoff !== false) {
+      Game.fillTextOutline(
+        '!',
+        (this.x + 0.5) * GameConstants.TILESIZE - width / 2,
+        (this.y - 0.75) * GameConstants.TILESIZE + yoff,
+        GameConstants.OUTLINE,
+        GameConstants.WARNING_RED
+      );
+    }
+  }
 }

@@ -65,8 +65,8 @@ export class Game {
   static fontsheet: HTMLImageElement;
 
   static text_rendering_canvas = null;
-  static readonly letters = "abcdefghijklmnopqrstuvwxyz1234567890,.!?:'()%-";
-  static readonly letter_widths = [4, 4, 4, 4, 3, 3, 4, 4, 1, 4, 4, 3, 5, 5, 4, 4, 4, 4, 4, 3, 4, 5, 5, 5, 5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 1, 4, 1, 1, 2, 2, 5, 3];
+  static readonly letters = "abcdefghijklmnopqrstuvwxyz1234567890,.!?:'()[]%-";
+  static readonly letter_widths = [4, 4, 4, 4, 3, 3, 4, 4, 1, 4, 4, 3, 5, 5, 4, 4, 4, 4, 4, 3, 4, 5, 5, 5, 5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 1, 4, 1, 1, 2, 2, 2, 2, 5, 3];
   static readonly letter_height = 6;
   static letter_positions = [];
 
@@ -84,8 +84,6 @@ export class Game {
     window.addEventListener("load", () => {
       this.socket = io(ServerAddress.address, { 'transports': ['websocket'] });
       this.socket.on('welcome', (seed: string, pid: number) => {
-        console.log('welcome');
-
         this.localPlayerID = pid;
         this.players = {};
         this.players[this.localPlayerID] = new Player(this, 0, 0, true);
@@ -444,8 +442,8 @@ export class Game {
   }
 
   static fillText = (text: string, x: number, y: number, maxWidth?: number) => {
-    x = Math.floor(x);
-    y = Math.floor(y);
+    x = Math.round(x);
+    y = Math.round(y);
 
     if (Game.letter_positions.length === 0) {
       // calculate letter positions
@@ -478,6 +476,17 @@ export class Game {
       }
     }
   };
+
+  static fillTextOutline = (text: string, x: number, y: number, outlineColor: string, fillColor: string) => {
+    Game.ctx.fillStyle = outlineColor;
+    for (let xx = -1; xx <= 1; xx++) {
+      for (let yy = -1; yy <= 1; yy++) {
+        Game.fillText(text, x + xx, y + yy);
+      }
+    }
+    Game.ctx.fillStyle = fillColor;
+    Game.fillText(text, x, y);
+  }
 
   draw = () => {
     Game.ctx.globalAlpha = 1;
@@ -543,9 +552,7 @@ export class Game {
 
       Game.ctx.translate(levelOffsetX, levelOffsetY);
       this.prevLevel.draw();
-      this.prevLevel.drawEntitiesBehindPlayer();
-      for (let i in this.players) if (this.prevLevel === this.levels[this.players[i].levelID] && this.players[i] !== this.players[this.localPlayerID]) this.players[i].draw();
-      this.prevLevel.drawEntitiesInFrontOfPlayer();
+      this.prevLevel.drawEntities();
       for (
         let x = this.prevLevel.roomX - 1;
         x <= this.prevLevel.roomX + this.prevLevel.width;
@@ -563,9 +570,7 @@ export class Game {
 
       Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
       this.level.draw();
-      this.level.drawEntitiesBehindPlayer();
-      for (let i in this.players) if (this.level === this.levels[this.players[i].levelID] && this.players[i] !== this.players[this.localPlayerID]) this.players[i].draw();
-      this.level.drawEntitiesInFrontOfPlayer();
+      this.level.drawEntities(true);
       for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
         for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
           Game.drawFX(ditherFrame, 10, 1, 1, x, y, 1, 1);
@@ -606,9 +611,7 @@ export class Game {
 
       if (ditherFrame < 7) {
         this.level.draw();
-        this.level.drawEntitiesBehindPlayer();
-        for (let i in this.players) if (this.level === this.levels[this.players[i].levelID]) this.players[i].draw();
-        this.level.drawEntitiesInFrontOfPlayer();
+        this.level.drawEntities();
         this.level.drawShade();
         this.level.drawOverShade();
 
@@ -628,9 +631,7 @@ export class Game {
         }
 
         this.level.draw();
-        this.level.drawEntitiesBehindPlayer();
-        for (let i in this.players) if (this.level === this.levels[this.players[i].levelID]) this.players[i].draw();
-        this.level.drawEntitiesInFrontOfPlayer();
+        this.level.drawEntities();
         this.level.drawShade();
         this.level.drawOverShade();
         for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
@@ -667,9 +668,7 @@ export class Game {
       );
 
       this.level.draw();
-      this.level.drawEntitiesBehindPlayer();
-      for (let i in this.players) if (this.level === this.levels[this.players[i].levelID]) this.players[i].draw();
-      this.level.drawEntitiesInFrontOfPlayer();
+      this.level.drawEntities();
       this.level.drawShade();
       this.level.drawOverShade();
       this.players[this.localPlayerID].drawTopLayer();

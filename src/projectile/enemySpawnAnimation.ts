@@ -6,6 +6,7 @@ import { Enemy } from "../enemy/enemy";
 import { Level } from "../level";
 import { GenericParticle } from "../particle/genericParticle";
 import { Sound } from "../sound";
+import { HitWarning } from "../hitWarning";
 
 export class EnemySpawnAnimation extends Projectile {
   readonly ANIM_COUNT = 3;
@@ -13,20 +14,11 @@ export class EnemySpawnAnimation extends Projectile {
   level: Level;
   enemy: Enemy;
   frame: number;
-  knockbackX: number;
-  knockbackY: number;
   f: number[];
   xx: number[];
   yy: number[];
 
-  constructor(
-    level: Level,
-    enemy: Enemy,
-    x: number,
-    y: number,
-    knockbackX: number,
-    knockbackY: number
-  ) {
+  constructor(level: Level, enemy: Enemy, x: number, y: number) {
     super(x, y);
     this.level = level;
     this.enemy = enemy;
@@ -39,25 +31,27 @@ export class EnemySpawnAnimation extends Projectile {
       this.f[i] = this.xx[i] = Math.random() * 6.28;
       this.yy[i] = Math.random() * 8 - 8;
     }
-
-    this.knockbackX = knockbackX;
-    this.knockbackY = knockbackY;
   }
 
   tick = () => {
     if (this.level === this.level.game.level) Sound.enemySpawn();
 
-    this.dead = true;
-    this.enemy.skipNextTurns = 1;
-    this.level.enemies.push(this.enemy);
+    let hitPlayer = false;
     for (const i in this.level.game.players) {
       if (this.level.game.players[i].x === this.x && this.level.game.players[i].y === this.y) {
         this.level.game.players[i].hurt(0.5);
-        this.level.game.players[i].move(this.knockbackX, this.knockbackY);
+        hitPlayer = true;
       }
     }
-    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");
-    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");
+    if (!hitPlayer) {
+      this.dead = true;
+      this.enemy.skipNextTurns = 1;
+      this.level.enemies.push(this.enemy);
+      GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");
+      GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#ffffff");
+    } else {
+      this.level.hitwarnings.push(new HitWarning(this.level.game, this.x, this.y));
+    }
   };
 
   drawTopLayer = () => {

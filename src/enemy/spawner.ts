@@ -8,7 +8,7 @@ import { Floor } from "../tile/floor";
 import { Bones } from "../tile/bones";
 import { DeathParticle } from "../particle/deathParticle";
 import { GameConstants } from "../gameConstants";
-import { HitWarning } from "../projectile/hitWarning";
+import { HitWarning } from "../hitWarning";
 import { GreenGem } from "../item/greengem";
 import { SpikeTrap } from "../tile/spiketrap";
 import { SkullEnemy } from "./skullEnemy";
@@ -32,7 +32,7 @@ export class Spawner extends Enemy {
     this.tileX = 6;
     this.tileY = 4;
     this.seenPlayer = true;
-    this.enemySpawnType = Game.randTable([1, 1, 1, 2, 2, 2, 2, 3], rand);
+    this.enemySpawnType = 2;//Game.randTable([1, 1, 1, 2, 2, 2, 2, 3], rand);
     this.deathParticleColor = "#ffffff";
 
     this.rand = rand;
@@ -60,30 +60,29 @@ export class Spawner extends Enemy {
       }
       if (this.seenPlayer) {
         if (this.ticks % 8 === 0) {
-          this.tileX = 7;
+          const positions = this.level.getEmptyTiles().filter(t => Math.abs(t.x - this.x) <= 1 && Math.abs(t.y - this.y) <= 1);
+          if (positions.length > 0) {
+            this.tileX = 7;
 
-          let positions = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
-          let position = Game.randTable(positions, this.rand);
-          let spawnX = this.x + position[0];
-          let spawnY = this.y + position[1];
-          let knockbackX = this.x + position[0] * 2;
-          let knockbackY = this.y + position[1] * 2;
+            const position = Game.randTable(positions, this.rand);
 
-          let spawned;
-          switch (this.enemySpawnType) {
-            case 1:
-              spawned = new KnightEnemy(this.level, this.game, spawnX, spawnY, this.rand);
-              break;
-            case 2:
-              spawned = new SkullEnemy(this.level, this.game, spawnX, spawnY, this.rand);
-              break;
-            case 3:
-              spawned = new WizardEnemy(this.level, this.game, spawnX, spawnY, this.rand);
-              break;
+            let spawned;
+            switch (this.enemySpawnType) {
+              case 1:
+                spawned = new KnightEnemy(this.level, this.game, position.x, position.y, this.rand);
+                break;
+              case 2:
+                spawned = new SkullEnemy(this.level, this.game, position.x, position.y, this.rand);
+                break;
+              case 3:
+                spawned = new WizardEnemy(this.level, this.game, position.x, position.y, this.rand);
+                break;
+            }
+            this.level.projectiles.push(
+              new EnemySpawnAnimation(this.level, spawned, position.x, position.y)
+            );
+            this.level.hitwarnings.push(new HitWarning(this.game, position.x, position.y));
           }
-          this.level.projectiles.push(
-            new EnemySpawnAnimation(this.level, spawned, spawnX, spawnY, knockbackX, knockbackY)
-          );
         }
       }
       this.ticks++;

@@ -16,6 +16,7 @@ import { SlashParticle } from "./particle/slashParticle";
 import { HealthBar } from "./healthbar";
 import { VendingMachine } from "./enemy/vendingMachine";
 import { SideDoor } from "./tile/sidedoor";
+import { Drawable } from "./drawable";
 
 enum PlayerDirection {
   DOWN = 0,
@@ -24,7 +25,7 @@ enum PlayerDirection {
   LEFT = 3,
 }
 
-export class Player {
+export class Player extends Drawable {
   x: number;
   y: number;
   w: number;
@@ -52,6 +53,8 @@ export class Player {
   isLocalPlayer: boolean;
 
   constructor(game: Game, x: number, y: number, isLocalPlayer: boolean) {
+    super();
+
     this.game = game;
 
     this.levelID = 0;
@@ -71,7 +74,12 @@ export class Player {
       Input.rightSwipeListener = () => this.inputHandler(InputEnum.RIGHT);
       Input.upSwipeListener = () => this.inputHandler(InputEnum.UP);
       Input.downSwipeListener = () => this.inputHandler(InputEnum.DOWN);
-      //Input.tapListener = () => this.inputHandler(InputEnum.I);
+      Input.tapListener = () => {
+        if (this.inventory.isOpen)
+          this.inputHandler(InputEnum.SPACE);
+        else
+          this.inputHandler(InputEnum.I);
+      }
     }
 
     this.health = 2;
@@ -438,6 +446,8 @@ export class Player {
   };
 
   drawTopLayer = () => {
+    this.drawableY = this.y - this.drawY;
+
     this.healthBar.draw(
       this.health,
       this.maxHealth,

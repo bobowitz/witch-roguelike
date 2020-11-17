@@ -1,14 +1,18 @@
-import { Projectile } from "./projectile";
-import { Game } from "../game";
-import { WizardEnemy } from "../enemy/wizardEnemy";
-import { Player } from "../player";
+import { Game } from "./game";
+import { Drawable } from "./drawable";
 
-export class HitWarning extends Projectile {
+export class HitWarning extends Drawable {
+  x: number;
+  y: number;
+  dead: boolean;
   static frame = 0;
   game: Game;
 
   constructor(game: Game, x: number, y: number) {
-    super(x, y);
+    super();
+    this.x = x;
+    this.y = y;
+    this.dead = false;
     this.game = game;
   }
 
@@ -30,6 +34,7 @@ export class HitWarning extends Projectile {
   };
 
   drawTopLayer = () => {
+    this.drawableY = this.y;
     if (
       (this.x === this.game.players[this.game.localPlayerID].x && Math.abs(this.y - this.game.players[this.game.localPlayerID].y) <= 1) ||
       (this.y === this.game.players[this.game.localPlayerID].y && Math.abs(this.x - this.game.players[this.game.localPlayerID].x) <= 1)

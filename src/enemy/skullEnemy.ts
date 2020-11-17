@@ -1,22 +1,12 @@
 import { Enemy, EnemyDirection } from "./enemy";
-import { LevelConstants } from "../levelConstants";
 import { Game } from "../game";
 import { Level } from "../level";
-import { astar } from "../astarclass";
-import { Heart } from "../item/heart";
-import { Floor } from "../tile/floor";
-import { Bones } from "../tile/bones";
-import { GameConstants } from "../gameConstants";
 import { Player } from "../player";
-import { DeathParticle } from "../particle/deathParticle";
-import { HitWarning } from "../projectile/hitWarning";
-import { GreenGem } from "../item/greengem";
-import { SpikeTrap } from "../tile/spiketrap";
+import { HitWarning } from "../hitWarning";
 import { GenericParticle } from "../particle/genericParticle";
 import { Coin } from "../item/coin";
 import { RedGem } from "../item/redgem";
 import { Item } from "../item/item";
-import { DualDagger } from "../weapon/dualdagger";
 import { Spear } from "../weapon/spear";
 
 export class SkullEnemy extends Enemy {
@@ -25,8 +15,6 @@ export class SkullEnemy extends Enemy {
   seenPlayer: boolean;
   ticksSinceFirstHit: number;
   flashingFrame: number;
-  dx: number;
-  dy: number;
   targetPlayer: Player;
   readonly REGEN_TICKS = 5;
   drop: Item;
@@ -42,8 +30,6 @@ export class SkullEnemy extends Enemy {
     this.seenPlayer = false;
     this.ticksSinceFirstHit = 0;
     this.flashingFrame = 0;
-    this.dx = 0;
-    this.dy = 0;
     this.deathParticleColor = "#ffffff";
 
     if (drop) this.drop = drop;
@@ -83,6 +69,7 @@ export class SkullEnemy extends Enemy {
           this.health = 2;
         }
       } else {
+        this.ticks++;
         if (!this.seenPlayer) {
           let p = this.nearestPlayer();
           if (p !== false) {
@@ -90,46 +77,36 @@ export class SkullEnemy extends Enemy {
             if (distance <= 4) {
               this.targetPlayer = player;
               this.seenPlayer = true;
+              if (player === this.game.players[this.game.localPlayerID]) this.alert = true;
+              this.level.hitwarnings.push(new HitWarning(this.game, this.x - 1, this.y));
+              this.level.hitwarnings.push(new HitWarning(this.game, this.x + 1, this.y));
+              this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y - 1));
+              this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y + 1));
             }
           }
         }
-        if (this.seenPlayer && this.level.playerTicked === this.targetPlayer) {
+        else if (this.seenPlayer && this.level.playerTicked === this.targetPlayer) {
+          this.alert = false;
           let oldX = this.x;
           let oldY = this.y;
-          if (this.targetPlayer.x > this.x) this.dx++;
-          if (this.targetPlayer.x < this.x) this.dx--;
-          if (this.targetPlayer.y > this.y) this.dy++;
-          if (this.targetPlayer.y < this.y) this.dy--;
           let moveX = this.x;
           let moveY = this.y;
-          if (
-            Math.abs(this.dx) > Math.abs(this.dy) ||
-            (this.dx === this.dy &&
-              Math.abs(this.targetPlayer.x - this.x) >= Math.abs(this.targetPlayer.y - this.y))
-          ) {
-            if (this.dx > 0) {
-              moveX++;
-              this.dx--;
-            } else if (this.dx < 0) {
-              moveX--;
-              this.dx++;
-            }
-          } else {
-            if (this.dy > 0) {
-              moveY++;
-              this.dy--;
-            } else if (this.dy < 0) {
-              moveY--;
-              this.dy++;
-            }
+          if (this.ticks % 2 === 0) { // horizontal preference
+            if (this.targetPlayer.x > this.x) moveX++;
+            else if (this.targetPlayer.x < this.x) moveX--;
+            else if (this.targetPlayer.y > this.y) moveY++;
+            else if (this.targetPlayer.y < this.y) moveY--;
+          } else { // vertical preference
+            if (this.targetPlayer.y > this.y) moveY++;
+            else if (this.targetPlayer.y < this.y) moveY--;
+            else if (this.targetPlayer.x > this.x) moveX++;
+            else if (this.targetPlayer.x < this.x) moveX--;
           }
 
           let hitPlayer = false;
           for (const i in this.game.players) {
             if (this.game.levels[this.game.players[i].levelID] === this.level && this.game.players[i].x === moveX && this.game.players[i].y === moveY) {
               this.game.players[i].hurt(this.hit());
-              this.dx = 0;
-              this.dy = 0;
               this.drawX = 0.5 * (this.x - this.game.players[i].x);
               this.drawY = 0.5 * (this.y - this.game.players[i].y);
               if (this.game.players[i] === this.game.players[i])
@@ -138,11 +115,6 @@ export class SkullEnemy extends Enemy {
           }
           if (!hitPlayer) {
             this.tryMove(moveX, moveY);
-            if (this.x === oldX && this.y === oldY) {
-              // didn't move
-              this.dx = 0;
-              this.dy = 0;
-            }
             this.drawX = this.x - oldX;
             this.drawY = this.y - oldY;
             if (this.x > oldX) this.direction = EnemyDirection.RIGHT;
@@ -151,10 +123,10 @@ export class SkullEnemy extends Enemy {
             else if (this.y < oldY) this.direction = EnemyDirection.UP;
           }
 
-          this.level.projectiles.push(new HitWarning(this.game, this.x - 1, this.y));
-          this.level.projectiles.push(new HitWarning(this.game, this.x + 1, this.y));
-          this.level.projectiles.push(new HitWarning(this.game, this.x, this.y - 1));
-          this.level.projectiles.push(new HitWarning(this.game, this.x, this.y + 1));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x - 1, this.y));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x + 1, this.y));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y - 1));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y + 1));
         }
       }
     }
@@ -203,6 +175,12 @@ export class SkullEnemy extends Enemy {
         this.level.shadeColor,
         this.shadeAmount()
       );
+    }
+    if (!this.seenPlayer) {
+      this.drawSleepingZs();
+    }
+    if (this.alert) {
+      this.drawExclamation();
     }
   };
 

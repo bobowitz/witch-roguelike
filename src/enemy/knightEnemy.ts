@@ -2,7 +2,7 @@ import { Enemy, EnemyDirection } from "./enemy";
 import { Game } from "../game";
 import { Level } from "../level";
 import { astar } from "../astarclass";
-import { HitWarning } from "../projectile/hitWarning";
+import { HitWarning } from "../hitWarning";
 import { SpikeTrap } from "../tile/spiketrap";
 import { Coin } from "../item/coin";
 import { Player } from "../player";
@@ -65,14 +65,20 @@ export class KnightEnemy extends Enemy {
           if (distance < 4) {
             this.seenPlayer = true;
             this.targetPlayer = p;
+            if (p === this.game.players[this.game.localPlayerID]) this.alert = true;
+            this.level.hitwarnings.push(new HitWarning(this.game, this.x - 1, this.y));
+            this.level.hitwarnings.push(new HitWarning(this.game, this.x + 1, this.y));
+            this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y - 1));
+            this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y + 1));
           }
         }
       }
-      if (this.seenPlayer && this.level.playerTicked === this.targetPlayer) {
+      else if (this.seenPlayer && this.level.playerTicked === this.targetPlayer) {
+        this.alert = false;
         this.ticks++;
         this.tileX = 9;
         this.tileY = 8;
-        if (this.ticks % 2 === 0) {
+        if (this.ticks % 2 === 1) {
           this.tileX = 4;
           this.tileY = 0;
 
@@ -128,10 +134,10 @@ export class KnightEnemy extends Enemy {
             }
           }
         } else {
-          this.level.projectiles.push(new HitWarning(this.game, this.x - 1, this.y));
-          this.level.projectiles.push(new HitWarning(this.game, this.x + 1, this.y));
-          this.level.projectiles.push(new HitWarning(this.game, this.x, this.y - 1));
-          this.level.projectiles.push(new HitWarning(this.game, this.x, this.y + 1));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x - 1, this.y));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x + 1, this.y));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y - 1));
+          this.level.hitwarnings.push(new HitWarning(this.game, this.x, this.y + 1));
         }
       }
     }
@@ -166,6 +172,12 @@ export class KnightEnemy extends Enemy {
         this.level.shadeColor,
         this.shadeAmount()
       );
+    }
+    if (!this.seenPlayer) {
+      this.drawSleepingZs();
+    }
+    if (this.alert) {
+      this.drawExclamation();
     }
   };
 

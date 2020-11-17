@@ -6,7 +6,7 @@ import { Tile } from "./tile";
 import { Enemy } from "../enemy/enemy";
 import { Crate } from "../enemy/crate";
 import { Barrel } from "../enemy/barrel";
-import { HitWarning } from "../projectile/hitWarning";
+import { HitWarning } from "../hitWarning";
 
 export class SpikeTrap extends Tile {
   on: boolean;
@@ -34,7 +34,7 @@ export class SpikeTrap extends Tile {
     }
 
     if (this.tickCount === 3)
-      this.level.projectiles.push(new HitWarning(this.level.game, this.x, this.y));
+      this.level.hitwarnings.push(new HitWarning(this.level.game, this.x, this.y));
   };
 
   tickEnd = () => {

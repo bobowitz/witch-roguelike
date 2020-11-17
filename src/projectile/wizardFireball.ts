@@ -2,6 +2,7 @@ import { Projectile } from "./projectile";
 import { Game } from "../game";
 import { WizardEnemy } from "../enemy/wizardEnemy";
 import { Player } from "../player";
+import { HitWarning } from "../hitWarning";
 
 export class WizardFireball extends Projectile {
   state: number;
@@ -19,6 +20,9 @@ export class WizardFireball extends Projectile {
   tick = () => {
     if (this.parent.dead) this.dead = true;
     this.state++;
+    if (this.state === 1) {
+      this.parent.level.hitwarnings.push(new HitWarning(this.parent.game, this.x, this.y));
+    }
     if (this.state === 2) {
       this.frame = 0;
       this.delay = Game.rand(0, 10);

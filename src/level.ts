@@ -31,7 +31,7 @@ import { CoffinTile } from "./tile/coffinTile";
 import { PottedPlant } from "./enemy/pottedPlant";
 import { InsideLevelDoor } from "./tile/insideLevelDoor";
 import { Button } from "./tile/button";
-import { HitWarning } from "./projectile/hitWarning";
+import { HitWarning } from "./hitWarning";
 import { UpLadder } from "./tile/upLadder";
 import { DownLadder } from "./tile/downLadder";
 import { CoalResource } from "./enemy/coalResource";
@@ -92,6 +92,7 @@ export class Level {
   doors: Array<any>; // (Door | BottomDoor) just a reference for mapping, still access through levelArray
   projectiles: Array<Projectile>;
   particles: Array<Particle>;
+  hitwarnings: Array<HitWarning>;
   game: Game;
   roomX: number;
   roomY: number;
@@ -764,6 +765,7 @@ export class Level {
 
     this.items = Array<Item>();
     this.projectiles = Array<Projectile>();
+    this.hitwarnings = Array<HitWarning>();
     this.particles = Array<Particle>();
     this.doors = Array<Door>();
     this.enemies = Array<Enemy>();
@@ -1188,8 +1190,12 @@ export class Level {
     this.enemies = this.enemies.filter(e => !e.dead);
     this.updateLighting();
 
+    for (const h of this.hitwarnings) {
+      h.tick();
+    }
+
     for (const p of this.projectiles) {
-      if (!(p instanceof HitWarning) || player === this.game.players[this.game.localPlayerID]) p.tick();
+      p.tick();
     }
 
     for (let x = 0; x < this.levelArray.length; x++) {
@@ -1218,6 +1224,10 @@ export class Level {
     }
     for (const i of this.items) {
       i.tick();
+    }
+
+    for (const h of this.hitwarnings) {
+      if (this.levelArray[h.x][h.y].isSolid()) h.dead = true;
     }
 
     for (const p of this.projectiles) {
@@ -1256,7 +1266,7 @@ export class Level {
     }
   };
 
-  drawEntitiesBehindPlayer = () => {
+  drawEntities = (skipLocalPlayer?: boolean) => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
         if (this.softVis[x][y] < 1) this.levelArray[x][y].drawUnderPlayer();
@@ -1264,10 +1274,18 @@ export class Level {
     }
 
     this.projectiles = this.projectiles.filter(p => !p.dead);
+    this.hitwarnings = this.hitwarnings.filter(h => !h.dead);
     this.particles = this.particles.filter(p => !p.dead);
 
     let drawables = new Array<Drawable>();
-    drawables = drawables.concat(this.enemies, this.projectiles, this.particles, this.items);
+
+    drawables = drawables.concat(this.enemies, this.hitwarnings, this.projectiles, this.particles, this.items);
+    for (const i in this.game.players) {
+      if (this.game.levels[this.game.players[i].levelID] === this) {
+        if (!(skipLocalPlayer && this.game.players[i] === this.game.players[this.game.localPlayerID]))
+          drawables.push(this.game.players[i]);
+      }
+    }
     drawables.sort((a, b) => {
       if (a.drawableY - b.drawableY === 0) {
         if (a instanceof Enemy) {
@@ -1281,32 +1299,13 @@ export class Level {
     });
 
     for (const d of drawables) {
-      if (d.drawableY <= this.game.players[this.game.localPlayerID].y) d.draw();
+      d.draw();
     }
-  };
-  drawEntitiesInFrontOfPlayer = () => {
+
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
         if (this.softVis[x][y] < 1) this.levelArray[x][y].drawAbovePlayer();
       }
-    }
-
-    let drawables = new Array<Drawable>();
-    drawables = drawables.concat(this.enemies, this.projectiles, this.particles, this.items);
-    drawables.sort((a, b) => {
-      if (a.drawableY - b.drawableY === 0) {
-        if (a instanceof Enemy) {
-          return 1;
-        } else if (b instanceof Enemy) {
-          return -1;
-        } else return 0;
-      } else {
-        return a.drawableY - b.drawableY;
-      }
-    });
-
-    for (const d of drawables) {
-      if (d.drawableY > this.game.players[this.game.localPlayerID].y) d.draw();
     }
 
     for (const i of this.items) {
@@ -1336,6 +1335,10 @@ export class Level {
 
     for (const p of this.projectiles) {
       p.drawTopLayer();
+    }
+
+    for (const h of this.hitwarnings) {
+      h.drawTopLayer();
     }
 
     // draw over dithered shading

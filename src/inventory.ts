@@ -195,13 +195,13 @@ export class Inventory {
       for (let i of this.items) {
         if (i.constructor === item.constructor) {
           // we already have an item of the same type
-          i.stackCount++;
+          i.stackCount += item.stackCount;
           return true;
         }
       }
     }
     if (!this.isFull()) {
-      // item is either not stackable, or its stackable but we don't have one yet
+      // item is either not stackable, or it's stackable but we don't have one yet
       this.items.push(item);
       return true;
     }
@@ -270,23 +270,10 @@ export class Inventory {
     let countX = 4 - width;
     let countY = -1;
 
-    Game.ctx.fillStyle = "black";
-    for (let xx = -1; xx <= 1; xx++) {
-      for (let yy = -1; yy <= 1; yy++) {
-        Game.ctx.fillStyle = GameConstants.OUTLINE;
-        Game.fillText(
-          countText,
-          coinX * GameConstants.TILESIZE + countX + xx,
-          coinY * GameConstants.TILESIZE + countY + yy
-        );
-      }
-    }
-
-    Game.ctx.fillStyle = "white";
-    Game.fillText(
+    Game.fillTextOutline(
       countText,
       coinX * GameConstants.TILESIZE + countX,
-      coinY * GameConstants.TILESIZE + countY
+      coinY * GameConstants.TILESIZE + countY, GameConstants.OUTLINE, "white"
     );
   };
 
@@ -472,7 +459,7 @@ export class Inventory {
 
         let lines = this.items[i].getDescription().split("\n");
         let nextY = Math.round(
-          0.5 * GameConstants.HEIGHT - 0.5 * height + this.rows * (s + 2 * b + g) + b + 2
+          0.5 * GameConstants.HEIGHT - 0.5 * height + this.rows * (s + 2 * b + g) + b + 5
         );
         for (let j = 0; j < lines.length; j++) {
           nextY = this.textWrap(lines[j], 5, nextY, GameConstants.WIDTH - 10);

@@ -1,16 +1,7 @@
 import { Enemy, EnemyDirection } from "./enemy";
-import { LevelConstants } from "../levelConstants";
 import { Game } from "../game";
 import { Level } from "../level";
-import { astar } from "../astarclass";
-import { Heart } from "../item/heart";
-import { Floor } from "../tile/floor";
-import { Bones } from "../tile/bones";
-import { DeathParticle } from "../particle/deathParticle";
-import { GameConstants } from "../gameConstants";
-import { HitWarning } from "../projectile/hitWarning";
-import { GreenGem } from "../item/greengem";
-import { SpikeTrap } from "../tile/spiketrap";
+import { HitWarning } from "../hitWarning";
 import { Coin } from "../item/coin";
 import { Door } from "../tile/door";
 import { BottomDoor } from "../tile/bottomDoor";
@@ -96,7 +87,7 @@ export class ChargeEnemy extends Enemy {
                 (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y - 1) ||
                 (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y + 1)
               )
-                this.level.projectiles.push(new HitWarning(this.game, this.targetX, this.targetY));
+                this.level.hitwarnings.push(new HitWarning(this.game, this.targetX, this.targetY));
             }
           }
         } else if (this.state === ChargeEnemyState.ALERTED) {

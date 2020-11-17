@@ -114,23 +114,12 @@ export class Item extends Drawable {
     let countX = 16 - width;
     let countY = 10;
 
-    Game.ctx.fillStyle = "black";
-    for (let xx = -1; xx <= 1; xx++) {
-      for (let yy = -1; yy <= 1; yy++) {
-        Game.ctx.fillStyle = GameConstants.OUTLINE;
-        Game.fillText(
-          countText,
-          x * GameConstants.TILESIZE + countX + xx,
-          y * GameConstants.TILESIZE + countY + yy
-        );
-      }
-    }
-
-    Game.ctx.fillStyle = "white";
-    Game.fillText(
+    Game.fillTextOutline(
       countText,
       x * GameConstants.TILESIZE + countX,
-      y * GameConstants.TILESIZE + countY
+      y * GameConstants.TILESIZE + countY,
+      GameConstants.OUTLINE,
+      "white"
     );
   };
 }
