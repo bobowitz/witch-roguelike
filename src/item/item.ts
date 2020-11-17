@@ -97,7 +97,7 @@ export class Item extends Drawable {
       this.alpha -= 0.03;
       if (this.y < -1) this.level.items = this.level.items.filter(x => x !== this); // removes itself from the level
 
-      Game.ctx.globalAlpha = Math.max(0, this.alpha);
+      if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = Math.max(0, this.alpha);
 
       Game.drawItem(this.tileX, this.tileY, 1, 2, this.x, this.y - 1, this.w, this.h);
 
@@ -105,7 +105,7 @@ export class Item extends Drawable {
     }
   };
   drawIcon = (x: number, y: number, opacity = 1) => {
-    Game.ctx.globalAlpha = opacity;
+    if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = opacity;
     Game.drawItem(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
     Game.ctx.globalAlpha = 1;
 

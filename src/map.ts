@@ -33,7 +33,7 @@ export class Map {
 
     let startLevel = this.game.levels[0];
 
-    Game.ctx.globalAlpha = 0.5;
+    if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 0.5;
     Game.ctx.fillStyle = "white";
     Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 

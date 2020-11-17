@@ -1315,17 +1315,19 @@ export class Level {
 
   drawShade = () => {
     let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / this.game.players[this.game.localPlayerID].sightRadius));
-    Game.ctx.globalAlpha = shadingAlpha;
-    //Game.ctx.fillStyle = "#400a0e";
-    Game.ctx.fillStyle = this.shadeColor;
-    Game.ctx.fillRect(
-      (this.roomX - LevelConstants.SCREEN_W) * GameConstants.TILESIZE,
-      (this.roomY - LevelConstants.SCREEN_H) * GameConstants.TILESIZE,
-      (this.width + 2 * LevelConstants.SCREEN_W) * GameConstants.TILESIZE,
-      (this.height + 2 * LevelConstants.SCREEN_H) * GameConstants.TILESIZE
-    );
-    Game.ctx.globalAlpha = 1.0;
-    Game.ctx.globalCompositeOperation = "source-over";
+    if (GameConstants.ALPHA_ENABLED) {
+      Game.ctx.globalAlpha = shadingAlpha;
+      //Game.ctx.fillStyle = "#400a0e";
+      Game.ctx.fillStyle = this.shadeColor;
+      Game.ctx.fillRect(
+        (this.roomX - LevelConstants.SCREEN_W) * GameConstants.TILESIZE,
+        (this.roomY - LevelConstants.SCREEN_H) * GameConstants.TILESIZE,
+        (this.width + 2 * LevelConstants.SCREEN_W) * GameConstants.TILESIZE,
+        (this.height + 2 * LevelConstants.SCREEN_H) * GameConstants.TILESIZE
+      );
+      Game.ctx.globalAlpha = 1.0;
+      Game.ctx.globalCompositeOperation = "source-over";
+    }
   };
 
   drawOverShade = () => {

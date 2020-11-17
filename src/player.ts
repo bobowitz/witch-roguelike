@@ -75,8 +75,13 @@ export class Player extends Drawable {
       Input.upSwipeListener = () => this.inputHandler(InputEnum.UP);
       Input.downSwipeListener = () => this.inputHandler(InputEnum.DOWN);
       Input.tapListener = () => {
-        if (this.inventory.isOpen)
-          this.inputHandler(InputEnum.SPACE);
+        if (this.inventory.isOpen) {
+          if (this.inventory.pointInside(Input.mouseX, Input.mouseY)) {
+            this.inputHandler(InputEnum.SPACE);
+          } else {
+            this.inputHandler(InputEnum.I);
+          }
+        }
         else
           this.inputHandler(InputEnum.I);
       }

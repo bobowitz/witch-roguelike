@@ -17,17 +17,6 @@ export class Floor extends Tile {
   }
 
   draw = () => {
-    /*this.level.game.drawSoftVis1x1(
-      Game.tileset,
-      this.variation,
-      this.skin,
-      1,
-      1,
-      this.x,
-      this.y,
-      this.x,
-      this.y
-    );*/
     Game.drawTile(
       this.variation,
       this.skin,

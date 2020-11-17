@@ -277,6 +277,21 @@ export class Inventory {
     );
   };
 
+  pointInside = (x: number, y: number): boolean => {
+    let s = Math.min(18, (18 * (Date.now() - this.openTime)) / OPEN_TIME); // size of box
+    let b = 2; // border
+    let g = -2; // gap
+    let hg = 3 + Math.round(0.5 * Math.sin(Date.now() * 0.01) + 0.5); // highlighted growth
+    let ob = 1; // outer border
+    let width = this.cols * (s + 2 * b + g) - g;
+    let height = this.rows * (s + 2 * b + g) - g;
+
+    return (x >= Math.round(0.5 * GameConstants.WIDTH - 0.5 * width) - ob &&
+            x <= Math.round(0.5 * GameConstants.WIDTH - 0.5 * width) - ob + Math.round(width + 2 * ob) &&
+            y >= Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height) - ob &&
+            y <= Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height) - ob + Math.round(height + 2 * ob));
+  }
+
   draw = () => {
     this.drawCoins();
 

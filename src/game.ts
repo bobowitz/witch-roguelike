@@ -27,10 +27,17 @@ class ChatMessage {
   }
 }
 
+let getShadeCanvasKey = (set: HTMLImageElement, sx: number, sy: number, sw: number, sh: number, opacity: number): string => {
+  return set.src + "," + sx + "," + sy + "," + sw + "," + sh + "," + opacity;
+}
+
+// fps counter
+const times = [];
+let fps;
+
 export class Game {
   static ctx: CanvasRenderingContext2D;
-  static shImg: HTMLCanvasElement;
-  static shCtx: CanvasRenderingContext2D;
+  static shade_canvases: Record<string, HTMLCanvasElement>;
   prevLevel: Level; // for transitions
   level: Level;
   levels: Array<Level>;
@@ -64,7 +71,7 @@ export class Game {
   static mobsetShadow: HTMLImageElement;
   static fontsheet: HTMLImageElement;
 
-  static text_rendering_canvas = null;
+  static text_rendering_canvases: Record<string, HTMLCanvasElement>;
   static readonly letters = "abcdefghijklmnopqrstuvwxyz1234567890,.!?:'()[]%-";
   static readonly letter_widths = [4, 4, 4, 4, 3, 3, 4, 4, 1, 4, 4, 3, 5, 5, 4, 4, 4, 4, 4, 3, 4, 5, 5, 5, 5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 1, 4, 1, 1, 2, 2, 2, 2, 5, 3];
   static readonly letter_height = 6;
@@ -160,8 +167,8 @@ export class Game {
       this.chatBoxCursor = 0;
       this.chatOpen = false;
 
-      Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
-      Game.ctx.textBaseline = "top";
+      Game.shade_canvases = {};
+      Game.text_rendering_canvases = {};
 
       Game.tileset = new Image();
       Game.tileset.src = "res/tileset.png";
@@ -350,6 +357,13 @@ export class Game {
   run = () => {
     this.update();
     this.draw();
+
+    const now = performance.now();
+    while (times.length > 0 && times[0] <= now - 1000) {
+      times.shift();
+    }
+    times.push(now);
+    fps = times.length;
   };
 
   update = () => {
@@ -454,25 +468,31 @@ export class Game {
     } else {
       let dimensions = Game.measureText(text);
       if (dimensions.width > 0) {
-        if (!Game.text_rendering_canvas) Game.text_rendering_canvas = document.createElement('canvas');
-        Game.text_rendering_canvas.width = dimensions.width;
-        Game.text_rendering_canvas.height = dimensions.height;
-        let bx = Game.text_rendering_canvas.getContext('2d');
+        let key = text + Game.ctx.fillStyle;
 
-        let letter_x = 0;
-        for (const letter of text.toLowerCase()) {
-          if (letter === ' ') letter_x += 4;
-          else for (let i = 0; i < Game.letters.length; i++) {
-            if (Game.letters[i] === letter) {
-              bx.drawImage(Game.fontsheet, Game.letter_positions[i] + 1, 0, Game.letter_widths[i], Game.letter_height, letter_x, 0, Game.letter_widths[i], Game.letter_height);
-              letter_x += Game.letter_widths[i] + 1;
+        if (!Game.text_rendering_canvases[key]) {
+          Game.text_rendering_canvases[key] = document.createElement('canvas');
+          Game.text_rendering_canvases[key].width = dimensions.width;
+          Game.text_rendering_canvases[key].height = dimensions.height;
+          let bx = Game.text_rendering_canvases[key].getContext('2d');
+
+          let letter_x = 0;
+          for (const letter of text.toLowerCase()) {
+            if (letter === ' ') letter_x += 4;
+            else for (let i = 0; i < Game.letters.length; i++) {
+              if (Game.letters[i] === letter) {
+                bx.drawImage(Game.fontsheet, Game.letter_positions[i] + 1, 0, Game.letter_widths[i], Game.letter_height, letter_x, 0, Game.letter_widths[i], Game.letter_height);
+                letter_x += Game.letter_widths[i] + 1;
+              }
             }
           }
+          bx.fillStyle = Game.ctx.fillStyle;
+          bx.globalCompositeOperation = "source-in";
+          bx.fillRect(0, 0, Game.text_rendering_canvases[key].width, Game.text_rendering_canvases[key].height);
+          Game.ctx.drawImage(Game.text_rendering_canvases[key], x, y);
+        } else {
+          Game.ctx.drawImage(Game.text_rendering_canvases[key], x, y);
         }
-        bx.fillStyle = Game.ctx.fillStyle;
-        bx.globalCompositeOperation = "source-in";
-        bx.fillRect(0, 0, Game.text_rendering_canvas.width, Game.text_rendering_canvas.height);
-        Game.ctx.drawImage(Game.text_rendering_canvas, x, y);
       }
     }
   };
@@ -697,7 +717,7 @@ export class Game {
     let CHAT_OPACITY = 0.5;
     if (this.chatOpen) {
       Game.ctx.fillStyle = "black";
-      Game.ctx.globalAlpha = 0.5;
+      if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 0.5;
       Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
       Game.ctx.globalAlpha = 1;
@@ -717,9 +737,9 @@ export class Game {
       }
       else {
         if (age <= GameConstants.CHAT_APPEAR_TIME) {
-          Game.ctx.globalAlpha = CHAT_OPACITY;
+          if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = CHAT_OPACITY;
         } else if (age <= GameConstants.CHAT_APPEAR_TIME + GameConstants.CHAT_FADE_TIME) {
-          Game.ctx.globalAlpha = CHAT_OPACITY * (1 - ((age - GameConstants.CHAT_APPEAR_TIME) / GameConstants.CHAT_FADE_TIME));
+          if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = CHAT_OPACITY * (1 - ((age - GameConstants.CHAT_APPEAR_TIME) / GameConstants.CHAT_FADE_TIME));
         } else {
           Game.ctx.globalAlpha = 0;
         }
@@ -728,112 +748,24 @@ export class Game {
     }
 
     // game version
-    Game.ctx.globalAlpha = 0.1;
+    if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 0.1;
     Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
-    Game.ctx.font = GameConstants.SCRIPT_FONT_SIZE + "px Script";
-    Game.ctx.textBaseline = "top";
     Game.fillText(
       GameConstants.VERSION,
       GameConstants.WIDTH - Game.measureText(GameConstants.VERSION).width - 1,
       1
     );
     Game.ctx.globalAlpha = 1;
-  };
 
-  drawSoftVis1x1 = (
-    set: HTMLImageElement,
-    sX: number,
-    sY: number,
-    sW: number,
-    sH: number,
-    dX: number,
-    dY: number,
-    levelX: number,
-    levelY: number
-  ) => {
-    if (Game.shImg === undefined) {
-      Game.shImg = document.createElement("canvas");
-      Game.shCtx = Game.shImg.getContext("2d");
-      Game.shImg.width = GameConstants.TILESIZE * 2;
-      Game.shImg.height = GameConstants.TILESIZE * 2;
-    }
-
-    Game.shCtx.clearRect(0, 0, Game.shImg.width, Game.shImg.height);
-
-    Game.shCtx.globalCompositeOperation = "source-over";
-    Game.shCtx.drawImage(
-      set,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      0,
-      0,
-      GameConstants.TILESIZE,
-      GameConstants.TILESIZE
+    // fps
+    if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 0.1;
+    Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
+    Game.fillText(
+      fps + "fps",
+      1,
+      1
     );
-
-    Game.shCtx.globalCompositeOperation = "multiply";
-    Game.shCtx.fillStyle = "black";
-    for (let xx = 0; xx < 1; xx += 0.25) {
-      for (let yy = 0; yy < 1; yy += 0.25) {
-        Game.shCtx.globalAlpha =
-          (1 - xx) *
-          (1 - yy) *
-          0.25 *
-          (this.level.softVis[levelX][levelY] +
-            this.level.softVis[levelX - 1][levelY] +
-            this.level.softVis[levelX - 1][levelY - 1] +
-            this.level.softVis[levelX][levelY - 1]) +
-          xx *
-          (1 - yy) *
-          0.25 *
-          (this.level.softVis[levelX + 1][levelY] +
-            this.level.softVis[levelX][levelY] +
-            this.level.softVis[levelX][levelY - 1] +
-            this.level.softVis[levelX + 1][levelY - 1]) +
-          (1 - xx) *
-          yy *
-          0.25 *
-          (this.level.softVis[levelX][levelY + 1] +
-            this.level.softVis[levelX - 1][levelY + 1] +
-            this.level.softVis[levelX - 1][levelY] +
-            this.level.softVis[levelX][levelY]) +
-          xx *
-          yy *
-          0.25 *
-          (this.level.softVis[levelX + 1][levelY + 1] +
-            this.level.softVis[levelX][levelY + 1] +
-            this.level.softVis[levelX][levelY] +
-            this.level.softVis[levelX + 1][levelY]);
-        Game.shCtx.fillRect(
-          xx * GameConstants.TILESIZE,
-          yy * GameConstants.TILESIZE,
-          0.25 * GameConstants.TILESIZE,
-          0.25 * GameConstants.TILESIZE
-        );
-      }
-    }
-    Game.shCtx.globalAlpha = 1.0;
-
-    Game.shCtx.globalCompositeOperation = "destination-in";
-    Game.shCtx.drawImage(
-      set,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      0,
-      0,
-      GameConstants.TILESIZE,
-      GameConstants.TILESIZE
-    );
-
-    Game.ctx.drawImage(
-      Game.shImg,
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE)
-    );
+    Game.ctx.globalAlpha = 1;
   };
 
   static drawHelper = (
@@ -849,18 +781,19 @@ export class Game {
     shadeColor = "black",
     shadeOpacity = 0
   ) => {
-    if (shadeOpacity > 0) {
-      if (Game.shImg === undefined) {
-        Game.shImg = document.createElement("canvas");
-        Game.shCtx = Game.shImg.getContext("2d");
-        Game.shImg.width = GameConstants.TILESIZE * 2;
-        Game.shImg.height = GameConstants.TILESIZE * 2;
-      }
+    // snap to nearest shading increment
+    shadeOpacity = Math.round(shadeOpacity * GameConstants.SHADE_LEVELS) / GameConstants.SHADE_LEVELS;
+    let key = getShadeCanvasKey(set, sX, sY, sW, sH, shadeOpacity);
+    if (!Game.shade_canvases[key]) {
+      Game.shade_canvases[key] = document.createElement("canvas");
+      Game.shade_canvases[key].width = Math.round(sW * GameConstants.TILESIZE);
+      Game.shade_canvases[key].height = Math.round(sH * GameConstants.TILESIZE);
+      let shCtx = Game.shade_canvases[key].getContext("2d");
 
-      Game.shCtx.clearRect(0, 0, Game.shImg.width, Game.shImg.height);
+      shCtx.clearRect(0, 0, Game.shade_canvases[key].width, Game.shade_canvases[key].height);
 
-      Game.shCtx.globalCompositeOperation = "source-over";
-      Game.shCtx.drawImage(
+      shCtx.globalCompositeOperation = "source-over";
+      shCtx.drawImage(
         set,
         Math.round(sX * GameConstants.TILESIZE),
         Math.round(sY * GameConstants.TILESIZE),
@@ -868,17 +801,17 @@ export class Game {
         Math.round(sH * GameConstants.TILESIZE),
         0,
         0,
-        Math.round(dW * GameConstants.TILESIZE),
-        Math.round(dH * GameConstants.TILESIZE)
+        Math.round(sW * GameConstants.TILESIZE),
+        Math.round(sH * GameConstants.TILESIZE)
       );
 
-      Game.shCtx.globalAlpha = shadeOpacity;
-      Game.shCtx.fillStyle = shadeColor;
-      Game.shCtx.fillRect(0, 0, Game.shImg.width, Game.shImg.height);
-      Game.shCtx.globalAlpha = 1.0;
+      shCtx.globalAlpha = shadeOpacity;
+      shCtx.fillStyle = shadeColor;
+      shCtx.fillRect(0, 0, Game.shade_canvases[key].width, Game.shade_canvases[key].height);
+      shCtx.globalAlpha = 1.0;
 
-      Game.shCtx.globalCompositeOperation = "destination-in";
-      Game.shCtx.drawImage(
+      shCtx.globalCompositeOperation = "destination-in";
+      shCtx.drawImage(
         set,
         Math.round(sX * GameConstants.TILESIZE),
         Math.round(sY * GameConstants.TILESIZE),
@@ -886,28 +819,17 @@ export class Game {
         Math.round(sH * GameConstants.TILESIZE),
         0,
         0,
-        Math.round(dW * GameConstants.TILESIZE),
-        Math.round(dH * GameConstants.TILESIZE)
-      );
-
-      Game.ctx.drawImage(
-        Game.shImg,
-        Math.round(dX * GameConstants.TILESIZE),
-        Math.round(dY * GameConstants.TILESIZE)
-      );
-    } else {
-      Game.ctx.drawImage(
-        set,
-        Math.round(sX * GameConstants.TILESIZE),
-        Math.round(sY * GameConstants.TILESIZE),
         Math.round(sW * GameConstants.TILESIZE),
-        Math.round(sH * GameConstants.TILESIZE),
-        Math.round(dX * GameConstants.TILESIZE),
-        Math.round(dY * GameConstants.TILESIZE),
-        Math.round(dW * GameConstants.TILESIZE),
-        Math.round(dH * GameConstants.TILESIZE)
+        Math.round(sH * GameConstants.TILESIZE)
       );
     }
+    Game.ctx.drawImage(
+      Game.shade_canvases[key],
+      Math.round(dX * GameConstants.TILESIZE),
+      Math.round(dY * GameConstants.TILESIZE),
+      Math.round(dW * GameConstants.TILESIZE),
+      Math.round(dH * GameConstants.TILESIZE)
+    );
   };
 
   static drawTile = (
@@ -922,9 +844,9 @@ export class Game {
     shadeColor = "black",
     shadeOpacity = 0
   ) => {
-    //Game.drawHelper(Game.tileset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
+    Game.drawHelper(Game.tileset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
 
-    Game.ctx.drawImage(
+    /*Game.ctx.drawImage(
       Game.tileset,
       Math.round(sX * GameConstants.TILESIZE),
       Math.round(sY * GameConstants.TILESIZE),
@@ -936,15 +858,17 @@ export class Game {
       Math.round(dH * GameConstants.TILESIZE)
     );
 
-    Game.ctx.globalAlpha = shadeOpacity;
-    Game.ctx.fillStyle = shadeColor;
-    Game.ctx.fillRect(
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE),
-      Math.round(dW * GameConstants.TILESIZE),
-      Math.round(dH * GameConstants.TILESIZE)
-    );
-    Game.ctx.globalAlpha = 1.0;
+    if (GameConstants.ALPHA_ENABLED) {
+      Game.ctx.globalAlpha = shadeOpacity;
+      Game.ctx.fillStyle = shadeColor;
+      Game.ctx.fillRect(
+        Math.round(dX * GameConstants.TILESIZE),
+        Math.round(dY * GameConstants.TILESIZE),
+        Math.round(dW * GameConstants.TILESIZE),
+        Math.round(dH * GameConstants.TILESIZE)
+      );
+      Game.ctx.globalAlpha = 1.0;
+    }*/
   };
 
   static drawObj = (

@@ -199,7 +199,7 @@ export class VendingMachine extends Enemy {
         }
       }
       this.buyAnimAmount *= this.buyAnimAmount;
-      Game.ctx.globalAlpha = this.buyAnimAmount;
+      if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = this.buyAnimAmount;
       Game.ctx.fillStyle = FULL_OUTLINE;
       Game.ctx.fillRect(
         Math.round(cx - 0.5 * width) - ob,

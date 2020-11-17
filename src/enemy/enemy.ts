@@ -232,16 +232,16 @@ export class Enemy extends Drawable {
       let alpha = Math.min(1 - (t + off) / numZs, 2 * (t + off) / numZs);
 
       let xoff = 0;
-      //if (off !== 1 && t > 0.5) xoff = 1;
-      //if (off === 1 && t > 0.5) xoff = -1;
-      //if (whichway === 1) xoff *= -1;
+      if (off === 0) xoff = 1;
+      if (t >= 0.33 && t < 0.66) xoff = off;
+      if (t >= 0.33 && t < 0.66) xoff = off;
 
       let width = Game.measureText('Z').width;
-      Game.ctx.globalAlpha = alpha;
+      if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = alpha;
       Game.fillTextOutline(
         'Z',
         (this.x + 0.5) * GameConstants.TILESIZE - width / 2 + xoff,
-        (this.y - 0.75) * GameConstants.TILESIZE - yoff,
+        (this.y - 0.6) * GameConstants.TILESIZE - yoff,
         GameConstants.OUTLINE,
         "white"
       );

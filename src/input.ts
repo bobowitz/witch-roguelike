@@ -18,7 +18,7 @@ export const Input = {
 
   isTapHold: false,
   tapStartTime: null,
-  IS_TAP_HOLD_THRESH: 100,
+  IS_TAP_HOLD_THRESH: 300,
   keyDownListener: function (key: string) { },
   iListener: function () { },
   mListener: function () { },
