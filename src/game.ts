@@ -66,9 +66,6 @@ export class Game {
   static itemset: HTMLImageElement;
   static fxset: HTMLImageElement;
   static shopset: HTMLImageElement;
-  static tilesetShadow: HTMLImageElement;
-  static objsetShadow: HTMLImageElement;
-  static mobsetShadow: HTMLImageElement;
   static fontsheet: HTMLImageElement;
 
   static text_rendering_canvases: Record<string, HTMLCanvasElement>;
@@ -182,12 +179,6 @@ export class Game {
       Game.fxset.src = "res/fxset.png";
       Game.shopset = new Image();
       Game.shopset.src = "res/shopset.png";
-      Game.tilesetShadow = new Image();
-      Game.tilesetShadow.src = "res/tilesetShadow.png";
-      Game.objsetShadow = new Image();
-      Game.objsetShadow.src = "res/objsetShadow.png";
-      Game.mobsetShadow = new Image();
-      Game.mobsetShadow.src = "res/mobsetShadow.png";
       Game.fontsheet = new Image();
       Game.fontsheet.src = "res/font.png";
 
