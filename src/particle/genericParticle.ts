@@ -131,7 +131,7 @@ export class GenericParticle extends Particle {
     Game.ctx.fillStyle = oldFillStyle;
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (this.targetX) this.x += 0.1 * (this.targetX - this.x);
     else this.x += this.dx;
     if (this.targetY) this.y += 0.1 * (this.targetY - this.y);

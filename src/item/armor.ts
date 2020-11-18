@@ -49,7 +49,7 @@ export class Armor extends Equippable {
     this.rechargeTurnCounter = this.RECHARGE_TURNS + 1;
   };
 
-  drawGUI = (playerHealth: number) => {
+  drawGUI = (delta: number, playerHealth: number) => {
     if (this.rechargeTurnCounter === -1)
       Game.drawFX(5, 2, 1, 1, playerHealth, LevelConstants.SCREEN_H - 1, 1, 1);
     else {

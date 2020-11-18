@@ -51,7 +51,7 @@ export class SpikeTrap extends Tile {
     if (this.on && !(enemy instanceof Crate || enemy instanceof Barrel)) enemy.hurt(null, 1);
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       1,
       this.skin,
@@ -68,7 +68,7 @@ export class SpikeTrap extends Tile {
 
   t = 0;
 
-  drawUnderPlayer = () => {
+  drawUnderPlayer = (delta: number) => {
     let rumbleOffsetX = 0;
     this.t++;
     if (!this.on && this.tickCount === 3) {
@@ -93,8 +93,8 @@ export class SpikeTrap extends Tile {
       this.shadeAmount()
     );
     if (this.on && this.frame < frames.length - 1) {
-      if (frames[Math.floor(this.frame)] < 3) this.frame += 0.4;
-      else this.frame += 0.2;
+      if (frames[Math.floor(this.frame)] < 3) this.frame += 0.4 * delta;
+      else this.frame += 0.2 * delta;
     }
     if (!this.on) this.frame = 0;
   };

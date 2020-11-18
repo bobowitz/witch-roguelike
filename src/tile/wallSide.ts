@@ -12,7 +12,7 @@ export class WallSide extends Tile {
     return false;
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       0,
       this.skin,

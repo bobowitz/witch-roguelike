@@ -19,7 +19,7 @@ export class FountainTile extends Tile {
     return true;
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       1,
       this.skin,

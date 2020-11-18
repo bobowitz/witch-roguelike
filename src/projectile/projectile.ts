@@ -17,10 +17,10 @@ export class Projectile extends Drawable {
     this.drawableY = y;
   }
 
-  hitPlayer = (player: Player) => {};
-  hitEnemy = (enemy: Enemy) => {};
+  hitPlayer = (player: Player) => { };
+  hitEnemy = (enemy: Enemy) => { };
 
-  tick = () => {};
-  draw = () => {};
-  drawTopLayer = () => {};
+  tick = () => { };
+  draw = (delta: number) => { };
+  drawTopLayer = (delta: number) => { };
 }

@@ -33,7 +33,7 @@ export class DownLadder extends Tile {
     player.levelID = this.game.changeLevelThroughLadder(player, this);
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     let xx = 4;
     if (this.isRope) xx = 16;
 
@@ -63,5 +63,5 @@ export class DownLadder extends Tile {
     );
   };
 
-  drawAbovePlayer = () => {};
+  drawAbovePlayer = (delta: number) => { };
 }

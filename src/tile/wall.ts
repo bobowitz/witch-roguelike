@@ -20,7 +20,7 @@ export class Wall extends Tile {
     return true;
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (this.type === 1) {
       Game.drawTile(
         5,

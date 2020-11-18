@@ -59,6 +59,7 @@ export class Game {
   chatOpen: boolean;
   chatBox: string;
   chatBoxCursor: number;
+  previousFrameTimestamp: number;
   static scale;
   static tileset: HTMLImageElement;
   static objset: HTMLImageElement;
@@ -104,7 +105,7 @@ export class Game {
 
         this.levelState = LevelState.IN_LEVEL;
 
-        setInterval(this.run, 1000.0 / GameConstants.FPS);
+        window.requestAnimationFrame(this.run);
         this.onResize();
         window.addEventListener("resize", this.onResize);
       });
@@ -345,16 +346,23 @@ export class Game {
     return this.levels.indexOf(door.level);
   };
 
-  run = () => {
-    this.update();
-    this.draw();
+  run = (timestamp: number) => {
+    if (!this.previousFrameTimestamp) this.previousFrameTimestamp = timestamp - 1000.0 / GameConstants.FPS;
 
-    const now = performance.now();
-    while (times.length > 0 && times[0] <= now - 1000) {
+    // normalized so 1.0 = 60fps
+    let delta = (timestamp - this.previousFrameTimestamp) * 60.0 / 1000.0;
+
+    while (times.length > 0 && times[0] <= timestamp - 1000) {
       times.shift();
     }
-    times.push(now);
+    times.push(timestamp);
     fps = times.length;
+
+    this.update();
+    this.draw(delta);
+    window.requestAnimationFrame(this.run);
+
+    this.previousFrameTimestamp = timestamp;
   };
 
   update = () => {
@@ -499,7 +507,7 @@ export class Game {
     Game.fillText(text, x, y);
   }
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.ctx.globalAlpha = 1;
     Game.ctx.fillStyle = this.level.shadeColor;
     Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
@@ -562,8 +570,8 @@ export class Game {
       );
 
       Game.ctx.translate(levelOffsetX, levelOffsetY);
-      this.prevLevel.draw();
-      this.prevLevel.drawEntities();
+      this.prevLevel.draw(delta);
+      this.prevLevel.drawEntities(delta);
       for (
         let x = this.prevLevel.roomX - 1;
         x <= this.prevLevel.roomX + this.prevLevel.width;
@@ -580,8 +588,8 @@ export class Game {
       Game.ctx.translate(-levelOffsetX, -levelOffsetY);
 
       Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
-      this.level.draw();
-      this.level.drawEntities(true);
+      this.level.draw(delta);
+      this.level.drawEntities(delta, true);
       for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
         for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
           Game.drawFX(ditherFrame, 10, 1, 1, x, y, 1, 1);
@@ -590,12 +598,12 @@ export class Game {
       Game.ctx.translate(-newLevelOffsetX, -newLevelOffsetY);
 
       Game.ctx.translate(playerOffsetX, playerOffsetY);
-      this.players[this.localPlayerID].draw();
+      this.players[this.localPlayerID].draw(delta);
       Game.ctx.translate(-playerOffsetX, -playerOffsetY);
 
       Game.ctx.translate(newLevelOffsetX, newLevelOffsetY);
-      this.level.drawShade();
-      this.level.drawOverShade();
+      this.level.drawShade(delta);
+      this.level.drawOverShade(delta);
       Game.ctx.translate(-newLevelOffsetX, -newLevelOffsetY);
 
       Game.ctx.translate(
@@ -603,8 +611,8 @@ export class Game {
         Math.round(playerCY + playerOffsetY - 0.5 * GameConstants.HEIGHT)
       );
 
-      this.players[this.localPlayerID].drawGUI();
-      for (const i in this.players) this.players[i].updateDrawXY();
+      this.players[this.localPlayerID].drawGUI(delta);
+      for (const i in this.players) this.players[i].updateDrawXY(delta);
     } else if (this.levelState === LevelState.TRANSITIONING_LADDER) {
       let playerCX = (this.players[this.localPlayerID].x - this.players[this.localPlayerID].drawX + 0.5) * GameConstants.TILESIZE;
       let playerCY = (this.players[this.localPlayerID].y - this.players[this.localPlayerID].drawY + 0.5) * GameConstants.TILESIZE;
@@ -621,10 +629,10 @@ export class Game {
       );
 
       if (ditherFrame < 7) {
-        this.level.draw();
-        this.level.drawEntities();
-        this.level.drawShade();
-        this.level.drawOverShade();
+        this.level.draw(delta);
+        this.level.drawEntities(delta);
+        this.level.drawShade(delta);
+        this.level.drawOverShade(delta);
 
         for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
           for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
@@ -641,10 +649,10 @@ export class Game {
           this.transitioningLadder = null;
         }
 
-        this.level.draw();
-        this.level.drawEntities();
-        this.level.drawShade();
-        this.level.drawOverShade();
+        this.level.draw(delta);
+        this.level.drawEntities(delta);
+        this.level.drawShade(delta);
+        this.level.drawOverShade(delta);
         for (let x = this.level.roomX - 1; x <= this.level.roomX + this.level.width; x++) {
           for (let y = this.level.roomY - 1; y <= this.level.roomY + this.level.height; y++) {
             Game.drawFX(ditherFrame - (7 + deadFrames), 10, 1, 1, x, y, 1, 1);
@@ -656,8 +664,8 @@ export class Game {
         Math.round(playerCY - 0.5 * GameConstants.HEIGHT)
       );
 
-      this.players[this.localPlayerID].drawGUI();
-      for (const i in this.players) this.players[i].updateDrawXY();
+      this.players[this.localPlayerID].drawGUI(delta);
+      for (const i in this.players) this.players[i].updateDrawXY(delta);
     } else {
       this.screenShakeX *= -0.8;
       this.screenShakeY *= -0.8;
@@ -678,11 +686,11 @@ export class Game {
         )
       );
 
-      this.level.draw();
-      this.level.drawEntities();
-      this.level.drawShade();
-      this.level.drawOverShade();
-      this.players[this.localPlayerID].drawTopLayer();
+      this.level.draw(delta);
+      this.level.drawEntities(delta);
+      this.level.drawShade(delta);
+      this.level.drawOverShade(delta);
+      this.players[this.localPlayerID].drawTopLayer(delta);
 
       Game.ctx.translate(
         Math.round(
@@ -697,9 +705,9 @@ export class Game {
         )
       );
 
-      this.level.drawTopLayer();
-      this.players[this.localPlayerID].drawGUI();
-      for (const i in this.players) this.players[i].updateDrawXY();
+      this.level.drawTopLayer(delta);
+      this.players[this.localPlayerID].drawGUI(delta);
+      for (const i in this.players) this.players[i].updateDrawXY(delta);
     }
 
     // draw chat

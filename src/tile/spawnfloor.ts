@@ -16,7 +16,7 @@ export class SpawnFloor extends Tile {
     if (Game.rand(1, 20) == 1) this.variation = Game.randTable([8, 9, 10, 12]);
   }
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       this.variation,
       this.skin,

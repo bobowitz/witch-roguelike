@@ -41,6 +41,7 @@ export class WizardEnemy extends Enemy {
     this.frame = 0;
     this.state = WizardState.attack;
     this.seenPlayer = false;
+    this.alert = false;
     this.deathParticleColor = "#ffffff";
     this.rand = rand;
 
@@ -90,10 +91,12 @@ export class WizardEnemy extends Enemy {
           let [distance, player] = p;
           if (distance <= 4) {
             this.seenPlayer = true;
+            this.alert = true;
           }
         }
       }
-      if (this.seenPlayer) {
+      else if (this.seenPlayer) {
+        this.alert = false;
         switch (this.state) {
           case WizardState.attack:
             this.tileX = 7;
@@ -166,7 +169,7 @@ export class WizardEnemy extends Enemy {
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (!this.dead) {
       if (this.hasShadow)
         Game.drawMob(
@@ -194,7 +197,7 @@ export class WizardEnemy extends Enemy {
           this.level.shadeColor,
           this.shadeAmount()
         );
-        this.frame += 0.4;
+        this.frame += 0.4 * delta;
         if (this.frame > 11) this.frame = -1;
       } else {
         Game.drawMob(
@@ -209,6 +212,12 @@ export class WizardEnemy extends Enemy {
           this.level.shadeColor,
           this.shadeAmount()
         );
+      }
+      if (!this.seenPlayer) {
+        this.drawSleepingZs(delta);
+      }
+      if (this.alert) {
+        this.drawExclamation(delta);
       }
     }
   };

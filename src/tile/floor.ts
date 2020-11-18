@@ -16,7 +16,7 @@ export class Floor extends Tile {
       this.variation = Game.randTable([1, 1, 1, 1, 1, 1, 8, 8, 8, 9, 10, 10, 10, 10, 10, 12]);
   }
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       this.variation,
       this.skin,

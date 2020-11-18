@@ -191,6 +191,9 @@ export class Inventory {
       this.coins += 1;
       return true;
     }
+    if (item instanceof Weapon) {
+      item.wielder = this.player;
+    }
     if (item.stackable) {
       for (let i of this.items) {
         if (i.constructor === item.constructor) {
@@ -259,7 +262,7 @@ export class Inventory {
     return y;
   };
 
-  drawCoins = () => {
+  drawCoins = (delta: number) => {
     let coinX = LevelConstants.SCREEN_W - 1;
     let coinY = LevelConstants.SCREEN_H - 1;
 
@@ -287,13 +290,13 @@ export class Inventory {
     let height = this.rows * (s + 2 * b + g) - g;
 
     return (x >= Math.round(0.5 * GameConstants.WIDTH - 0.5 * width) - ob &&
-            x <= Math.round(0.5 * GameConstants.WIDTH - 0.5 * width) - ob + Math.round(width + 2 * ob) &&
-            y >= Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height) - ob &&
-            y <= Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height) - ob + Math.round(height + 2 * ob));
+      x <= Math.round(0.5 * GameConstants.WIDTH - 0.5 * width) - ob + Math.round(width + 2 * ob) &&
+      y >= Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height) - ob &&
+      y <= Math.round(0.5 * GameConstants.HEIGHT - 0.5 * height) - ob + Math.round(height + 2 * ob));
   }
 
-  draw = () => {
-    this.drawCoins();
+  draw = (delta: number) => {
+    this.drawCoins(delta);
 
     if (this.isOpen) {
       for (let i = 0; i < this.equipAnimAmount.length; i++) {
@@ -392,7 +395,7 @@ export class Inventory {
           let drawXScaled = drawX / GameConstants.TILESIZE;
           let drawYScaled = drawY / GameConstants.TILESIZE;
 
-          this.items[i].drawIcon(drawXScaled, drawYScaled);
+          this.items[i].drawIcon(delta, drawXScaled, drawYScaled);
 
           //if (this.items[i] instanceof Equippable && (this.items[i] as Equippable).equipped) {
           //  Game.drawItem(0, 4, 2, 2, x - 0.5, y - 0.5, 2, 2);
@@ -450,7 +453,7 @@ export class Inventory {
         let drawXScaled = drawX / GameConstants.TILESIZE;
         let drawYScaled = drawY / GameConstants.TILESIZE;
 
-        if (i < this.items.length) this.items[i].drawIcon(drawXScaled, drawYScaled);
+        if (i < this.items.length) this.items[i].drawIcon(delta, drawXScaled, drawYScaled);
       }
 
       let i = this.selX + this.selY * this.cols;

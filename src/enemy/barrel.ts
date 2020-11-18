@@ -25,7 +25,7 @@ export class Barrel extends Enemy {
     this.kill();
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     // not inherited because it doesn't have the 0.5 offset
     if (!this.dead) {
       Game.drawObj(
@@ -43,7 +43,7 @@ export class Barrel extends Enemy {
     }
   };
 
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y - this.drawY;
 
     this.drawX += -0.5 * this.drawX;

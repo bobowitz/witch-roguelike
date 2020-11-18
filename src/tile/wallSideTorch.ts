@@ -22,8 +22,8 @@ export class WallSideTorch extends Tile {
     return false;
   };
 
-  draw = () => {
-    this.frame += 0.3;
+  draw = (delta: number) => {
+    this.frame += 0.3 * delta;
     if (this.frame >= 12) this.frame = 0;
 
     Game.drawTile(

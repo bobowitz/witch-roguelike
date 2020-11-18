@@ -25,7 +25,7 @@ export class Resource extends Enemy {
     this.kill();
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (!this.dead) {
       Game.drawObj(
         this.tileX,
@@ -42,7 +42,7 @@ export class Resource extends Enemy {
     }
   };
 
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y;
   };
 }

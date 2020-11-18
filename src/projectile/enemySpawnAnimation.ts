@@ -54,8 +54,8 @@ export class EnemySpawnAnimation extends Projectile {
     }
   };
 
-  drawTopLayer = () => {
-    this.frame += 0.25;
+  drawTopLayer = (delta: number) => {
+    this.frame += 0.25 * delta;
     if (this.frame >= 8) this.frame = 0;
     for (let i = 0; i < this.ANIM_COUNT; i++) {
       let offsetX = 0; //4 * Math.sin(this.frame + this.xx[i]);

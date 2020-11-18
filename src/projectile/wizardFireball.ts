@@ -35,13 +35,13 @@ export class WizardFireball extends Projectile {
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (this.state === 0) {
-      this.frame += 0.25;
+      this.frame += 0.25 * delta;
       if (this.frame >= 4) this.frame = 0;
       Game.drawFX(22 + Math.floor(this.frame), 7, 1, 1, this.x, this.y, 1, 1);
     } else if (this.state === 1) {
-      this.frame += 0.25;
+      this.frame += 0.25 * delta;
       if (this.frame >= 4) this.frame = 0;
       Game.drawFX(18 + Math.floor(this.frame), 7, 1, 1, this.x, this.y, 1, 1);
     } else {
@@ -49,7 +49,7 @@ export class WizardFireball extends Projectile {
         this.delay--;
         return;
       }
-      this.frame += 0.3;
+      this.frame += 0.3 * delta;
       if (this.frame > 17) this.dead = true;
       Game.drawFX(Math.floor(this.frame), 6, 1, 2, this.x, this.y - 1, 1, 2);
     }

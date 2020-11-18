@@ -26,7 +26,7 @@ export class Door extends Tile {
     player.levelID = this.game.changeLevelThroughDoor(player, this.linkedDoor);
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (this.opened)
       Game.drawTile(
         6,
@@ -55,7 +55,7 @@ export class Door extends Tile {
       );
   };
 
-  drawAbovePlayer = () => {
+  drawAbovePlayer = (delta: number) => {
     if (!this.opened)
       Game.drawTile(
         13,
@@ -84,7 +84,7 @@ export class Door extends Tile {
       );
   };
 
-  drawAboveShading = () => {
+  drawAboveShading = (delta: number) => {
     Game.drawFX(2, 2, 1, 1, this.x, this.y - 1.25 + 0.125 * Math.sin(0.006 * Date.now()), 1, 1);
   };
 }

@@ -56,7 +56,7 @@ export class Chest extends Enemy {
     this.kill();
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (!this.dead) {
       Game.drawObj(
         this.tileX,
@@ -73,7 +73,7 @@ export class Chest extends Enemy {
     }
   };
 
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y;
   };
 }

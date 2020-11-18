@@ -28,7 +28,7 @@ export class Map {
     this.game = game;
   }
 
-  draw = () => {
+  draw = (delta: number) => {
     let SCALE = 1;
 
     let startLevel = this.game.levels[0];

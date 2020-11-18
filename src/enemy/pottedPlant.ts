@@ -25,7 +25,7 @@ export class PottedPlant extends Enemy {
     this.kill();
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     // not inherited because it doesn't have the 0.5 offset
     if (!this.dead) {
       this.drawX += -0.5 * this.drawX;
@@ -45,7 +45,7 @@ export class PottedPlant extends Enemy {
     }
   };
 
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y;
   };
 }

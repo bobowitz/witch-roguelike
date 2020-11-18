@@ -18,7 +18,7 @@ export class Equippable extends Item {
     this.equipped = !this.equipped;
   };
 
-  drawEquipped = (x: number, y: number) => {
+  drawEquipped = (delta: number, x: number, y: number) => {
     Game.drawItem(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
   };
 }

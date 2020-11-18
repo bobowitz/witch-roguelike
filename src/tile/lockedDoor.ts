@@ -28,7 +28,7 @@ export class LockedDoor extends Tile {
     return true;
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       17,
       this.skin,

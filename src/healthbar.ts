@@ -12,7 +12,7 @@ export class HealthBar {
     this.hurtTimer = Date.now();
   };
 
-  draw = (hearts: number, maxHearts: number, x: number, y: number, flashing: boolean) => {
+  draw = (delta: number, hearts: number, maxHearts: number, x: number, y: number, flashing: boolean) => {
     let t = Date.now() - this.hurtTimer;
     if (t <= LevelConstants.HEALTH_BAR_TOTALTIME) {
       let fullHearts = Math.floor(hearts);

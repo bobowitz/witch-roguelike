@@ -112,7 +112,7 @@ export class VendingMachine extends Enemy {
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     let tileX = 19;
     if (!this.isInf && this.quantity === 0) tileX = 20;
     Game.drawObj(
@@ -129,7 +129,7 @@ export class VendingMachine extends Enemy {
     );
   };
 
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y - this.drawY;
 
     if (this.open && this.playerOpened === this.game.players[this.game.localPlayerID]) {
@@ -190,11 +190,11 @@ export class VendingMachine extends Enemy {
           if (i < this.costItems.length) {
             let a = 1;
             if (!this.playerOpened.inventory.hasItemCount(this.costItems[i])) a = 0.15;
-            this.costItems[i].drawIcon(drawXScaled, drawYScaled, a);
+            this.costItems[i].drawIcon(delta, drawXScaled, drawYScaled, a);
           } else if (i === this.costItems.length) {
             Game.drawFX(0, 1, 1, 1, drawXScaled, drawYScaled, 1, 1);
           } else if (i === this.costItems.length + 1) {
-            this.item.drawIcon(drawXScaled, drawYScaled);
+            this.item.drawIcon(delta, drawXScaled, drawYScaled);
           }
         }
       }

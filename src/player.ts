@@ -418,8 +418,8 @@ export class Player extends Drawable {
     }
   };
 
-  drawPlayerSprite = () => {
-    this.frame += 0.1;
+  drawPlayerSprite = (delta: number) => {
+    this.frame += 0.1 * delta;
     if (this.frame >= 4) this.frame = 0;
     Game.drawMob(
       1 + Math.floor(this.frame),
@@ -436,12 +436,12 @@ export class Player extends Drawable {
     }
   };
 
-  draw = () => {
-    this.flashingFrame += 12 / GameConstants.FPS;
+  draw = (delta: number) => {
+    this.flashingFrame += delta * 12 / GameConstants.FPS;
     if (!this.dead) {
       Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
       if (!this.flashing || Math.floor(this.flashingFrame) % 2 === 0) {
-        this.drawPlayerSprite();
+        this.drawPlayerSprite(delta);
       }
     }
   };
@@ -450,10 +450,11 @@ export class Player extends Drawable {
     this.guiHeartFrame = 1;
   };
 
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y - this.drawY;
 
     this.healthBar.draw(
+      delta,
       this.health,
       this.maxHealth,
       this.x - this.drawX,
@@ -462,11 +463,11 @@ export class Player extends Drawable {
     );
   };
 
-  drawGUI = () => {
+  drawGUI = (delta: number) => {
     if (!this.dead) {
-      this.inventory.draw();
+      this.inventory.draw(delta);
 
-      if (this.guiHeartFrame > 0) this.guiHeartFrame++;
+      if (this.guiHeartFrame > 0) this.guiHeartFrame += delta;
       if (this.guiHeartFrame > 5) {
         this.guiHeartFrame = 0;
       }
@@ -482,7 +483,7 @@ export class Player extends Drawable {
           }
         } else Game.drawFX(frame, 2, 1, 1, i, LevelConstants.SCREEN_H - 1, 1, 1);
       }
-      if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(this.maxHealth);
+      if (this.inventory.getArmor()) this.inventory.getArmor().drawGUI(delta, this.maxHealth);
     } else {
       Game.ctx.fillStyle = LevelConstants.LEVEL_TEXT_COLOR;
       let gameOverString = "Game Over";
@@ -493,11 +494,11 @@ export class Player extends Drawable {
       );
     }
     if ((Input.isDown(Input.M) || Input.isTapHold) && !this.game.chatOpen) {
-      this.map.draw();
+      this.map.draw(delta);
     }
   };
 
-  updateDrawXY = () => {
+  updateDrawXY = (delta: number) => {
     this.drawX += -0.5 * this.drawX;
     this.drawY += -0.5 * this.drawY;
   };

@@ -20,12 +20,12 @@ export class HitWarning extends Drawable {
     this.dead = true;
   };
 
-  static updateFrame = () => {
-    HitWarning.frame += 0.125;
+  static updateFrame = (delta: number) => {
+    HitWarning.frame += 0.125 * delta;
     if (HitWarning.frame >= 4) HitWarning.frame = 0;
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (
       (this.x === this.game.players[this.game.localPlayerID].x && Math.abs(this.y - this.game.players[this.game.localPlayerID].y) <= 1) ||
       (this.y === this.game.players[this.game.localPlayerID].y && Math.abs(this.x - this.game.players[this.game.localPlayerID].x) <= 1)
@@ -33,7 +33,7 @@ export class HitWarning extends Drawable {
       Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
   };
 
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y;
     if (
       (this.x === this.game.players[this.game.localPlayerID].x && Math.abs(this.y - this.game.players[this.game.localPlayerID].y) <= 1) ||

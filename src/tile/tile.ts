@@ -34,13 +34,13 @@ export class Tile {
   isOpaque = (): boolean => {
     return false;
   };
-  onCollide = (player: Player) => {};
-  onCollideEnemy = (enemy: Enemy) => {};
-  tick = () => {};
-  tickEnd = () => {};
+  onCollide = (player: Player) => { };
+  onCollideEnemy = (enemy: Enemy) => { };
+  tick = () => { };
+  tickEnd = () => { };
 
-  draw = () => {};
-  drawUnderPlayer = () => {};
-  drawAbovePlayer = () => {};
-  drawAboveShading = () => {};
+  draw = (delta: number) => { };
+  drawUnderPlayer = (delta: number) => { };
+  drawAbovePlayer = (delta: number) => { };
+  drawAboveShading = (delta: number) => { };
 }

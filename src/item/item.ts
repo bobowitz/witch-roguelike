@@ -66,13 +66,13 @@ export class Item extends Drawable {
     return this.level.softVis[this.x][this.y];
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (!this.pickedUp) {
       if (this.scaleFactor < 1) this.scaleFactor += 0.04;
       else this.scaleFactor = 1;
 
       Game.drawItem(0, 0, 1, 1, this.x, this.y, 1, 1);
-      this.frame += (Math.PI * 2) / 60;
+      this.frame += delta * (Math.PI * 2) / 60;
       Game.drawItem(
         this.tileX,
         this.tileY,
@@ -91,7 +91,7 @@ export class Item extends Drawable {
       );
     }
   };
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     if (this.pickedUp) {
       this.y -= 0.125;
       this.alpha -= 0.03;
@@ -104,7 +104,7 @@ export class Item extends Drawable {
       Game.ctx.globalAlpha = 1.0;
     }
   };
-  drawIcon = (x: number, y: number, opacity = 1) => {
+  drawIcon = (delta: number, x: number, y: number, opacity = 1) => {
     if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = opacity;
     Game.drawItem(this.tileX, this.tileY, 1, 2, x, y - 1, this.w, this.h);
     Game.ctx.globalAlpha = 1;

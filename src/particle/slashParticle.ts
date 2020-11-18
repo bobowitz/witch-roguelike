@@ -15,10 +15,10 @@ export class SlashParticle extends Particle {
     this.frame = 0;
   }
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawFX(Math.round(this.frame), 13, 1, 1, this.x, this.y, 1, 1);
 
-    this.frame += 0.5;
+    this.frame += 0.5 * delta;
     if (this.frame > 9) this.dead = true;
   };
 }

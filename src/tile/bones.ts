@@ -2,7 +2,7 @@ import { Game } from "../game";
 import { Floor } from "./floor";
 
 export class Bones extends Floor {
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       7,
       this.skin,

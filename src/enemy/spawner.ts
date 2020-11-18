@@ -49,40 +49,29 @@ export class Spawner extends Enemy {
         return;
       }
       this.tileX = 6;
-      if (!this.seenPlayer) {
-        let p = this.nearestPlayer();
-        if (p !== false) {
-          let [distance, player] = p;
-          if (distance <= 12) {
-            this.seenPlayer = true;
-          }
-        }
-      }
-      if (this.seenPlayer) {
-        if (this.ticks % 8 === 0) {
-          const positions = this.level.getEmptyTiles().filter(t => Math.abs(t.x - this.x) <= 1 && Math.abs(t.y - this.y) <= 1);
-          if (positions.length > 0) {
-            this.tileX = 7;
+      if (this.ticks % 8 === 0) {
+        const positions = this.level.getEmptyTiles().filter(t => Math.abs(t.x - this.x) <= 1 && Math.abs(t.y - this.y) <= 1);
+        if (positions.length > 0) {
+          this.tileX = 7;
 
-            const position = Game.randTable(positions, this.rand);
+          const position = Game.randTable(positions, this.rand);
 
-            let spawned;
-            switch (this.enemySpawnType) {
-              case 1:
-                spawned = new KnightEnemy(this.level, this.game, position.x, position.y, this.rand);
-                break;
-              case 2:
-                spawned = new SkullEnemy(this.level, this.game, position.x, position.y, this.rand);
-                break;
-              case 3:
-                spawned = new WizardEnemy(this.level, this.game, position.x, position.y, this.rand);
-                break;
-            }
-            this.level.projectiles.push(
-              new EnemySpawnAnimation(this.level, spawned, position.x, position.y)
-            );
-            this.level.hitwarnings.push(new HitWarning(this.game, position.x, position.y));
+          let spawned;
+          switch (this.enemySpawnType) {
+            case 1:
+              spawned = new KnightEnemy(this.level, this.game, position.x, position.y, this.rand);
+              break;
+            case 2:
+              spawned = new SkullEnemy(this.level, this.game, position.x, position.y, this.rand);
+              break;
+            case 3:
+              spawned = new WizardEnemy(this.level, this.game, position.x, position.y, this.rand);
+              break;
           }
+          this.level.projectiles.push(
+            new EnemySpawnAnimation(this.level, spawned, position.x, position.y)
+          );
+          this.level.hitwarnings.push(new HitWarning(this.game, position.x, position.y));
         }
       }
       this.ticks++;

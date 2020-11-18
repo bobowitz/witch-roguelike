@@ -132,7 +132,7 @@ export class SkullEnemy extends Enemy {
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (!this.dead) {
       this.tileX = 5;
       this.tileY = 8;
@@ -140,14 +140,14 @@ export class SkullEnemy extends Enemy {
         this.tileX = 3;
         this.tileY = 0;
         if (this.ticksSinceFirstHit >= 3) {
-          this.flashingFrame += 0.1;
+          this.flashingFrame += 0.1 * delta;
           if (Math.floor(this.flashingFrame) % 2 === 0) {
             this.tileX = 2;
           }
         }
       }
 
-      this.frame += 0.1;
+      this.frame += 0.1 * delta;
       if (this.frame >= 4) this.frame = 0;
 
       if (this.hasShadow)
@@ -177,10 +177,10 @@ export class SkullEnemy extends Enemy {
       );
     }
     if (!this.seenPlayer) {
-      this.drawSleepingZs();
+      this.drawSleepingZs(delta);
     }
     if (this.alert) {
-      this.drawExclamation();
+      this.drawExclamation(delta);
     }
   };
 

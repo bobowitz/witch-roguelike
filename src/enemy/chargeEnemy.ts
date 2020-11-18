@@ -6,6 +6,7 @@ import { Coin } from "../item/coin";
 import { Door } from "../tile/door";
 import { BottomDoor } from "../tile/bottomDoor";
 import { GenericParticle } from "../particle/genericParticle";
+import { GameConstants } from "../gameConstants";
 
 export enum ChargeEnemyState {
   IDLE,
@@ -14,12 +15,15 @@ export enum ChargeEnemyState {
 }
 
 export class ChargeEnemy extends Enemy {
+  startX: number;
+  startY: number;
   targetX: number;
   targetY: number;
   ticks: number;
   frame: number;
   seenPlayer: boolean;
   state: ChargeEnemyState;
+  trailFrame: number;
 
   constructor(level: Level, game: Game, x: number, y: number) {
     super(level, game, x, y);
@@ -27,16 +31,18 @@ export class ChargeEnemy extends Enemy {
     this.frame = 0;
     this.health = 1;
     this.maxHealth = 1;
-    this.tileX = 17;
+    this.tileX = 13;
     this.tileY = 8;
+    this.trailFrame = 0;
     this.seenPlayer = true;
+    this.alert = false;
     this.deathParticleColor = "#ffffff";
 
     this.state = ChargeEnemyState.IDLE;
   }
 
   hit = (): number => {
-    return 0.5;
+    return 1;
   };
 
   canMoveOver = (x: number, y: number): boolean => {
@@ -54,22 +60,21 @@ export class ChargeEnemy extends Enemy {
         return;
       }
       this.ticks++;
-      if (this.seenPlayer || this.level.softVis[this.x][this.y] < 1) {
-        this.seenPlayer = true;
-        if (this.state === ChargeEnemyState.IDLE) {
-          let blocked = false;
-          let dx = 0;
-          let dy = 0;
-          if (this.x === this.game.players[this.game.localPlayerID].x) {
-            if (this.y < this.game.players[this.game.localPlayerID].y) dy = 1;
+      if (this.state === ChargeEnemyState.IDLE) {
+        let blocked = false;
+        let dx = 0;
+        let dy = 0;
+        for (const i in this.game.players) {
+          if (this.x === this.game.players[i].x) {
+            if (this.y < this.game.players[i].y) dy = 1;
             else dy = -1;
-            for (let yy = this.y; yy !== this.game.players[this.game.localPlayerID].y; yy += dy) {
+            for (let yy = this.y; yy !== this.game.players[i].y; yy += dy) {
               if (!this.canMoveOver(this.x, yy)) blocked = true;
             }
-          } else if (this.y === this.game.players[this.game.localPlayerID].y) {
-            if (this.x < this.game.players[this.game.localPlayerID].x) dx = 1;
+          } else if (this.y === this.game.players[i].y) {
+            if (this.x < this.game.players[i].x) dx = 1;
             else dx = -1;
-            for (let xx = this.x; xx !== this.game.players[this.game.localPlayerID].x; xx += dx) {
+            for (let xx = this.x; xx !== this.game.players[i].x; xx += dx) {
               if (!this.canMoveOver(xx, this.y)) blocked = true;
             }
           }
@@ -81,43 +86,53 @@ export class ChargeEnemy extends Enemy {
               this.targetX += dx;
               this.targetY += dy;
               if (
-                (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y) ||
-                (this.targetX === this.game.players[this.game.localPlayerID].x - 1 && this.targetY === this.game.players[this.game.localPlayerID].y) ||
-                (this.targetX === this.game.players[this.game.localPlayerID].x + 1 && this.targetY === this.game.players[this.game.localPlayerID].y) ||
-                (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y - 1) ||
-                (this.targetX === this.game.players[this.game.localPlayerID].x && this.targetY === this.game.players[this.game.localPlayerID].y + 1)
+                (this.targetX === this.game.players[i].x && this.targetY === this.game.players[i].y) ||
+                (this.targetX === this.game.players[i].x - 1 && this.targetY === this.game.players[i].y) ||
+                (this.targetX === this.game.players[i].x + 1 && this.targetY === this.game.players[i].y) ||
+                (this.targetX === this.game.players[i].x && this.targetY === this.game.players[i].y - 1) ||
+                (this.targetX === this.game.players[i].x && this.targetY === this.game.players[i].y + 1)
               )
                 this.level.hitwarnings.push(new HitWarning(this.game, this.targetX, this.targetY));
             }
+            if (dx > 0) this.direction = EnemyDirection.RIGHT;
+            else if (dx < 0) this.direction = EnemyDirection.LEFT;
+            else if (dy < 0) this.direction = EnemyDirection.UP;
+            else if (dy > 0) this.direction = EnemyDirection.DOWN;
+            break;
           }
-        } else if (this.state === ChargeEnemyState.ALERTED) {
-          this.state = ChargeEnemyState.CHARGING;
-
-          if (
-            (this.y === this.game.players[this.game.localPlayerID].y &&
-              ((this.x < this.game.players[this.game.localPlayerID].x && this.game.players[this.game.localPlayerID].x <= this.targetX) ||
-                (this.targetX <= this.game.players[this.game.localPlayerID].x && this.game.players[this.game.localPlayerID].x < this.x))) ||
-            (this.x === this.game.players[this.game.localPlayerID].x &&
-              ((this.y < this.game.players[this.game.localPlayerID].y && this.game.players[this.game.localPlayerID].y <= this.targetY) ||
-                (this.targetY <= this.game.players[this.game.localPlayerID].y && this.game.players[this.game.localPlayerID].y < this.y)))
-          ) {
-            this.game.players[this.game.localPlayerID].hurt(0.5);
-          }
-
-          this.drawX = this.targetX - this.x;
-          this.drawY = this.targetY - this.y;
-          this.x = this.targetX;
-          this.y = this.targetY;
-        } else if (this.state === ChargeEnemyState.CHARGING) {
-          this.state = ChargeEnemyState.IDLE;
         }
+      } else if (this.state === ChargeEnemyState.ALERTED) {
+        this.state = ChargeEnemyState.CHARGING;
+        this.trailFrame = 0;
+
+        for (const i in this.game.players) {
+          if (
+            (this.y === this.game.players[i].y &&
+              ((this.x < this.game.players[i].x && this.game.players[i].x <= this.targetX) ||
+                (this.targetX <= this.game.players[i].x && this.game.players[i].x < this.x))) ||
+            (this.x === this.game.players[i].x &&
+              ((this.y < this.game.players[i].y && this.game.players[i].y <= this.targetY) ||
+                (this.targetY <= this.game.players[i].y && this.game.players[i].y < this.y)))
+          ) {
+            this.game.players[i].hurt(0.5);
+          }
+        }
+
+        this.startX = this.x;
+        this.startY = this.y;
+        this.drawX = this.targetX - this.x;
+        this.drawY = this.targetY - this.y;
+        this.x = this.targetX;
+        this.y = this.targetY;
+      } else if (this.state === ChargeEnemyState.CHARGING) {
+        this.state = ChargeEnemyState.IDLE;
       }
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (!this.dead) {
-      this.frame += 0.1;
+      this.frame += 0.1 * delta;
       if (this.frame >= 4) this.frame = 0;
 
       if (
@@ -138,7 +153,24 @@ export class ChargeEnemy extends Enemy {
         );
       }
 
-      //if (this.doneMoving() && this.game.players[this.game.localPlayerID].doneMoving()) this.facePlayer();
+      if (this.state === ChargeEnemyState.CHARGING) {
+        this.trailFrame += 0.01 * delta;
+        let t = this.trailFrame;
+
+        if (t >= 0 && t <= 1) {
+          Game.ctx.strokeStyle = "white";
+          if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 1 - t;
+          Game.ctx.lineWidth = GameConstants.TILESIZE * 0.5;
+          Game.ctx.beginPath();
+          Game.ctx.moveTo((this.startX + 0.5) * GameConstants.TILESIZE, (this.startY + 0.5) * GameConstants.TILESIZE);
+          Game.ctx.lineCap = "round";
+          Game.ctx.lineTo((this.x - this.drawX + 0.5) * GameConstants.TILESIZE, (this.y - this.drawY + 0.5) * GameConstants.TILESIZE);
+          Game.ctx.closePath();
+          Game.ctx.stroke();
+          Game.ctx.globalAlpha = 1;
+        }
+      }
+
       if (this.hasShadow)
         Game.drawMob(
           0,
@@ -153,17 +185,23 @@ export class ChargeEnemy extends Enemy {
           this.shadeAmount()
         );
       Game.drawMob(
-        this.tileX,
-        this.tileY,
+        this.tileX + Math.floor(this.frame),
+        this.tileY + this.direction * 2,
         1,
         2,
         this.x - this.drawX,
-        this.y - 1.5 - this.drawY + (this.tileX === 4 ? 0.1875 : 0),
+        this.y - 1.5 - this.drawY,
         1,
         2,
         this.level.shadeColor,
         this.shadeAmount()
       );
+      if (this.state === ChargeEnemyState.IDLE) {
+        this.drawSleepingZs(delta);
+      }
+      else if (this.state === ChargeEnemyState.ALERTED) {
+        this.drawExclamation(delta);
+      }
     }
   };
 

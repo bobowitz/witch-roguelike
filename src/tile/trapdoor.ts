@@ -12,7 +12,7 @@ export class Trapdoor extends Tile {
     this.game = game;
   }
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(
       13,
       this.skin,

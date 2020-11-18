@@ -72,7 +72,7 @@ export const Input = {
 
   onKeydown: (event: KeyboardEvent) => {
     if (event.key) Input.keyDownListener(event.key);
-    if (event.cancelable && event.key != "F12") event.preventDefault();
+    if (event.cancelable && event.key != "F12" && event.key != "F5") event.preventDefault();
     if (event.repeat) return; // ignore repeat keypresses
     Input.lastPressTime = Date.now();
     Input.lastPressKeyCode = event.code;

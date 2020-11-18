@@ -9,7 +9,7 @@ import { Player } from "../player";
 import { DualDagger } from "../weapon/dualdagger";
 import { Item } from "../item/item";
 
-export class KnightEnemy extends Enemy {
+export class SlimeEnemy extends Enemy {
   moves: Array<astar.AStarData>;
   ticks: number;
   frame: number;
@@ -23,19 +23,17 @@ export class KnightEnemy extends Enemy {
     this.moves = new Array<astar.AStarData>(); // empty move list
     this.ticks = 0;
     this.frame = 0;
-    this.health = 2;
-    this.maxHealth = 2;
-    this.tileX = 9;
-    this.tileY = 8;
+    this.health = 1;
+    this.maxHealth = 1;
+    this.tileX = 8;
+    this.tileY = 4;
     this.seenPlayer = false;
     this.deathParticleColor = "#ffffff";
 
     this.rand = rand;
     if (drop) this.drop = drop;
     else {
-      let dropProb = rand();
-      if (dropProb < 0.005) this.drop = new DualDagger(this.level, 0, 0);
-      else this.drop = new Coin(this.level, 0, 0);
+      this.drop = new Coin(this.level, 0, 0);
     }
   }
 
@@ -63,6 +61,8 @@ export class KnightEnemy extends Enemy {
         if (result !== false) {
           let [distance, p] = result;
           if (distance < 4) {
+            this.tileX = 9;
+            this.tileY = 4;
             this.seenPlayer = true;
             this.targetPlayer = p;
             if (p === this.game.players[this.game.localPlayerID]) this.alert = true;
@@ -77,10 +77,10 @@ export class KnightEnemy extends Enemy {
         this.alert = false;
         this.ticks++;
         this.tileX = 9;
-        this.tileY = 8;
+        this.tileY = 4;
         if (this.ticks % 2 === 1) {
-          this.tileX = 4;
-          this.tileY = 0;
+          this.tileX = 8;
+          this.tileY = 4;
 
           let oldX = this.x;
           let oldY = this.y;
@@ -161,12 +161,12 @@ export class KnightEnemy extends Enemy {
           this.shadeAmount()
         );
       Game.drawMob(
-        this.tileX + (this.tileX === 4 ? 0 : Math.floor(this.frame)),
-        this.tileY + this.direction * 2,
+        this.tileX,
+        this.tileY,
         1,
         2,
         this.x - this.drawX,
-        this.y - 1.5 - this.drawY + (this.tileX === 4 ? 0.1875 : 0),
+        this.y - 1.5 - this.drawY,
         1,
         2,
         this.level.shadeColor,

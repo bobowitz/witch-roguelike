@@ -52,7 +52,7 @@ export class Button extends Tile {
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.level.shadeColor, this.shadeAmount());
     if (this.pressed)
       Game.drawTile(

@@ -182,7 +182,7 @@ export class Enemy extends Drawable {
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     if (!this.dead) {
       if (this.hasShadow)
         Game.drawMob(
@@ -212,16 +212,16 @@ export class Enemy extends Drawable {
     }
   };
   tick = () => { };
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     this.drawableY = this.y - this.drawY;
 
-    this.healthBar.draw(this.health, this.maxHealth, this.x, this.y, true);
+    this.healthBar.draw(delta, this.health, this.maxHealth, this.x, this.y, true);
     this.drawX += -0.5 * this.drawX;
     this.drawY += -0.5 * this.drawY;
   };
 
-  drawSleepingZs = () => {
-    this.sleepingZFrame++;
+  drawSleepingZs = (delta: number) => {
+    this.sleepingZFrame += delta;
 
     let numZs = 2;
     let t = (this.sleepingZFrame) * 0.01; // 0 <= t < 1
@@ -249,8 +249,8 @@ export class Enemy extends Drawable {
     }
   }
 
-  drawExclamation = () => {
-    this.exclamationFrame++;
+  drawExclamation = (delta: number) => {
+    this.exclamationFrame += delta;
 
     let yoff: number | false = 0;
     let yoffs: Array<number | false> = [0, -1, -2, -3, -5, -7, -4];

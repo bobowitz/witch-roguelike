@@ -18,7 +18,7 @@ export class GoldenDoor extends LockedDoor {
     }
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(18, 0, 1, 1, this.x, this.y, 1, 1, this.level.shadeColor, this.shadeAmount());
   };
 }

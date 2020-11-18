@@ -20,7 +20,7 @@ export class UpLadder extends Tile {
     player.levelID = this.game.changeLevelThroughLadder(player, this);
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     let xx = 29;
     let yy = 0;
     if (this.isRope) {
@@ -67,7 +67,7 @@ export class UpLadder extends Tile {
     );
   };
 
-  drawAbovePlayer = () => {
+  drawAbovePlayer = (delta: number) => {
     if (this.isRope)
       Game.drawTile(
         16,

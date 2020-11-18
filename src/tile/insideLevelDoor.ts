@@ -25,7 +25,7 @@ export class InsideLevelDoor extends Tile {
     return !this.opened;
   };
 
-  draw = () => {
+  draw = (delta: number) => {
     Game.drawTile(1, 0, 1, 1, this.x, this.y, 1, 1, this.level.shadeColor, this.shadeAmount());
     if (this.opened)
       Game.drawTile(15, 1, 1, 1, this.x, this.y, 1, 1, this.level.shadeColor, this.shadeAmount());
@@ -44,7 +44,7 @@ export class InsideLevelDoor extends Tile {
       );
   };
 
-  drawAbovePlayer = () => {
+  drawAbovePlayer = (delta: number) => {
     if (!this.opened)
       Game.drawTile(
         13,

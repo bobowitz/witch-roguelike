@@ -49,6 +49,8 @@ import { Spear } from "./weapon/spear";
 import { SideDoor } from "./tile/sidedoor";
 import { Drawable } from "./drawable";
 import { Player } from "./player";
+import { SlimeEnemy } from "./enemy/slimeEnemy";
+import { ZombieEnemy } from "./enemy/zombieEnemy";
 
 export enum RoomType {
   DUNGEON,
@@ -402,25 +404,40 @@ export class Level {
       let x = t.x;
       let y = t.y;
       if (this.depth !== 0) {
-        let d = Math.min(this.depth, Game.randTable([1, 1, 1, 2, 2, 2, 3, 3, 4, 4], rand));
-        switch (d) {
-          case 1:
-            this.enemies.push(new KnightEnemy(this, this.game, x, y, rand));
-            break;
-          case 2:
-            let s = new SkullEnemy(this, this.game, x, y, rand);
-            s.skipNextTurns = 1;
-            this.enemies.push(s);
-            break;
-          case 3:
-            this.enemies.push(new WizardEnemy(this, this.game, x, y, rand));
-            break;
-          case 4:
-            this.enemies.push(new Spawner(this, this.game, x, y, rand));
-            break;
-          case 5:
-            this.enemies.push(new ChargeEnemy(this, this.game, x, y));
-            break;
+        let tables = {
+          0: [],
+          1: [1],
+          2: [1, 1, 2, 2, 3],
+          3: [1, 2, 2, 3, 3, 4, 4, 5],
+          4: [1, 2, 3, 4, 5, 6, 7]
+        };
+        let max_depth_table = 4;
+        let d = Math.min(this.depth, max_depth_table);
+        if (tables[d] && tables[d].length > 0) {
+          let type = Game.randTable(tables[d], rand);
+          switch (type) {
+            case 1:
+              this.enemies.push(new SlimeEnemy(this, this.game, x, y, rand));
+              break;
+            case 2:
+              this.enemies.push(new KnightEnemy(this, this.game, x, y, rand));
+              break;
+            case 3:
+              this.enemies.push(new ZombieEnemy(this, this.game, x, y, rand));
+              break;
+            case 4:
+              this.enemies.push(new SkullEnemy(this, this.game, x, y, rand));
+              break;
+            case 5:
+              this.enemies.push(new WizardEnemy(this, this.game, x, y, rand));
+              break;
+            case 6:
+              this.enemies.push(new ChargeEnemy(this, this.game, x, y));
+              break;
+            case 7:
+              this.enemies.push(new Spawner(this, this.game, x, y, rand));
+              break;
+          }
         }
       }
     }
@@ -663,9 +680,7 @@ export class Level {
     let factor = Game.rand(1, 36, rand);
 
     this.buildEmptyRoom();
-    if (factor < 30) this.addWallBlocks(rand);
-    if (factor < 26) this.addFingers(rand);
-    if (factor % 4 === 0) this.addChasms(rand);
+    this.addWallBlocks(rand);
     this.fixWalls();
 
     if (factor > 15) this.addSpikeTraps(Game.randTable([0, 0, 0, 1, 1, 2, 5], rand), rand);
@@ -1254,22 +1269,22 @@ export class Level {
     this.turn = TurnState.playerTurn;
   };
 
-  draw = () => {
-    HitWarning.updateFrame();
+  draw = (delta: number) => {
+    HitWarning.updateFrame(delta);
 
     this.fadeLighting();
 
     for (let x = this.roomX - 1; x < this.roomX + this.width + 1; x++) {
       for (let y = this.roomY - 1; y < this.roomY + this.height + 1; y++) {
-        if (this.softVis[x][y] < 1) this.levelArray[x][y].draw();
+        if (this.softVis[x][y] < 1) this.levelArray[x][y].draw(delta);
       }
     }
   };
 
-  drawEntities = (skipLocalPlayer?: boolean) => {
+  drawEntities = (delta: number, skipLocalPlayer?: boolean) => {
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.softVis[x][y] < 1) this.levelArray[x][y].drawUnderPlayer();
+        if (this.softVis[x][y] < 1) this.levelArray[x][y].drawUnderPlayer(delta);
       }
     }
 
@@ -1299,21 +1314,21 @@ export class Level {
     });
 
     for (const d of drawables) {
-      d.draw();
+      d.draw(delta);
     }
 
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        if (this.softVis[x][y] < 1) this.levelArray[x][y].drawAbovePlayer();
+        if (this.softVis[x][y] < 1) this.levelArray[x][y].drawAbovePlayer(delta);
       }
     }
 
     for (const i of this.items) {
-      i.drawTopLayer();
+      i.drawTopLayer(delta);
     }
   };
 
-  drawShade = () => {
+  drawShade = (delta: number) => {
     let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / this.game.players[this.game.localPlayerID].sightRadius));
     if (GameConstants.ALPHA_ENABLED) {
       Game.ctx.globalAlpha = shadingAlpha;
@@ -1330,29 +1345,29 @@ export class Level {
     }
   };
 
-  drawOverShade = () => {
+  drawOverShade = (delta: number) => {
     for (const e of this.enemies) {
-      e.drawTopLayer(); // health bars
+      e.drawTopLayer(delta); // health bars
     }
 
     for (const p of this.projectiles) {
-      p.drawTopLayer();
+      p.drawTopLayer(delta);
     }
 
     for (const h of this.hitwarnings) {
-      h.drawTopLayer();
+      h.drawTopLayer(delta);
     }
 
     // draw over dithered shading
     for (let x = 0; x < this.levelArray.length; x++) {
       for (let y = 0; y < this.levelArray[0].length; y++) {
-        this.levelArray[x][y].drawAboveShading();
+        this.levelArray[x][y].drawAboveShading(delta);
       }
     }
   };
 
   // for stuff rendered on top of the player
-  drawTopLayer = () => {
+  drawTopLayer = (delta: number) => {
     // gui stuff
 
     // room name

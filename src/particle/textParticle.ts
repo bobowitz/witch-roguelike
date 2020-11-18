@@ -28,7 +28,7 @@ export class TextParticle extends Particle {
     else this.delay = delay;
   }
 
-  draw = () => {
+  draw = (delta: number) => {
     if (this.delay > 0) {
       this.delay--;
     } else {
