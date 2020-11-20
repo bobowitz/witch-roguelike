@@ -665,8 +665,6 @@ export const loadGameState = (game: Game, gameState: GameState) => {
 
   console.log(gameState);
 
-  Random.setState(gameState.randomState);
-
   if (!(gameState as any).init_state) {
     if (gameState.players) {
       for (const i in gameState.players) {
@@ -705,6 +703,7 @@ export const loadGameState = (game: Game, gameState: GameState) => {
     game.level = game.levels[game.players[game.localPlayerID].levelID];
     game.level.enterLevel(game.players[game.localPlayerID]);
   }
+  Random.setState(gameState.randomState);
   console.log('current level ' + game.players[game.localPlayerID].levelID);
   game.level.updateLighting();
 

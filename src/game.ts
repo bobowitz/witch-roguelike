@@ -73,6 +73,8 @@ export class Game {
   chatTextBox: TextBox;
   previousFrameTimestamp: number;
 
+  input_history = [];
+
   loginMessage: string = "";
   username: string;
   usernameTextBox: TextBox;
@@ -140,6 +142,7 @@ export class Game {
         this.players = {};
         this.offlinePlayers = {};
         loadGameState(this, state);
+        this.chatOpen = false;
 
         this.screenShakeX = 0;
         this.screenShakeY = 0;
@@ -150,7 +153,18 @@ export class Game {
       this.socket.on('get state', () => {
         this.socket.emit('game state', createGameState(this));
       });
-      this.socket.on('input', (tickPlayerID: number, input: InputEnum) => {
+      this.socket.on('input', (tickPlayerID: string, input: InputEnum) => {
+        let decode_input = (input: InputEnum): string => {
+          if (input === InputEnum.I) return "I";
+          if (input === InputEnum.Q) return "Q";
+          if (input === InputEnum.LEFT) return "LEFT";
+          if (input === InputEnum.RIGHT) return "RIGHT";
+          if (input === InputEnum.UP) return "UP";
+          if (input === InputEnum.DOWN) return "DOWN";
+          if (input === InputEnum.SPACE) return "SPACE";
+        }
+
+        this.input_history.push(tickPlayerID + ', ' + decode_input(input));
         // make sure player exists
         if (!(tickPlayerID in this.players) && !(tickPlayerID in this.offlinePlayers)) { // new player
           this.players[this.localPlayerID] = new Player(this, 0, 0, true);
@@ -215,35 +229,46 @@ export class Game {
       this.chat = [];
       this.chatTextBox = new TextBox();
       this.chatTextBox.setEnterCallback(() => {
-        if (this.chatTextBox.text.length > 0)
+        if (this.chatTextBox.text.length > 0) {
           this.socket.emit('chat message', this.chatTextBox.text);
+          // chat commands
+          if (this.chatTextBox.text === "/logout") {
+            this.socket.emit('logout');
+            this.menuState = MenuState.LOGIN_USERNAME;
+            this.usernameTextBox.clear();
+            this.passwordTextBox.clear();
+            this.levels = [];
+            this.players = {};
+            this.offlinePlayers = {};
+          }
+          else if (this.chatTextBox.text === "/leave") {
+            this.socket.emit('game state', createGameState(this));
+            this.socket.emit('leave world');
+            this.socket.emit('get available worlds');
+            this.menuState = MenuState.SELECT_WORLD;
+            this.levels = [];
+            this.players = {};
+            this.offlinePlayers = {};
+          }
+          else if (this.chatTextBox.text === "/save") {
+            this.socket.emit('game state', createGameState(this));
+          }
+          else if (this.chatTextBox.text === "/r") {
+            console.log(Random.state);
+          }
+          else if (this.chatTextBox.text === "/i") {
+            for (let i = 0; i < this.input_history.length; i++) {
+              console.log(i + ': ' + this.input_history[i]);
+            }
+          }
+          else if (this.chatTextBox.text.substring(0, 8) === "/invite ")
+            this.socket.emit('invite', this.chatTextBox.text.substring(8));
 
-        // chat commands
-        if (this.chatTextBox.text === "/logout") {
-          this.socket.emit('logout');
-          this.menuState = MenuState.LOGIN_USERNAME;
-          this.usernameTextBox.clear();
-          this.passwordTextBox.clear();
-          this.levels = [];
-          this.players = {};
-          this.offlinePlayers = {};
+          this.chatTextBox.clear();
         }
-        else if (this.chatTextBox.text === "/leave") {
-          this.socket.emit('game state', createGameState(this));
-          this.socket.emit('leave world');
-          this.socket.emit('get available worlds');
-          this.menuState = MenuState.SELECT_WORLD;
-          this.levels = [];
-          this.players = {};
-          this.offlinePlayers = {};
+        else {
+          this.chatOpen = false;
         }
-        else if (this.chatTextBox.text === "/save") {
-          this.socket.emit('game state', createGameState(this));
-        }
-        else if (this.chatTextBox.text.substring(0, 8) === "/invite ")
-          this.socket.emit('invite', this.chatTextBox.text.substring(8));
-
-        this.chatTextBox.clear();
       });
       this.chatTextBox.setEscapeCallback(() => {
         this.chatOpen = false;
@@ -892,7 +917,7 @@ export class Game {
       let CHAT_OPACITY = 0.5;
       if (this.chatOpen) {
         Game.ctx.fillStyle = "black";
-        if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 0.5;
+        if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 0.75;
         Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
 
         Game.ctx.globalAlpha = 1;

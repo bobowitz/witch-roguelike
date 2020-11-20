@@ -429,7 +429,7 @@ export class Level {
             this.enemies.push(enemy);
           };
 
-          let type = Game.randTable(tables[d], rand);
+          let type = 5;//Game.randTable(tables[d], rand);
           switch (type) {
             case 1:
               addEnemy(new SlimeEnemy(this, this.game, x, y, rand));

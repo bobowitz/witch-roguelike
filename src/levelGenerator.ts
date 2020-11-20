@@ -164,6 +164,9 @@ export class LevelGenerator {
             case RoomType.ROPEHOLE:
               newLevelDoorDir = r.generateAroundPoint(rand, points[ind], ind, 3, 4);
               break;
+            case RoomType.SHOP:
+              newLevelDoorDir = r.generateAroundPoint(rand, points[ind], ind, 7, 7);
+              break;
             case RoomType.DUNGEON:
               newLevelDoorDir = r.generateAroundPoint(
                 rand,

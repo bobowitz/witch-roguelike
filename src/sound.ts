@@ -78,22 +78,22 @@ export class Sound {
   };
 
   static playerStoneFootstep = () => {
-    let f = Game.randTable(Sound.playerStoneFootsteps);
+    let f = Game.randTable(Sound.playerStoneFootsteps, Math.random);
     f.play();
     f.currentTime = 0;
   };
 
   static enemyFootstep = () => {
-    let f = Game.randTable(Sound.enemyFootsteps);
+    let f = Game.randTable(Sound.enemyFootsteps, Math.random);
     f.play();
     f.currentTime = 0;
   };
 
   static hit = () => {
-    let f = Game.randTable(Sound.hitSounds);
+    let f = Game.randTable(Sound.hitSounds, Math.random);
     f.play();
     f.currentTime = 0;
-    f = Game.randTable(Sound.hurtSounds);
+    f = Game.randTable(Sound.hurtSounds, Math.random);
     f.volume = 0.5;
     f.play();
     f.currentTime = 0;
@@ -101,7 +101,7 @@ export class Sound {
   };
 
   static hurt = () => {
-    let f = Game.randTable(Sound.hurtSounds);
+    let f = Game.randTable(Sound.hurtSounds, Math.random);
     f.play();
     f.currentTime = 0;
   };
@@ -112,19 +112,19 @@ export class Sound {
   };
 
   static chest = () => {
-    let f = Game.randTable(Sound.chestSounds);
+    let f = Game.randTable(Sound.chestSounds, Math.random);
     f.play();
     f.currentTime = 0;
   };
 
   static pickupCoin = () => {
-    let f = Game.randTable(Sound.coinPickupSounds);
+    let f = Game.randTable(Sound.coinPickupSounds, Math.random);
     f.play();
     f.currentTime = 0;
   };
 
   static mine = () => {
-    let f = Game.randTable(Sound.miningSounds);
+    let f = Game.randTable(Sound.miningSounds, Math.random);
     f.play();
     f.currentTime = 0;
   };
@@ -150,7 +150,7 @@ export class Sound {
   };
 
   static push = () => {
-    let f = Game.randTable(Sound.pushSounds);
+    let f = Game.randTable(Sound.pushSounds, Math.random);
     f.play();
     f.currentTime = 0;
   };
