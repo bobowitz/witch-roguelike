@@ -15,7 +15,6 @@ export class Item extends Drawable {
   tileX: number;
   tileY: number;
   frame: number;
-  dead: boolean; // for inventory, just a removal flag
   level: Level;
   stackable: boolean;
   stackCount: number;
@@ -35,7 +34,6 @@ export class Item extends Drawable {
     this.tileX = 0;
     this.tileY = 0;
     this.frame = 0;
-    this.dead = false;
     this.stackable = false;
     this.stackCount = 1;
     this.pickedUp = false;

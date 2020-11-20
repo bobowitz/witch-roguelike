@@ -1,5 +1,6 @@
 import { Game } from "./game";
 import { Drawable } from "./drawable";
+import { Level } from "./level";
 
 export class HitWarning extends Drawable {
   x: number;

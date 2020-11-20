@@ -19,9 +19,10 @@ export class ChargeEnemy extends Enemy {
   startY: number;
   targetX: number;
   targetY: number;
+  visualTargetX: number;
+  visualTargetY: number;
   ticks: number;
   frame: number;
-  seenPlayer: boolean;
   state: ChargeEnemyState;
   trailFrame: number;
 
@@ -34,8 +35,7 @@ export class ChargeEnemy extends Enemy {
     this.tileX = 13;
     this.tileY = 8;
     this.trailFrame = 0;
-    this.seenPlayer = true;
-    this.alert = false;
+    this.alertTicks = 0;
     this.deathParticleColor = "#ffffff";
 
     this.state = ChargeEnemyState.IDLE;
@@ -94,6 +94,9 @@ export class ChargeEnemy extends Enemy {
               )
                 this.level.hitwarnings.push(new HitWarning(this.game, this.targetX, this.targetY));
             }
+            this.visualTargetX = this.targetX + 0.5 * dx;
+            this.visualTargetY = this.targetY + 0.5 * dy;
+            if (dy === 1) this.visualTargetY += 0.65;
             if (dx > 0) this.direction = EnemyDirection.RIGHT;
             else if (dx < 0) this.direction = EnemyDirection.LEFT;
             else if (dy < 0) this.direction = EnemyDirection.UP;
@@ -114,7 +117,7 @@ export class ChargeEnemy extends Enemy {
               ((this.y < this.game.players[i].y && this.game.players[i].y <= this.targetY) ||
                 (this.targetY <= this.game.players[i].y && this.game.players[i].y < this.y)))
           ) {
-            this.game.players[i].hurt(0.5);
+            this.game.players[i].hurt(this.hit());
           }
         }
 
@@ -160,12 +163,11 @@ export class ChargeEnemy extends Enemy {
         if (t >= 0 && t <= 1) {
           Game.ctx.strokeStyle = "white";
           if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = 1 - t;
-          Game.ctx.lineWidth = GameConstants.TILESIZE * 0.5;
+          Game.ctx.lineWidth = GameConstants.TILESIZE * 0.25;
           Game.ctx.beginPath();
           Game.ctx.moveTo((this.startX + 0.5) * GameConstants.TILESIZE, (this.startY + 0.5) * GameConstants.TILESIZE);
           Game.ctx.lineCap = "round";
           Game.ctx.lineTo((this.x - this.drawX + 0.5) * GameConstants.TILESIZE, (this.y - this.drawY + 0.5) * GameConstants.TILESIZE);
-          Game.ctx.closePath();
           Game.ctx.stroke();
           Game.ctx.globalAlpha = 1;
         }
@@ -204,6 +206,36 @@ export class ChargeEnemy extends Enemy {
       }
     }
   };
+
+  drawTopLayer = (delta: number) => {
+    this.drawableY = this.y;
+
+    this.healthBar.draw(delta, this.health, this.maxHealth, this.x, this.y, true);
+    this.drawX += -0.5 * this.drawX;
+    this.drawY += -0.5 * this.drawY;
+
+    if (this.state === ChargeEnemyState.ALERTED) {
+      this.trailFrame += 0.4 * delta;
+
+      if (Math.floor(this.trailFrame) % 2 === 0) {
+        let startX = (this.x + 0.5) * GameConstants.TILESIZE;
+        let startY = (this.y - 0.25) * GameConstants.TILESIZE;
+        if (this.direction === EnemyDirection.LEFT) startX -= 3;
+        else if (this.direction === EnemyDirection.RIGHT) startX += 3;
+        else if (this.direction === EnemyDirection.DOWN) startY += 2;
+        else if (this.direction === EnemyDirection.UP) startY -= 8;
+
+        Game.ctx.strokeStyle = "white";
+        Game.ctx.lineWidth = GameConstants.TILESIZE * 0.25;
+        Game.ctx.beginPath();
+        Game.ctx.moveTo(Math.round(startX), Math.round(startY));
+        Game.ctx.lineCap = "round";
+        Game.ctx.lineTo(Math.round((this.visualTargetX + 0.5) * GameConstants.TILESIZE), Math.round((this.visualTargetY - 0.25) * GameConstants.TILESIZE));
+        Game.ctx.stroke();
+        Game.ctx.globalAlpha = 1;
+      }
+    }
+  }
 
   dropLoot = () => {
     this.level.items.push(new Coin(this.level, this.x, this.y));

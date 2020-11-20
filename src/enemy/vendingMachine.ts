@@ -42,6 +42,8 @@ export class VendingMachine extends Enemy {
     this.chainPushable = false;
     this.interactable = true;
 
+    this.costItems = [];
+
     this.item = item;
     if (this.item instanceof Shotgun) {
       let g = new BlueGem(level, 0, 0);
@@ -130,7 +132,7 @@ export class VendingMachine extends Enemy {
   };
 
   drawTopLayer = (delta: number) => {
-    this.drawableY = this.y - this.drawY;
+    this.drawableY = this.y;
 
     if (this.open && this.playerOpened === this.game.players[this.game.localPlayerID]) {
       let s = Math.min(18, (18 * (Date.now() - this.openTime)) / OPEN_TIME); // size of box

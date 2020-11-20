@@ -16,6 +16,6 @@ export class BlueGem extends Item {
   }
 
   getDescription = (): string => {
-    return "SAPPHIRE";
+    return "ZIRCON";
   };
 }

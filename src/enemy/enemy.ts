@@ -44,7 +44,7 @@ export class Enemy extends Drawable {
   healthBar: HealthBar;
   drop: Item;
   sleepingZFrame = 0;
-  alert: boolean;
+  alertTicks: number;
   exclamationFrame: number;
 
   constructor(level: Level, game: Game, x: number, y: number) {
@@ -71,26 +71,45 @@ export class Enemy extends Drawable {
     this.interactable = false;
     this.deathParticleColor = "#ff00ff";
     this.healthBar = new HealthBar();
-    this.alert = false;
+    this.alertTicks = 0;
     this.exclamationFrame = 0;
   }
 
   tryMove = (x: number, y: number) => {
+    let pointWouldBeIn = (someX: number, someY: number): boolean => {
+      return someX >= x && someX < x + this.w && someY >= y && someY < y + this.h;
+    };
+    let enemyCollide = (enemy: Enemy): boolean => {
+      if (enemy.x >= x + this.w || enemy.x + enemy.w <= x) return false;
+      if (enemy.y >= y + this.h || enemy.y + enemy.h <= y) return false;
+      return true;
+    };
     for (const e of this.level.enemies) {
-      if (e !== this && e.x === x && e.y === y) {
+      if (e !== this && enemyCollide(e)) {
         return;
       }
     }
     for (const i in this.game.players) {
-      if (this.game.players[i].x === x && this.game.players[i].y === y) {
+      if (pointWouldBeIn(this.game.players[i].x, this.game.players[i].y)) {
         return;
       }
     }
-    if (!this.level.levelArray[x][y].isSolid()) {
-      this.level.levelArray[x][y].onCollideEnemy(this);
-      this.x = x;
-      this.y = y;
+    let tiles = [];
+    for (let xx = 0; xx < this.w; xx++) {
+      for (let yy = 0; yy < this.h; yy++) {
+        if (!this.level.levelArray[x + xx][y + yy].isSolid()) {
+          tiles.push(this.level.levelArray[x + xx][y + yy]);
+        }
+        else {
+          return;
+        }
+      }
     }
+    for (let tile of tiles) {
+      tile.onCollideEnemy(this);
+    }
+    this.x = x;
+    this.y = y;
   };
 
   hit = (): number => {
@@ -98,6 +117,10 @@ export class Enemy extends Drawable {
   };
 
   hurtCallback = () => { };
+
+  pointIn = (x: number, y: number): boolean => {
+    return x >= this.x && x < this.x + this.w && y >= this.y && y < this.y + this.h;
+  }
 
   hurt = (playerHitBy: Player, damage: number) => {
     this.healthBar.hurt();
@@ -118,17 +141,15 @@ export class Enemy extends Drawable {
       this.level.levelArray[this.x][this.y] = b;
     }
 
-    this.dead = true;
-    GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, this.deathParticleColor);
-    this.level.particles.push(new DeathParticle(this.x, this.y));
-
-    this.dropLoot();
+    this.killNoBones();
   };
 
   killNoBones = () => {
     this.dead = true;
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, this.deathParticleColor);
     this.level.particles.push(new DeathParticle(this.x, this.y));
+
+    this.dropLoot();
   };
 
   shadeAmount = () => {
@@ -146,7 +167,7 @@ export class Enemy extends Drawable {
     let closestPlayer = null;
     for (const i in this.game.players) {
       if (this.game.levels[this.game.players[i].levelID] === this.level) {
-        let distance = Math.max(Math.abs(this.x - this.game.players[i].x), Math.abs(this.y - this.game.players[i].y));
+        let distance = this.playerDistance(this.game.players[i]);
         if (distance < closestDistance) {
           closestDistance = distance;
           closestPlayer = this.game.players[i];
@@ -160,6 +181,10 @@ export class Enemy extends Drawable {
       return [closestDistance, closestPlayer];
   };
 
+  playerDistance = (player: Player): number => {
+    return Math.max(Math.abs(this.x - player.x), Math.abs(this.y - player.y));
+  }
+
   seesPlayer = (): boolean => {
     let RADIUS = 4;
     return (
@@ -168,9 +193,9 @@ export class Enemy extends Drawable {
     );
   };
 
-  facePlayer = () => {
-    let dx = this.game.players[this.game.localPlayerID].x - this.x;
-    let dy = this.game.players[this.game.localPlayerID].y - this.y;
+  facePlayer = (player: Player) => {
+    let dx = player.x - this.x;
+    let dy = player.y - this.y;
     if (Math.abs(dx) === Math.abs(dy)) {
       // just moved, already facing player
     } else if (Math.abs(dx) > Math.abs(dy)) {
@@ -213,14 +238,14 @@ export class Enemy extends Drawable {
   };
   tick = () => { };
   drawTopLayer = (delta: number) => {
-    this.drawableY = this.y - this.drawY;
+    this.drawableY = this.y;
 
     this.healthBar.draw(delta, this.health, this.maxHealth, this.x, this.y, true);
     this.drawX += -0.5 * this.drawX;
     this.drawY += -0.5 * this.drawY;
   };
 
-  drawSleepingZs = (delta: number) => {
+  drawSleepingZs = (delta: number, offsetX = 0, offsetY = 0) => {
     this.sleepingZFrame += delta;
 
     let numZs = 2;
@@ -240,8 +265,8 @@ export class Enemy extends Drawable {
       if (GameConstants.ALPHA_ENABLED) Game.ctx.globalAlpha = alpha;
       Game.fillTextOutline(
         'Z',
-        (this.x + 0.5) * GameConstants.TILESIZE - width / 2 + xoff,
-        (this.y - 0.6) * GameConstants.TILESIZE - yoff,
+        (this.x + 0.5) * GameConstants.TILESIZE - width / 2 + xoff + offsetX,
+        (this.y - 0.6) * GameConstants.TILESIZE - yoff + offsetY,
         GameConstants.OUTLINE,
         "white"
       );
@@ -249,7 +274,7 @@ export class Enemy extends Drawable {
     }
   }
 
-  drawExclamation = (delta: number) => {
+  drawExclamation = (delta: number, offsetX = 0, offsetY = 0) => {
     this.exclamationFrame += delta;
 
     let yoff: number | false = 0;
@@ -262,8 +287,8 @@ export class Enemy extends Drawable {
     if (yoff !== false) {
       Game.fillTextOutline(
         '!',
-        (this.x + 0.5) * GameConstants.TILESIZE - width / 2,
-        (this.y - 0.75) * GameConstants.TILESIZE + yoff,
+        (this.x + 0.5) * GameConstants.TILESIZE - width / 2 + offsetX,
+        (this.y - 0.75) * GameConstants.TILESIZE + yoff + offsetY,
         GameConstants.OUTLINE,
         GameConstants.WARNING_RED
       );

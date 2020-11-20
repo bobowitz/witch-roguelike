@@ -51,6 +51,8 @@ import { Drawable } from "./drawable";
 import { Player } from "./player";
 import { SlimeEnemy } from "./enemy/slimeEnemy";
 import { ZombieEnemy } from "./enemy/zombieEnemy";
+import { BigSkullEnemy } from "./enemy/bigSkullEnemy";
+import { Random } from "./random";
 
 export enum RoomType {
   DUNGEON,
@@ -110,7 +112,6 @@ export class Level {
   playerTicked: Player;
   skin: SkinType;
   entered: boolean; // has the player entered this level
-  upLadder: UpLadder;
   lightSources: Array<LightSource>;
   shadeColor = "black";
 
@@ -406,36 +407,59 @@ export class Level {
       if (this.depth !== 0) {
         let tables = {
           0: [],
-          1: [1],
-          2: [1, 1, 2, 2, 3],
-          3: [1, 2, 2, 3, 3, 4, 4, 5],
-          4: [1, 2, 3, 4, 5, 6, 7]
+          1: [1, 2],
+          2: [1, 2, 3],
+          3: [1, 2, 3, 4, 5],
+          4: [1, 2, 3, 4, 5, 6, 7, 8]
         };
         let max_depth_table = 4;
         let d = Math.min(this.depth, max_depth_table);
         if (tables[d] && tables[d].length > 0) {
+          let addEnemy = (enemy: Enemy) => { // adds an enemy if it doesn't overlap any other enemies
+            for (let xx = 0; xx < enemy.w; xx++) {
+              for (let yy = 0; yy < enemy.h; yy++) {
+                for (const e of this.enemies) {
+                  if (e.pointIn(x + xx, y + yy)) {
+                    numEnemies++; // extra loop iteration since we're throwing out this point
+                    return; // throw out point if it overlaps an enemy
+                  }
+                }
+              }
+            }
+            this.enemies.push(enemy);
+          };
+
           let type = Game.randTable(tables[d], rand);
           switch (type) {
             case 1:
-              this.enemies.push(new SlimeEnemy(this, this.game, x, y, rand));
+              addEnemy(new SlimeEnemy(this, this.game, x, y, rand));
               break;
             case 2:
-              this.enemies.push(new KnightEnemy(this, this.game, x, y, rand));
+              addEnemy(new KnightEnemy(this, this.game, x, y, rand));
               break;
             case 3:
-              this.enemies.push(new ZombieEnemy(this, this.game, x, y, rand));
+              addEnemy(new ZombieEnemy(this, this.game, x, y, rand));
               break;
             case 4:
-              this.enemies.push(new SkullEnemy(this, this.game, x, y, rand));
+              addEnemy(new SkullEnemy(this, this.game, x, y, rand));
               break;
             case 5:
-              this.enemies.push(new WizardEnemy(this, this.game, x, y, rand));
+              addEnemy(new WizardEnemy(this, this.game, x, y, rand));
               break;
             case 6:
-              this.enemies.push(new ChargeEnemy(this, this.game, x, y));
+              addEnemy(new ChargeEnemy(this, this.game, x, y));
               break;
             case 7:
-              this.enemies.push(new Spawner(this, this.game, x, y, rand));
+              addEnemy(new Spawner(this, this.game, x, y, rand));
+              break;
+            case 8:
+              addEnemy(new BigSkullEnemy(this, this.game, x, y, rand));
+              // clear out some space
+              for (let xx = 0; xx < 2; xx++) {
+                for (let yy = 0; yy < 2; yy++) {
+                  this.levelArray[x + xx][y + yy] = new Floor(this, x + xx, y + yy); // remove any walls
+                }
+              }
               break;
           }
         }
@@ -700,8 +724,6 @@ export class Level {
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
-    this.upLadder = new UpLadder(this, this.game, cX, cY);
-    this.levelArray[cX][cY] = this.upLadder;
   };
   generateDownLadder = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
@@ -735,9 +757,9 @@ export class Level {
 
     let cX = Math.floor(this.roomX + this.width / 2);
     let cY = Math.floor(this.roomY + this.height / 2);
-    this.upLadder = new UpLadder(this, this.game, cX, cY);
-    this.upLadder.isRope = true;
-    this.levelArray[cX][cY] = this.upLadder;
+    let upLadder = new UpLadder(this, this.game, cX, cY);
+    upLadder.isRope = true;
+    this.levelArray[cX][cY] = upLadder;
   };
   generateShop = (rand: () => number) => {
     this.skin = SkinType.DUNGEON;
@@ -763,7 +785,7 @@ export class Level {
     type: RoomType,
     difficulty: number,
     group: number,
-    rand = Math.random
+    rand = Random.rand
   ) {
     this.game = game;
     this.x = x;
@@ -803,8 +825,6 @@ export class Level {
 
     this.roomX = 2; //Math.floor(- this.width / 2);
     this.roomY = 2; //Math.floor(- this.height / 2);
-
-    this.upLadder = null;
 
     this.name = "";
     switch (this.type) {
@@ -875,6 +895,7 @@ export class Level {
       case RoomType.SPAWNER:
         this.generateSpawner(rand);
     }
+    this.message = this.name;
   }
 
   addDoor = (location: number, link: any) => {
@@ -1020,7 +1041,7 @@ export class Level {
     this.updateLevelTextColor();
     player.moveSnap(
       this.roomX + Math.floor(this.width / 2),
-      this.roomY + this.height - 1
+      this.roomY + Math.floor(this.height / 2)
     );
 
     this.updateLighting();
@@ -1065,7 +1086,7 @@ export class Level {
       }
     }
     for (const e of this.enemies) {
-      returnVal = returnVal.filter(t => t.x !== e.x || t.y !== e.y);
+      returnVal = returnVal.filter(t => !e.pointIn(t.x, t.y));
     }
     return returnVal;
   };
@@ -1237,6 +1258,7 @@ export class Level {
     for (const e of this.enemies) {
       e.tick();
     }
+    this.enemies = this.enemies.filter(e => !e.dead);
     for (const i of this.items) {
       i.tick();
     }
@@ -1303,7 +1325,11 @@ export class Level {
     }
     drawables.sort((a, b) => {
       if (a.drawableY - b.drawableY === 0) {
-        if (a instanceof Enemy) {
+        if (a instanceof Player) {
+          return 1;
+        } else if (b instanceof Player) {
+          return -1;
+        } else if (a instanceof Enemy) {
           return 1;
         } else if (b instanceof Enemy) {
           return -1;

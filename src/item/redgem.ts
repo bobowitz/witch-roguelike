@@ -16,6 +16,6 @@ export class RedGem extends Item {
   }
 
   getDescription = (): string => {
-    return "RUBY";
+    return "GARNET";
   };
 }

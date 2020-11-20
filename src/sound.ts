@@ -71,7 +71,7 @@ export class Sound {
     Sound.powerupSound = new Audio("res/powerup.wav");
     Sound.powerupSound.volume = 0.5;
 
-    Sound.healSound = new Audio("res/heal.wav");
+    Sound.healSound = new Audio("res/SFX/items/powerup1.wav");
     Sound.healSound.volume = 0.5;
 
     Sound.music = new Audio("res/bewitched.mp3");

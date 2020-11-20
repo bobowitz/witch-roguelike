@@ -16,6 +16,6 @@ export class GreenGem extends Item {
   }
 
   getDescription = (): string => {
-    return "EMERALD";
+    return "PERIDOT";
   };
 }

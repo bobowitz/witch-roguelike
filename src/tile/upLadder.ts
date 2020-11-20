@@ -7,7 +7,7 @@ import { SkinType, Tile } from "./tile";
 import { DownLadder } from "./downLadder";
 
 export class UpLadder extends Tile {
-  linkedLadder: DownLadder;
+  linkedLevel: Level;
   game: Game;
   isRope = false;
 

@@ -27,8 +27,7 @@ export class DualDagger extends Weapon {
       if (
         e.destroyable &&
         !(e instanceof Crate || e instanceof Barrel) &&
-        e.x === newX &&
-        e.y === newY
+        e.pointIn(newX, newY)
       ) {
         e.hurt(this.wielder, 1);
         flag = true;

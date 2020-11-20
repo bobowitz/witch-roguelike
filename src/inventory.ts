@@ -31,7 +31,6 @@ let FULL_OUTLINE = "white";
 export class Inventory {
   player: Player;
   items: Array<Item>;
-  equipped: Array<Equippable>;
   rows = 2;
   cols = 5;
   selX = 0;
@@ -47,7 +46,6 @@ export class Inventory {
     this.game = game;
     this.player = player;
     this.items = new Array<Item>();
-    this.equipped = new Array<Equippable>();
     this.equipAnimAmount = [];
     for (let i = 0; i < this.rows * this.cols; i++) {
       this.equipAnimAmount[i] = 0;
@@ -69,6 +67,11 @@ export class Inventory {
 
     a(new Dagger({ game: this.game } as Level, 0, 0));
     a(new Torch({ game: this.game } as Level, 0, 0));
+  }
+
+  clear = () => {
+    this.items = [];
+    for (let i = 0; i < this.rows * this.cols; i++) this.equipAnimAmount[i] = 0;
   }
 
   open = () => {
@@ -118,9 +121,6 @@ export class Inventory {
           }
         }
       }
-      this.equipped = this.items.filter(x => x instanceof Equippable && x.equipped) as Array<
-        Equippable
-      >;
     }
   };
   drop = () => {
@@ -132,9 +132,6 @@ export class Inventory {
       this.items[i].y = this.player.y;
       this.items[i].pickedUp = false;
       this.equipAnimAmount[i] = 0;
-      this.equipped = this.items.filter(x => x instanceof Equippable && x.equipped) as Array<
-        Equippable
-      >;
       this.game.levels[this.player.levelID].items.push(this.items[i]);
       this.items.splice(i, 1);
     }
@@ -219,8 +216,8 @@ export class Inventory {
   };
 
   getArmor = (): Armor => {
-    for (const e of this.equipped) {
-      if (e instanceof Armor) return e;
+    for (const i of this.items) {
+      if (i instanceof Armor && i.equipped) return i;
     }
     return null;
   };
@@ -313,9 +310,6 @@ export class Inventory {
 
       Game.ctx.fillStyle = "rgb(0, 0, 0, 0.8)";
       Game.ctx.fillRect(0, 0, GameConstants.WIDTH, GameConstants.HEIGHT);
-
-      // check equips too
-      this.items = this.items.filter(x => !x.dead);
 
       Game.ctx.globalAlpha = 1;
 

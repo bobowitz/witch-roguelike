@@ -17,7 +17,7 @@ import { BlueGem } from "../item/bluegem";
 import { Random } from "../random";
 import { Item } from "../item/item";
 
-enum WizardState {
+export enum WizardState {
   idle,
   attack,
   justAttacked,
@@ -41,7 +41,7 @@ export class WizardEnemy extends Enemy {
     this.frame = 0;
     this.state = WizardState.attack;
     this.seenPlayer = false;
-    this.alert = false;
+    this.alertTicks = 0;
     this.deathParticleColor = "#ffffff";
     this.rand = rand;
 
@@ -70,7 +70,7 @@ export class WizardEnemy extends Enemy {
   shuffle = a => {
     let j, x, i;
     for (i = a.length - 1; i > 0; i--) {
-      j = Math.floor(this.rand() * (i + 1));
+      j = Math.floor(Random.rand() * (i + 1));
       x = a[i];
       a[i] = a[j];
       a[j] = x;
@@ -91,15 +91,14 @@ export class WizardEnemy extends Enemy {
           let [distance, player] = p;
           if (distance <= 4) {
             this.seenPlayer = true;
-            this.alert = true;
+            this.alertTicks = 1;
           }
         }
       }
       else if (this.seenPlayer) {
-        this.alert = false;
+        this.alertTicks = Math.max(0, this.alertTicks - 1);
         switch (this.state) {
           case WizardState.attack:
-            this.tileX = 7;
             if (!this.level.levelArray[this.x - 1][this.y].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
               if (!this.level.levelArray[this.x - 2][this.y].isSolid()) {
@@ -127,7 +126,6 @@ export class WizardEnemy extends Enemy {
             this.state = WizardState.justAttacked;
             break;
           case WizardState.justAttacked:
-            this.tileX = 6;
             this.state = WizardState.idle;
             break;
           case WizardState.teleport:
@@ -136,11 +134,11 @@ export class WizardEnemy extends Enemy {
             let min = 100000;
             let bestPos;
             let emptyTiles = this.shuffle(this.level.getEmptyTiles());
-            let optimalDist = Game.randTable([2, 2, 3, 3, 3, 3, 3], this.rand);
+            let optimalDist = Game.randTable([2, 2, 3, 3, 3, 3, 3], Random.rand);
             // pick a random player to target
             let player_ids = [];
             for (const i in this.game.players) player_ids.push(i);
-            let target_player_id = Game.randTable(player_ids, this.rand);
+            let target_player_id = Game.randTable(player_ids, Random.rand);
             for (let t of emptyTiles) {
               let newPos = t;
               let dist =
@@ -171,6 +169,9 @@ export class WizardEnemy extends Enemy {
 
   draw = (delta: number) => {
     if (!this.dead) {
+      if (this.state === WizardState.attack) this.tileX = 7;
+      else this.tileX = 6;
+
       if (this.hasShadow)
         Game.drawMob(
           0,
@@ -216,7 +217,7 @@ export class WizardEnemy extends Enemy {
       if (!this.seenPlayer) {
         this.drawSleepingZs(delta);
       }
-      if (this.alert) {
+      if (this.alertTicks > 0) {
         this.drawExclamation(delta);
       }
     }

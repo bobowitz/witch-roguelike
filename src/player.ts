@@ -18,7 +18,7 @@ import { VendingMachine } from "./enemy/vendingMachine";
 import { SideDoor } from "./tile/sidedoor";
 import { Drawable } from "./drawable";
 
-enum PlayerDirection {
+export enum PlayerDirection {
   DOWN = 0,
   UP = 1,
   RIGHT = 2,
@@ -63,6 +63,8 @@ export class Player extends Drawable {
     this.y = y;
     this.w = 1;
     this.h = 1;
+    this.drawX = 0;
+    this.drawY = 0;
 
     this.frame = 0;
 
@@ -254,7 +256,7 @@ export class Player extends Drawable {
           while (true) {
             foundEnd = true;
             for (const f of this.game.levels[this.levelID].enemies) {
-              if (f.x === nextX && f.y === nextY) {
+              if (f.pointIn(nextX, nextY)) {
                 if (!f.chainPushable) {
                   enemyEnd = true;
                   foundEnd = true;
@@ -266,8 +268,8 @@ export class Player extends Drawable {
               }
             }
             if (foundEnd) break;
-            nextX += dx;
-            nextY += dy;
+            nextX += dx * pushedEnemies[pushedEnemies.length - 1].w;
+            nextY += dy * pushedEnemies[pushedEnemies.length - 1].h;
           }
           /* if no enemies and there is a wall, no move
           otherwise, push everything, killing last enemy if there is a wall */
@@ -437,6 +439,8 @@ export class Player extends Drawable {
   };
 
   draw = (delta: number) => {
+    this.drawableY = this.y;
+
     this.flashingFrame += delta * 12 / GameConstants.FPS;
     if (!this.dead) {
       Game.drawMob(0, 0, 1, 1, this.x - this.drawX, this.y - this.drawY, 1, 1);
@@ -451,8 +455,6 @@ export class Player extends Drawable {
   };
 
   drawTopLayer = (delta: number) => {
-    this.drawableY = this.y - this.drawY;
-
     this.healthBar.draw(
       delta,
       this.health,

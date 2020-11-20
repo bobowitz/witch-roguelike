@@ -12,8 +12,6 @@ import { Coin } from "../item/coin";
 import { Sound } from "../sound";
 
 export class Chest extends Enemy {
-  rand: () => number;
-
   constructor(level: Level, game: Game, x: number, y: number, rand: () => number) {
     super(level, game, x, y);
 
@@ -21,36 +19,35 @@ export class Chest extends Enemy {
     this.tileY = 0;
     this.health = 1;
 
-    this.rand = rand;
+    let drop = Game.randTable([1, 1, 1, 2, 2, 3], rand);
+
+    switch (drop) {
+      case 1:
+        this.drop = new Coin(this.level, this.x, this.y);
+        break;
+      case 2:
+        this.drop = new Heart(this.level, this.x, this.y);
+        break;
+      case 3:
+        this.drop = new GreenGem(this.level, this.x, this.y);
+        break;
+      case 3:
+        this.drop = new Key(this.level, this.x, this.y);
+        break;
+      case 4:
+        this.drop = new Armor(this.level, this.x, this.y);
+        break;
+    }
   }
 
   kill = () => {
     if (this.level === this.game.level) Sound.chest();
 
     this.dead = true;
-    // DROP TABLES!
 
     GenericParticle.spawnCluster(this.level, this.x + 0.5, this.y + 0.5, "#fbf236");
 
-    let drop = Game.randTable([1, 1, 1, 2, 2, 3], this.rand);
-
-    switch (drop) {
-      case 1:
-        this.level.items.push(new Coin(this.level, this.x, this.y));
-        break;
-      case 2:
-        this.level.items.push(new Heart(this.level, this.x, this.y));
-        break;
-      case 3:
-        this.level.items.push(new GreenGem(this.level, this.x, this.y));
-        break;
-      case 3:
-        this.level.items.push(new Key(this.level, this.x, this.y));
-        break;
-      case 4:
-        this.level.items.push(new Armor(this.level, this.x, this.y));
-        break;
-    }
+    this.level.items.push(this.drop);
   };
   killNoBones = () => {
     this.kill();

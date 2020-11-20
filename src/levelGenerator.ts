@@ -4,6 +4,7 @@ import { Door } from "./tile/door";
 import { BottomDoor } from "./tile/bottomDoor";
 import { LevelConstants } from "./levelConstants";
 import { Random } from "./random"
+import { DownLadder } from "./tile/downLadder";
 
 let ROOM_SIZE = [3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 13];
 
@@ -94,15 +95,14 @@ class Room {
 }
 
 export class LevelGenerator {
-  rooms = [];
-  levels = [];
-  upLadder = null;
   game: Game;
-  seed: () => number;
+  seed: number;
   group: number;
+  depthReached = 0;
+  currentFloorFirstLevelID = 0;
 
-  noCollisions = r => {
-    for (const room of this.rooms) {
+  noCollisions = (r, rooms) => {
+    for (const room of rooms) {
       if (r.collides(room)) {
         return false;
       }
@@ -144,7 +144,7 @@ export class LevelGenerator {
     return a;
   };
 
-  addRooms = (thisNode: N, parent: Room, parentLevel: Level, rand: () => number) => {
+  addRooms = (levels: Array<Level>, rooms: Array<Room>, thisNode: N, parent: Room, parentLevel: Level, rand: () => number) => {
     let order = this.shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], rand);
 
     //console.log(thisNode, parent);
@@ -230,7 +230,7 @@ export class LevelGenerator {
             r.h = 4;
           }
         }
-        if (this.noCollisions(r)) {
+        if (this.noCollisions(r, rooms)) {
           let level = new Level(
             this.game,
             r.x,
@@ -242,16 +242,15 @@ export class LevelGenerator {
             this.group,
             rand
           );
-          if (level.upLadder) this.upLadder = level.upLadder;
-          this.levels.push(level);
+          levels.push(level);
           if (parentLevel) {
             let newDoor = level.addDoor(newLevelDoorDir, null);
             newDoor.linkedDoor = parentLevel.addDoor(ind, newDoor);
             r.doors[newLevelDoorDir] = newDoor;
           }
-          this.rooms.push(r);
+          rooms.push(r);
           for (const child of thisNode.children) {
-            if (!this.addRooms(child, r, level, rand)) return false;
+            if (!this.addRooms(levels, rooms, child, r, level, rand)) return false;
           }
           return true;
         }
@@ -260,12 +259,18 @@ export class LevelGenerator {
     return false;
   };
 
-  setSeed = (seed: string) => {
-    this.seed = Random.xmur3(seed);
+  setSeed = (seed: number) => {
+    this.seed = seed;
   };
 
-  generate = (game: Game, depth: number, cave = false) => {
-    let rand = Random.sfc32(this.seed(), this.seed(), this.seed(), this.seed());
+  generate = (game: Game, depth: number, cave = false): Level => {
+    console.assert(cave || this.depthReached === 0 || depth === this.depthReached + 1);
+    this.depthReached = depth;
+
+    Random.setState(this.seed + depth);
+
+    let levels = [];
+    let rooms = [];
 
     let d = depth;
     let node;
@@ -282,6 +287,7 @@ export class LevelGenerator {
         node = new N(RoomType.SHOP, d, [new N(RoomType.DOWNLADDER, d, [])]);
       } else {
         node = new N(RoomType.UPLADDER, d, [
+          new N(RoomType.SHOP, d, []),
           new N(RoomType.DUNGEON, d, [
             new N(RoomType.DUNGEON, d, [
               new N(RoomType.DUNGEON, d, [new N(RoomType.TREASURE, d, [])]),
@@ -338,15 +344,55 @@ export class LevelGenerator {
 
     let success = false;
     do {
-      this.rooms.splice(0);
-      this.levels.splice(0);
-      success = this.addRooms(node, null, null, rand);
+      rooms = [];
+      levels = [];
+      success = this.addRooms(levels, rooms, node, null, null, Random.rand);
     } while (!success);
 
-    this.game.levels = this.game.levels.concat(this.levels);
+    let numExistingLevels = this.game.levels.length;
+    if (!cave) this.currentFloorFirstLevelID = numExistingLevels;
+    this.game.levels = this.game.levels.concat(levels);
+    console.log('added ' + levels.length + (cave ? ' cave' : '') + ' levels');
 
-    if (d != 0) {
-      return this.upLadder;
+    for (let i = numExistingLevels; i < numExistingLevels + levels.length; i++) {
+      let found = false;
+      if (this.game.levels[i].type === RoomType.ROPEHOLE) {
+        for (let col of this.game.levels[i].levelArray) {
+          for (let tile of col) {
+            if (tile instanceof DownLadder && tile.isRope) {
+              tile.generate();
+              found = true;
+            }
+          }
+        }
+      }
+      if (found) break;
     }
+
+    console.log('game.levels.length = ' + this.game.levels.length);
+
+    return levels[0];
   };
+
+  generateFirstNFloors = (game, numFloors) => {
+    this.generate(game, 0, false);
+    for (let i = 0; i < numFloors; i++) {
+      let found = false;
+      for (let j = this.game.levels.length - 1; j >= 0; j--) {
+
+        if (this.game.levels[j].type === RoomType.DOWNLADDER) {
+          for (let col of this.game.levels[j].levelArray) {
+            for (let tile of col) {
+              if (tile instanceof DownLadder) {
+                tile.generate();
+                found = true;
+              }
+            }
+          }
+        }
+
+        if (found) break;
+      }
+    }
+  }
 }

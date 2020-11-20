@@ -40,36 +40,36 @@ export class Shotgun extends Weapon {
     let firstNonDestroyable = 5;
     for (let e of this.game.levels[this.wielder.levelID].enemies) {
       if (e.pushable) {
-        if (e.x === newX && e.y === newY) return true;
-        if (e.x === newX2 && e.y === newY2 && range >= 2) {
+        if (e.pointIn(newX, newY)) return true;
+        if (e.pointIn(newX2, newY2) && range >= 2) {
           enemyHitCandidates.push({ enemy: e, dist: 2 });
           firstPushable = 2;
         }
-        if (e.x === newX3 && e.y === newY3 && range >= 3) {
+        if (e.pointIn(newX3, newY3) && range >= 3) {
           enemyHitCandidates.push({ enemy: e, dist: 3 });
           firstPushable = Math.min(firstPushable, 3);
         }
       } else if (e.destroyable) {
-        if (e.x === newX && e.y === newY && range >= 1) {
+        if (e.pointIn(newX, newY) && range >= 1) {
           firstNonPushable = 1;
           enemyHitCandidates.push({ enemy: e, dist: 1 });
         }
-        if (e.x === newX2 && e.y === newY2 && range >= 2) {
+        if (e.pointIn(newX2, newY2) && range >= 2) {
           firstNonPushable = Math.min(firstNonPushable, 2);
           enemyHitCandidates.push({ enemy: e, dist: 2 });
         }
-        if (e.x === newX3 && e.y === newY3 && range >= 3) {
+        if (e.pointIn(newX3, newY3) && range >= 3) {
           firstNonPushable = Math.min(firstNonPushable, 3);
           enemyHitCandidates.push({ enemy: e, dist: 3 });
         }
       } else {
-        if (e.x === newX && e.y === newY && range >= 1) {
+        if (e.pointIn(newX, newY) && range >= 1) {
           firstNonDestroyable = 1;
         }
-        if (e.x === newX2 && e.y === newY2 && range >= 2) {
+        if (e.pointIn(newX2, newY2) && range >= 2) {
           firstNonDestroyable = Math.min(firstNonDestroyable, 2);
         }
-        if (e.x === newX3 && e.y === newY3 && range >= 3) {
+        if (e.pointIn(newX3, newY3) && range >= 3) {
           firstNonDestroyable = Math.min(firstNonDestroyable, 3);
         }
       }

@@ -14,23 +14,12 @@ export class EnemySpawnAnimation extends Projectile {
   level: Level;
   enemy: Enemy;
   frame: number;
-  f: number[];
-  xx: number[];
-  yy: number[];
 
   constructor(level: Level, enemy: Enemy, x: number, y: number) {
     super(x, y);
     this.level = level;
     this.enemy = enemy;
     this.frame = 0;
-
-    this.f = [];
-    this.xx = [];
-    this.yy = [];
-    for (let i = 0; i < this.ANIM_COUNT; i++) {
-      this.f[i] = this.xx[i] = Math.random() * 6.28;
-      this.yy[i] = Math.random() * 8 - 8;
-    }
   }
 
   tick = () => {
@@ -58,14 +47,14 @@ export class EnemySpawnAnimation extends Projectile {
     this.frame += 0.25 * delta;
     if (this.frame >= 8) this.frame = 0;
     for (let i = 0; i < this.ANIM_COUNT; i++) {
-      let offsetX = 0; //4 * Math.sin(this.frame + this.xx[i]);
+      let offsetX = 0;
       Game.drawFX(
         Math.floor(this.frame),
         26,
         1,
         2,
         this.x + Math.round(offsetX) / 16.0,
-        this.y - 1.5, // + Math.round(this.yy[i]) / 16.0,
+        this.y - 1.5,
         1,
         2
       );
@@ -85,6 +74,5 @@ export class EnemySpawnAnimation extends Projectile {
           0
         )
       );
-    //Game.drawFX(18 + Math.floor(HitWarning.frame), 6, 1, 1, this.x, this.y, 1, 1);
   };
 }
