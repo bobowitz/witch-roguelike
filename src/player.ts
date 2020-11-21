@@ -14,6 +14,7 @@ import { HealthBar } from "./healthbar";
 import { VendingMachine } from "./enemy/vendingMachine";
 import { SideDoor } from "./tile/sidedoor";
 import { Drawable } from "./drawable";
+import { Random } from "./random";
 
 export enum PlayerDirection {
   DOWN = 0,
@@ -108,25 +109,25 @@ export class Player extends Drawable {
   inputHandler = (input: InputEnum) => {
     switch (input) {
       case InputEnum.I:
-        this.game.socket.emit('input', this.game.localPlayerID, input);
+        this.game.socket.emit('input', this.game.localPlayerID, input, Random.state);
         break;
       case InputEnum.Q:
-        this.game.socket.emit('input', this.game.localPlayerID, input);
+        this.game.socket.emit('input', this.game.localPlayerID, input, Random.state);
         break;
       case InputEnum.LEFT:
-        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input, Random.state);
         break;
       case InputEnum.RIGHT:
-        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input, Random.state);
         break;
       case InputEnum.UP:
-        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input, Random.state);
         break;
       case InputEnum.DOWN:
-        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input);
+        if (!this.ignoreDirectionInput()) this.game.socket.emit('input', this.game.localPlayerID, input, Random.state);
         break;
       case InputEnum.SPACE:
-        this.game.socket.emit('input', this.game.localPlayerID, input);
+        this.game.socket.emit('input', this.game.localPlayerID, input, Random.state);
         break;
     }
   };

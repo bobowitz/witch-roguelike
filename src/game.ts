@@ -153,7 +153,13 @@ export class Game {
       this.socket.on('get state', () => {
         this.socket.emit('game state', createGameState(this));
       });
-      this.socket.on('input', (tickPlayerID: string, input: InputEnum) => {
+      this.socket.on('input', (tickPlayerID: string, input: InputEnum, randState: number) => {
+        if (Random.state !== randState) {
+          this.chat.push(new ChatMessage('RAND STATES OUT OF SYNC'));
+          this.chat.push(new ChatMessage('Received ' + randState));
+          this.chat.push(new ChatMessage('Current ' + Random.state));
+        }
+
         let decode_input = (input: InputEnum): string => {
           if (input === InputEnum.I) return "I";
           if (input === InputEnum.Q) return "Q";
