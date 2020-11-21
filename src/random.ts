@@ -12,3 +12,7 @@ export class Random {
     return (Random.state >>> 0) / 4294967296;
   }
 }
+
+// copy and paste into browser console
+// let state;
+// let rand = () => { state ^= (state << 21); state ^= (state >>> 35); state ^= (state << 4); return (state >>> 0) / 4294967296; }

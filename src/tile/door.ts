@@ -23,7 +23,7 @@ export class Door extends Tile {
 
   onCollide = (player: Player) => {
     this.opened = true;
-    player.levelID = this.game.changeLevelThroughDoor(player, this.linkedDoor);
+    this.game.changeLevelThroughDoor(player, this.linkedDoor);
   };
 
   draw = (delta: number) => {

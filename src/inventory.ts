@@ -57,8 +57,10 @@ export class Inventory {
     this.weapon = null;
 
     let a = (i: Item) => {
-      if (i instanceof Weapon) {
+      if (i instanceof Equippable) {
         i.setWielder(this.player);
+      }
+      if (i instanceof Weapon) {
         i.toggleEquip();
         this.weapon = i;
       }
@@ -188,8 +190,8 @@ export class Inventory {
       this.coins += 1;
       return true;
     }
-    if (item instanceof Weapon) {
-      item.wielder = this.player;
+    if (item instanceof Equippable) {
+      item.setWielder(this.player);
     }
     if (item.stackable) {
       for (let i of this.items) {

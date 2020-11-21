@@ -23,7 +23,7 @@ export class TextParticle extends Particle {
     this.color = color;
     this.dead = false;
     this.time = 0;
-    if (delay === undefined) this.delay = Game.rand(0, 10);
+    if (delay === undefined) this.delay = Game.rand(0, 10, Math.random);
     // up to a 10 tick delay
     else this.delay = delay;
   }

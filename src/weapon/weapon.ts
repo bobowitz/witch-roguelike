@@ -5,7 +5,6 @@ import { Player } from "../player";
 
 export class Weapon extends Equippable {
   game: Game;
-  wielder: Player;
 
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
@@ -13,16 +12,12 @@ export class Weapon extends Equippable {
     if (level) this.game = level.game;
   }
 
-  setWielder = (player: Player) => {
-    this.wielder = player;
-  }
-
   coEquippable = (other: Equippable): boolean => {
     if (other instanceof Weapon) return false;
     return true;
   };
 
-  tick = () => {};
+  tick = () => { };
 
   // returns true if nothing was hit, false if the player should move
   weaponMove = (newX: number, newY: number): boolean => {

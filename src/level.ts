@@ -90,7 +90,7 @@ export class Level {
   y: number;
   levelArray: Tile[][];
   softVis: number[][]; // this is the one we use for drawing (includes smoothing)
-  vis: number[][]; // visibility is 0, 1, or 2 (0 = black, 2 = fully lit)
+  vis: number[][]; // visibility ranges from 0 (fully visible) to 1 (fully black)
   enemies: Array<Enemy>;
   items: Array<Item>;
   doors: Array<any>; // (Door | BottomDoor) just a reference for mapping, still access through levelArray
@@ -1031,14 +1031,7 @@ export class Level {
     this.particles.splice(0, this.particles.length);
   };
 
-  updateLevelTextColor = () => {
-    LevelConstants.LEVEL_TEXT_COLOR = "white";
-    // no more color backgrounds:
-    // if (this.env === 3) LevelConstants.LEVEL_TEXT_COLOR = "black";
-  };
-
   enterLevel = (player: Player) => {
-    this.updateLevelTextColor();
     player.moveSnap(
       this.roomX + Math.floor(this.width / 2),
       this.roomY + Math.floor(this.height / 2)
@@ -1050,7 +1043,6 @@ export class Level {
   };
 
   enterLevelThroughDoor = (player: Player, door: any, side?: number) => {
-    this.updateLevelTextColor();
     if (door instanceof Door) {
       (door as Door).opened = true;
       player.moveNoSmooth(door.x, door.y + 1);
@@ -1066,8 +1058,6 @@ export class Level {
   };
 
   enterLevelThroughLadder = (player: Player, ladder: any) => {
-    this.updateLevelTextColor();
-
     player.moveSnap(ladder.x, ladder.y + 1);
 
     this.updateLighting();
@@ -1139,13 +1129,17 @@ export class Level {
         //  this.visibilityArray[x][y] = 0;
       }
     }
-    for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
-      this.castShadowsAtAngle(
-        i,
-        this.game.players[this.game.localPlayerID].x + 0.5,
-        this.game.players[this.game.localPlayerID].y + 0.5,
-        this.game.players[this.game.localPlayerID].sightRadius - this.depth
-      );
+    for (const p in this.game.players) {
+      if (this === this.game.levels[this.game.players[p].levelID]) {
+        for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
+          this.castShadowsAtAngle(
+            i,
+            this.game.players[p].x + 0.5,
+            this.game.players[p].y + 0.5,
+            this.game.players[p].sightRadius - this.depth
+          );
+        }
+      }
     }
     for (const l of this.lightSources) {
       for (let i = 0; i < 360; i += LevelConstants.LIGHTING_ANGLE_STEP) {
@@ -1355,7 +1349,13 @@ export class Level {
   };
 
   drawShade = (delta: number) => {
-    let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / this.game.players[this.game.localPlayerID].sightRadius));
+    let bestSightRadius = 0;
+    for (const p in this.game.players) {
+      if (this.game.levels[this.game.players[p].levelID] === this && this.game.players[p].sightRadius > bestSightRadius) {
+        bestSightRadius = this.game.players[p].sightRadius;
+      }
+    }
+    let shadingAlpha = Math.max(0, Math.min(0.8, (2 * this.depth) / bestSightRadius));
     if (GameConstants.ALPHA_ENABLED) {
       Game.ctx.globalAlpha = shadingAlpha;
       //Game.ctx.fillStyle = "#400a0e";

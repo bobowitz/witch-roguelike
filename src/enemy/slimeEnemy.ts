@@ -55,7 +55,6 @@ export class SlimeEnemy extends Enemy {
   };
 
   tick = () => {
-    console.log(this);
     if (!this.dead) {
       if (this.skipNextTurns > 0) {
         this.skipNextTurns--;

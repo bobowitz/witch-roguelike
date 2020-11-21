@@ -497,23 +497,12 @@ let loadItem = (i: ItemState, game: Game, player?: Player): Item => {
   if (i.type === ItemType.LANTERN) item = new Lantern(level, i.x, i.y);
   if (i.type === ItemType.REDGEM) item = new RedGem(level, i.x, i.y);
   if (i.type === ItemType.TORCH) item = new Torch(level, i.x, i.y);
-  if (i.type === ItemType.DAGGER) {
-    item = new Dagger(level, i.x, i.y);
-    if (player) item.wielder = player;
-  }
-  if (i.type === ItemType.DUALDAGGER) {
-    item = new DualDagger(level, i.x, i.y);
-    if (player) item.wielder = player;
-  }
-  if (i.type === ItemType.SHOTGUN) {
-    item = new Shotgun(level, i.x, i.y);
-    if (player) item.wielder = player;
-  }
-  if (i.type === ItemType.SPEAR) {
-    item = new Spear(level, i.x, i.y);
-    if (player) item.wielder = player;
-  }
+  if (i.type === ItemType.DAGGER) { item = new Dagger(level, i.x, i.y); }
+  if (i.type === ItemType.DUALDAGGER) { item = new DualDagger(level, i.x, i.y); }
+  if (i.type === ItemType.SHOTGUN) { item = new Shotgun(level, i.x, i.y); }
+  if (i.type === ItemType.SPEAR) { item = new Spear(level, i.x, i.y); }
   if (i.equipped) item.equipped = true;
+  if (item instanceof Equippable) item.setWielder(player);
   item.stackCount = i.stackCount;
   item.pickedUp = i.pickedUp;
   return item;
@@ -657,23 +646,24 @@ export const createGameState = (game: Game): GameState => {
   return gs;
 }
 
-export const loadGameState = (game: Game, gameState: GameState) => {
+export const loadGameState = (game: Game, activeUsernames: Array<string>, gameState: GameState) => {
   game.levels = Array<Level>();
   game.levelgen = new LevelGenerator();
   game.levelgen.setSeed(gameState.seed);
   game.levelgen.generateFirstNFloors(game, gameState.depth);
 
-  console.log(gameState);
-
   if (!(gameState as any).init_state) {
     if (gameState.players) {
       for (const i in gameState.players) {
-        game.players[i] = loadPlayer(i, gameState.players[i], game);
+        if (activeUsernames.includes(i)) game.players[i] = loadPlayer(i, gameState.players[i], game);
+        else game.offlinePlayers[i] = loadPlayer(i, gameState.players[i], game);
       }
     }
     if (gameState.offlinePlayers) {
       for (const i in gameState.offlinePlayers) {
         if (i === game.localPlayerID)
+          game.players[i] = loadPlayer(i, gameState.offlinePlayers[i], game);
+        else if (activeUsernames.includes(i))
           game.players[i] = loadPlayer(i, gameState.offlinePlayers[i], game);
         else
           game.offlinePlayers[i] = loadPlayer(i, gameState.offlinePlayers[i], game);
@@ -698,13 +688,12 @@ export const loadGameState = (game: Game, gameState: GameState) => {
       game.level = game.levels[game.players[game.localPlayerID].levelID];
     }
   }
-  else {
+  else { // stub game state, start a new world
     game.players[game.localPlayerID] = new Player(game, 0, 0, true);
     game.level = game.levels[game.players[game.localPlayerID].levelID];
     game.level.enterLevel(game.players[game.localPlayerID]);
   }
   Random.setState(gameState.randomState);
-  console.log('current level ' + game.players[game.localPlayerID].levelID);
   game.level.updateLighting();
 
   game.chat = [];

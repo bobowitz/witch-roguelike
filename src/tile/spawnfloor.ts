@@ -13,7 +13,7 @@ export class SpawnFloor extends Tile {
     this.w = 1;
     this.h = 1;
     this.variation = 1;
-    if (Game.rand(1, 20) == 1) this.variation = Game.randTable([8, 9, 10, 12]);
+    if (Game.rand(1, 20, Math.random) == 1) this.variation = Game.randTable([8, 9, 10, 12], Math.random);
   }
 
   draw = (delta: number) => {

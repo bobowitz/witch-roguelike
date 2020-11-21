@@ -185,14 +185,6 @@ export class Enemy extends Drawable {
     return Math.max(Math.abs(this.x - player.x), Math.abs(this.y - player.y));
   }
 
-  seesPlayer = (): boolean => {
-    let RADIUS = 4;
-    return (
-      Math.abs(this.x - this.game.players[this.game.localPlayerID].x) <= RADIUS &&
-      Math.abs(this.y - this.game.players[this.game.localPlayerID].y) <= RADIUS
-    );
-  };
-
   facePlayer = (player: Player) => {
     let dx = player.x - this.x;
     let dy = player.y - this.y;

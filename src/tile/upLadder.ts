@@ -17,7 +17,7 @@ export class UpLadder extends Tile {
   }
 
   onCollide = (player: Player) => {
-    player.levelID = this.game.changeLevelThroughLadder(player, this);
+    this.game.changeLevelThroughLadder(player, this);
   };
 
   draw = (delta: number) => {

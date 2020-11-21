@@ -355,7 +355,6 @@ export class LevelGenerator {
     let numExistingLevels = this.game.levels.length;
     if (!cave) this.currentFloorFirstLevelID = numExistingLevels;
     this.game.levels = this.game.levels.concat(levels);
-    console.log('added ' + levels.length + (cave ? ' cave' : '') + ' levels');
 
     for (let i = numExistingLevels; i < numExistingLevels + levels.length; i++) {
       let found = false;
@@ -371,8 +370,6 @@ export class LevelGenerator {
       }
       if (found) break;
     }
-
-    console.log('game.levels.length = ' + this.game.levels.length);
 
     return levels[0];
   };

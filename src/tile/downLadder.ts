@@ -33,7 +33,7 @@ export class DownLadder extends Tile {
   };
 
   onCollide = (player: Player) => {
-    if (this.isRope) player.levelID = this.game.changeLevelThroughLadder(player, this);
+    if (this.isRope) this.game.changeLevelThroughLadder(player, this);
     else {
       let allPlayersHere = true;
       for (const i in this.game.players) {
@@ -44,7 +44,7 @@ export class DownLadder extends Tile {
       if (allPlayersHere) {
         this.generate();
         for (const i in this.game.players) {
-          this.game.players[i].levelID = this.game.changeLevelThroughLadder(this.game.players[i], this);
+          this.game.changeLevelThroughLadder(this.game.players[i], this);
         }
       } else {
         if (player === this.game.players[this.game.localPlayerID]) this.game.chat.push(new ChatMessage('all players must be present'));

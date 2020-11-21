@@ -98,12 +98,12 @@ export class Game {
   static letter_positions = [];
 
   // [min, max] inclusive
-  static rand = (min: number, max: number, rand = Random.rand): number => {
+  static rand = (min: number, max: number, rand): number => {
     if (max < min) return min;
     return Math.floor(rand() * (max - min + 1) + min);
   };
 
-  static randTable = (table: any[], rand = Random.rand): any => {
+  static randTable = (table: any[], rand): any => {
     return table[Game.rand(0, table.length - 1, rand)];
   };
 
@@ -138,10 +138,10 @@ export class Game {
         this.worldCodes = codes;
         this.selectedWorldCode = 0;
       });
-      this.socket.on('welcome', (state: GameState) => {
+      this.socket.on('welcome', (activeUsernames: Array<string>, state: GameState) => {
         this.players = {};
         this.offlinePlayers = {};
-        loadGameState(this, state);
+        loadGameState(this, activeUsernames, state);
         this.chatOpen = false;
 
         this.screenShakeX = 0;
@@ -239,6 +239,7 @@ export class Game {
           this.socket.emit('chat message', this.chatTextBox.text);
           // chat commands
           if (this.chatTextBox.text === "/logout") {
+            this.socket.emit('game state', createGameState(this));
             this.socket.emit('logout');
             this.menuState = MenuState.LOGIN_USERNAME;
             this.usernameTextBox.clear();
@@ -441,16 +442,17 @@ export class Game {
   };
 
   changeLevel = (player: Player, newLevel: Level) => {
+    player.levelID = this.levels.indexOf(newLevel);
     if (this.players[this.localPlayerID] === player) {
       //this.level.exitLevel();
       this.level = newLevel;
     }
     newLevel.enterLevel(player);
-
-    return this.levels.indexOf(newLevel);
   };
 
   changeLevelThroughLadder = (player: Player, ladder: any) => {
+    player.levelID = this.levels.indexOf(ladder.linkedLevel);
+
     if (ladder instanceof DownLadder) ladder.generate();
 
     if (this.players[this.localPlayerID] === player) {
@@ -460,11 +462,11 @@ export class Game {
     } else {
       ladder.linkedLevel.enterLevel(player, ladder.linkedLevel); // since it's not a local player, don't wait for transition
     }
-
-    return this.levels.indexOf(ladder.linkedLevel);
   };
 
   changeLevelThroughDoor = (player: Player, door: any, side?: number) => {
+    player.levelID = this.levels.indexOf(door.level);
+
     if (this.players[this.localPlayerID] === player) {
       this.levelState = LevelState.TRANSITIONING;
       this.transitionStartTime = Date.now();
@@ -488,8 +490,6 @@ export class Game {
     } else {
       door.level.enterLevelThroughDoor(player, door, side);
     }
-
-    return this.levels.indexOf(door.level);
   };
 
   run = (timestamp: number) => {
