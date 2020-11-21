@@ -75,6 +75,8 @@ export class Game {
 
   input_history = [];
 
+  mostRecentInputReceived = true;
+
   loginMessage: string = "";
   username: string;
   usernameTextBox: TextBox;
@@ -205,6 +207,10 @@ export class Game {
           case InputEnum.SPACE:
             this.players[tickPlayerID].spaceListener();
             break;
+        }
+
+        if (tickPlayerID === this.localPlayerID) {
+          this.mostRecentInputReceived = true;
         }
       });
       this.socket.on('chat message', (message: string) => {
@@ -440,6 +446,13 @@ export class Game {
       }
     }
   };
+
+  sendInput = (input: InputEnum) => {
+    if (this.mostRecentInputReceived) {
+      this.mostRecentInputReceived = false;
+      this.socket.emit('input', this.localPlayerID, input, Random.state);
+    }
+  }
 
   changeLevel = (player: Player, newLevel: Level) => {
     player.levelID = this.levels.indexOf(newLevel);
