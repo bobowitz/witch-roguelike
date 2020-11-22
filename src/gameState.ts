@@ -527,6 +527,7 @@ export class InventoryState {
     this.equipAnimAmount = inventory.equipAnimAmount.map(x => x);
     this.isWeaponEquipped = false;
     if (inventory.weapon) {
+      this.isWeaponEquipped = true;
       this.weaponI = inventory.items.indexOf(inventory.weapon);
     }
     this.coins = inventory.coins;
