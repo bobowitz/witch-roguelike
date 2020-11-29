@@ -277,21 +277,22 @@ export class Level {
       let max_depth_table = 4;
       let d = Math.min(this.depth, max_depth_table);
       if (tables[d] && tables[d].length > 0) {
-        let addEnemy = (enemy: Enemy) => { // adds an enemy if it doesn't overlap any other enemies
+        let addEnemy = (enemy: Enemy): boolean => { // adds an enemy if it doesn't overlap any other enemies
           for (let xx = 0; xx < enemy.w; xx++) {
             for (let yy = 0; yy < enemy.h; yy++) {
               for (const e of this.enemies) {
                 if (!this.getEmptyTiles().some(tt => tt.x === x + xx && tt.y === y + yy)) {
                   numEnemies++; // extra loop iteration since we're throwing out this point
-                  return; // throw out point if it overlaps an enemy
+                  return false; // throw out point if it overlaps an enemy
                 }
               }
             }
           }
           this.enemies.push(enemy);
+          return true;
         };
 
-        let type = Game.randTable(tables[d], rand);
+        let type = 8;//Game.randTable(tables[d], rand);
         switch (type) {
           case 1:
             addEnemy(new SlimeEnemy(this, this.game, x, y, rand));
@@ -315,11 +316,12 @@ export class Level {
             addEnemy(new Spawner(this, this.game, x, y, rand));
             break;
           case 8:
-            addEnemy(new BigSkullEnemy(this, this.game, x, y, rand));
-            // clear out some space
-            for (let xx = 0; xx < 2; xx++) {
-              for (let yy = 0; yy < 2; yy++) {
-                this.levelArray[x + xx][y + yy] = new Floor(this, x + xx, y + yy); // remove any walls
+            if (addEnemy(new BigSkullEnemy(this, this.game, x, y, rand))) {
+              // clear out some space
+              for (let xx = 0; xx < 2; xx++) {
+                for (let yy = 0; yy < 2; yy++) {
+                  this.levelArray[x + xx][y + yy] = new Floor(this, x + xx, y + yy); // remove any walls
+                }
               }
             }
             break;
@@ -1055,6 +1057,11 @@ export class Level {
       }
     }
     drawables.sort((a, b) => {
+      if (a instanceof Floor) {
+        return -1;
+      } else if (b instanceof Floor) {
+        return 1;
+      }
       if (Math.abs(a.drawableY - b.drawableY) < 0.1) {
         if (a instanceof Player) {
           return 1;
