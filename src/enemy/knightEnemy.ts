@@ -101,8 +101,18 @@ export class KnightEnemy extends Enemy {
                 }
               }
             }
+            let grid = [];
+            for (let x = 0; x < this.level.roomX + this.level.width; x++) {
+              grid[x] = [];
+              for (let y = 0; y < this.level.roomY + this.level.height; y++) {
+                if (this.level.levelArray[x] && this.level.levelArray[x][y])
+                  grid[x][y] = this.level.levelArray[x][y];
+                else
+                  grid[x][y] = false;
+              }
+            }
             let moves = astar.AStar.search(
-              this.level.levelArray,
+              grid,
               this,
               this.targetPlayer,
               disablePositions

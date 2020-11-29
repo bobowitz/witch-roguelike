@@ -17,7 +17,7 @@ export class CoffinTile extends Tile {
     return true;
   };
 
-  drawUnderPlayer = (delta: number) => {
+  draw = (delta: number) => {
     if (this.subTileY === 0) {
       Game.drawTile(
         0,

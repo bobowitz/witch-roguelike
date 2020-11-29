@@ -1,19 +1,19 @@
 import { Game } from "../game";
-import { Tile } from "./tile";
+import { Tile, SkinType } from "./tile";
 import { Level } from "../level";
 
 export class SpawnFloor extends Tile {
   // all are in grid units
-  w: number;
-  h: number;
   variation: number;
 
   constructor(level: Level, x: number, y: number) {
     super(level, x, y);
-    this.w = 1;
-    this.h = 1;
     this.variation = 1;
-    if (Game.rand(1, 20, Math.random) == 1) this.variation = Game.randTable([8, 9, 10, 12], Math.random);
+    if (this.skin == SkinType.DUNGEON)
+      this.variation = Game.randTable([1, 1, 1, 1, 1, 1, 8, 8, 8, 9, 10, 10, 10, 10, 10, 12], Math.random);
+    if (this.skin == SkinType.CAVE)
+      //this.variation = Game.randTable([1, 1, 1, 1, 8, 9, 10, 12], Math.random);
+      this.variation = Game.randTable([1, 1, 1, 1, 1, 1, 8, 8, 8, 9, 10, 10, 10, 10, 10, 12], Math.random);
   }
 
   draw = (delta: number) => {
@@ -24,8 +24,8 @@ export class SpawnFloor extends Tile {
       1,
       this.x,
       this.y,
-      this.w,
-      this.h,
+      1,
+      1,
       this.level.shadeColor,
       this.shadeAmount()
     );

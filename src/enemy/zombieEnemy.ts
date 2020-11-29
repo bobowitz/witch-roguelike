@@ -11,6 +11,8 @@ import { Spear } from "../weapon/spear";
 import { DualDagger } from "../weapon/dualdagger";
 import { GreenGem } from "../item/greengem";
 import { Random } from "../random";
+import { astar } from "../astarclass";
+import { SpikeTrap } from "../tile/spiketrap";
 
 export class ZombieEnemy extends Enemy {
   frame: number;
@@ -89,38 +91,63 @@ export class ZombieEnemy extends Enemy {
           this.alertTicks = Math.max(0, this.alertTicks - 1);
           let oldX = this.x;
           let oldY = this.y;
-          let moveX = this.x;
-          let moveY = this.y;
-          if (this.ticks % 2 === 0) { // horizontal preference
-            if (this.targetPlayer.x > this.x) moveX++;
-            else if (this.targetPlayer.x < this.x) moveX--;
-            else if (this.targetPlayer.y > this.y) moveY++;
-            else if (this.targetPlayer.y < this.y) moveY--;
-          } else { // vertical preference
-            if (this.targetPlayer.y > this.y) moveY++;
-            else if (this.targetPlayer.y < this.y) moveY--;
-            else if (this.targetPlayer.x > this.x) moveX++;
-            else if (this.targetPlayer.x < this.x) moveX--;
-          }
 
-          let hitPlayer = false;
-          for (const i in this.game.players) {
-            if (this.game.levels[this.game.players[i].levelID] === this.level && this.game.players[i].x === moveX && this.game.players[i].y === moveY) {
-              this.game.players[i].hurt(this.hit());
-              this.drawX = 0.5 * (this.x - this.game.players[i].x);
-              this.drawY = 0.5 * (this.y - this.game.players[i].y);
-              if (this.game.players[i] === this.game.players[this.game.localPlayerID])
-                this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
+          let disablePositions = Array<astar.Position>();
+          for (const e of this.level.enemies) {
+            if (e !== this) {
+              disablePositions.push({ x: e.x, y: e.y } as astar.Position);
             }
           }
-          if (!hitPlayer) {
-            this.tryMove(moveX, moveY);
-            this.drawX = this.x - oldX;
-            this.drawY = this.y - oldY;
-            if (this.x > oldX) this.direction = EnemyDirection.RIGHT;
-            else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
-            else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
-            else if (this.y < oldY) this.direction = EnemyDirection.UP;
+          for (let xx = this.x - 1; xx <= this.x + 1; xx++) {
+            for (let yy = this.y - 1; yy <= this.y + 1; yy++) {
+              if (
+                this.level.levelArray[xx][yy] instanceof SpikeTrap &&
+                (this.level.levelArray[xx][yy] as SpikeTrap).on
+              ) {
+                // don't walk on active spiketraps
+                disablePositions.push({ x: xx, y: yy } as astar.Position);
+              }
+            }
+          }
+          let grid = [];
+          for (let x = 0; x < this.level.roomX + this.level.width; x++) {
+            grid[x] = [];
+            for (let y = 0; y < this.level.roomY + this.level.height; y++) {
+              if (this.level.levelArray[x] && this.level.levelArray[x][y])
+                grid[x][y] = this.level.levelArray[x][y];
+              else
+                grid[x][y] = false;
+            }
+          }
+          let moves = astar.AStar.search(
+            grid,
+            this,
+            this.targetPlayer,
+            disablePositions
+          );
+          if (moves.length > 0) {
+            let moveX = moves[0].pos.x;
+            let moveY = moves[0].pos.y;
+
+            let hitPlayer = false;
+            for (const i in this.game.players) {
+              if (this.game.levels[this.game.players[i].levelID] === this.level && this.game.players[i].x === moveX && this.game.players[i].y === moveY) {
+                this.game.players[i].hurt(this.hit());
+                this.drawX = 0.5 * (this.x - this.game.players[i].x);
+                this.drawY = 0.5 * (this.y - this.game.players[i].y);
+                if (this.game.players[i] === this.game.players[this.game.localPlayerID])
+                  this.game.shakeScreen(10 * this.drawX, 10 * this.drawY);
+              }
+            }
+            if (!hitPlayer) {
+              this.tryMove(moveX, moveY);
+              this.drawX = this.x - oldX;
+              this.drawY = this.y - oldY;
+              if (this.x > oldX) this.direction = EnemyDirection.RIGHT;
+              else if (this.x < oldX) this.direction = EnemyDirection.LEFT;
+              else if (this.y > oldY) this.direction = EnemyDirection.DOWN;
+              else if (this.y < oldY) this.direction = EnemyDirection.UP;
+            }
           }
 
           this.level.hitwarnings.push(new HitWarning(this.game, this.x - 1, this.y));

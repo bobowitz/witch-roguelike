@@ -2,23 +2,26 @@ import { Level } from "../level";
 import { LevelConstants } from "../levelConstants";
 import { Player } from "../player";
 import { Enemy } from "../enemy/enemy";
+import { Drawable } from "../drawable";
 
 export enum SkinType {
   DUNGEON = 0,
   CAVE = 1,
 }
 
-export class Tile {
+export class Tile extends Drawable {
   x: number;
   y: number;
   level: Level;
   skin: SkinType;
 
   constructor(level: Level, x: number, y: number) {
+    super();
     this.skin = level.skin;
     this.level = level;
     this.x = x;
     this.y = y;
+    this.drawableY = y;
   }
 
   shadeAmount = () => {

@@ -15,6 +15,9 @@ import { Heart } from "../item/heart";
 import { Spear } from "../weapon/spear";
 import { Gold } from "../item/gold";
 import { BlueGem } from "../item/bluegem";
+import { DualDagger } from "../weapon/dualdagger";
+import { Lantern } from "../item/lantern";
+import { RedGem } from "../item/redgem";
 
 let OPEN_TIME = 150;
 let FILL_COLOR = "#5a595b";
@@ -62,6 +65,14 @@ export class VendingMachine extends Enemy {
       let g = new Gold(level, 0, 0);
       g.stackCount = Game.randTable([5, 5, 6, 7], this.rand);
       this.costItems = [g];
+    } else if (this.item instanceof DualDagger) {
+      let g = new RedGem(level, 0, 0);
+      g.stackCount = Game.randTable([5, 5, 6, 7], this.rand);
+      this.costItems = [g];
+    } else if (this.item instanceof Lantern) {
+      let g = new Coal(level, 0, 0);
+      g.stackCount = Game.randTable([25, 26, 27, 28], this.rand);
+      this.costItems = [g];
     }
   }
 
@@ -98,7 +109,7 @@ export class VendingMachine extends Enemy {
       let i = 0;
       do {
         i = Game.rand(0, xs.length - 1, this.rand);
-      } while (xs[i] === this.playerOpened.x && ys[i] === this.playerOpened.y);
+      } while (this.level.levelArray[xs[i]][ys[i]].isSolid() || this.level.enemies.some(e => e.x === xs[i] && e.y === ys[i]));
 
       let newItem = new (this.item.constructor as { new(): Item })();
       newItem = newItem.constructor(this.level, xs[i], ys[i]);

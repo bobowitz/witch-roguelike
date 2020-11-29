@@ -10,12 +10,15 @@ export class SideDoor extends Tile {
   game: Game;
   opened: boolean;
 
-  constructor(level: Level, game: Game, x: number, y: number, linkedDoor: SideDoor) {
+  constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
     this.game = game;
-    this.linkedDoor = linkedDoor;
     this.opened = false;
   }
+
+  link = (other: SideDoor) => {
+    this.linkedDoor = other;
+  };
 
   canCrushEnemy = (): boolean => {
     return true;
@@ -26,23 +29,11 @@ export class SideDoor extends Tile {
     this.game.changeLevelThroughDoor(
       player,
       this.linkedDoor,
-      this.linkedDoor.level.x - this.level.x > 0 ? 1 : -1
+      this.linkedDoor.level.roomX - this.level.roomX > 0 ? 1 : -1
     );
   };
 
   draw = (delta: number) => {
-    Game.drawTile(
-      0,
-      this.skin,
-      1,
-      1,
-      this.x,
-      this.y - 1,
-      1,
-      1,
-      this.level.shadeColor,
-      this.shadeAmount()
-    );
     Game.drawTile(
       1,
       this.skin,

@@ -25,10 +25,13 @@ export class DownLadder extends Tile {
         this.level.depth + (this.isRope ? 0 : 1),
         this.isRope
       );
-      for (let col of this.linkedLevel.levelArray)
-        for (let tile of col)
+      for (let x = this.linkedLevel.roomX; x < this.linkedLevel.roomX + this.linkedLevel.width; x++) {
+        for (let y = this.linkedLevel.roomY; y < this.linkedLevel.roomY + this.linkedLevel.height; y++) {
+          let tile = this.linkedLevel.levelArray[x][y];
           if (tile instanceof UpLadder && tile.isRope)
             tile.linkedLevel = this.level;
+        }
+      }
     }
   };
 

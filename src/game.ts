@@ -484,16 +484,16 @@ export class Game {
       this.levelState = LevelState.TRANSITIONING;
       this.transitionStartTime = Date.now();
 
-      this.transitionX = this.players[this.localPlayerID].x;
-      this.transitionY = this.players[this.localPlayerID].y;
+      let oldX = this.players[this.localPlayerID].x;
+      let oldY = this.players[this.localPlayerID].y;
 
       this.prevLevel = this.level;
       //this.level.exitLevel();
       this.level = door.level;
       door.level.enterLevelThroughDoor(player, door, side);
 
-      this.transitionX = (this.players[this.localPlayerID].x - this.transitionX) * GameConstants.TILESIZE;
-      this.transitionY = (this.players[this.localPlayerID].y - this.transitionY) * GameConstants.TILESIZE;
+      this.transitionX = (this.players[this.localPlayerID].x - oldX) * GameConstants.TILESIZE;
+      this.transitionY = (this.players[this.localPlayerID].y - oldY) * GameConstants.TILESIZE;
 
       this.upwardTransition = false;
       this.sideTransition = false;
@@ -893,37 +893,24 @@ export class Game {
         let playerDrawX = this.players[this.localPlayerID].drawX;
         let playerDrawY = this.players[this.localPlayerID].drawY;
 
-        Game.ctx.translate(
-          -Math.round(
-            (this.players[this.localPlayerID].x - playerDrawX + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.WIDTH -
-            this.screenShakeX
-          ),
-          -Math.round(
-            (this.players[this.localPlayerID].y - playerDrawY + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.HEIGHT -
-            this.screenShakeY
-          )
+        let cameraX = Math.round(
+          (this.players[this.localPlayerID].x - playerDrawX + 0.5) * GameConstants.TILESIZE -
+          0.5 * GameConstants.WIDTH -
+          this.screenShakeX
+        );
+        let cameraY = Math.round(
+          (this.players[this.localPlayerID].y - playerDrawY + 0.5) * GameConstants.TILESIZE -
+          0.5 * GameConstants.HEIGHT -
+          this.screenShakeY
         );
 
+        Game.ctx.translate(-cameraX, -cameraY);
         this.level.draw(delta);
         this.level.drawEntities(delta);
         this.level.drawShade(delta);
         this.level.drawOverShade(delta);
         this.players[this.localPlayerID].drawTopLayer(delta);
-
-        Game.ctx.translate(
-          Math.round(
-            (this.players[this.localPlayerID].x - playerDrawX + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.WIDTH -
-            this.screenShakeX
-          ),
-          Math.round(
-            (this.players[this.localPlayerID].y - playerDrawY + 0.5) * GameConstants.TILESIZE -
-            0.5 * GameConstants.HEIGHT -
-            this.screenShakeY
-          )
-        );
+        Game.ctx.translate(cameraX, cameraY);
 
         this.level.drawTopLayer(delta);
         this.players[this.localPlayerID].drawGUI(delta);

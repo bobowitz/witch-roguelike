@@ -15,6 +15,7 @@ import { VendingMachine } from "./enemy/vendingMachine";
 import { SideDoor } from "./tile/sidedoor";
 import { Drawable } from "./drawable";
 import { Random } from "./random";
+import { GenericParticle } from "./particle/genericParticle";
 
 export enum PlayerDirection {
   DOWN = 0,
@@ -286,8 +287,10 @@ export class Player extends Drawable {
               f.drawY = dy;
               f.skipNextTurns = 1; // skip next turn, so they don't move while we're pushing them
             }
-            if (this.game.levels[this.levelID].levelArray[nextX][nextY].canCrushEnemy() || enemyEnd)
+            if (this.game.levels[this.levelID].levelArray[nextX][nextY].canCrushEnemy() || enemyEnd) {
               pushedEnemies[pushedEnemies.length - 1].killNoBones();
+              if (this.game.levels[this.levelID] === this.game.level) Sound.hit();
+            }
             e.x += dx;
             e.y += dy;
             e.drawX = dx;

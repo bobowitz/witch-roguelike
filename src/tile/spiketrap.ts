@@ -12,6 +12,7 @@ export class SpikeTrap extends Tile {
   on: boolean;
   tickCount: number;
   frame: number;
+  t: number;
 
   constructor(level: Level, x: number, y: number, tickCount?: number) {
     super(level, x, y);
@@ -19,6 +20,7 @@ export class SpikeTrap extends Tile {
     else this.tickCount = 0;
     this.on = false;
     this.frame = 0;
+    this.t = 0;
   }
 
   tick = () => {
@@ -64,11 +66,7 @@ export class SpikeTrap extends Tile {
       this.level.shadeColor,
       this.shadeAmount()
     );
-  };
 
-  t = 0;
-
-  drawUnderPlayer = (delta: number) => {
     let rumbleOffsetX = 0;
     this.t++;
     if (!this.on && this.tickCount === 3) {

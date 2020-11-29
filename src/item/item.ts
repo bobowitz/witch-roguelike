@@ -66,6 +66,8 @@ export class Item extends Drawable {
 
   draw = (delta: number) => {
     if (!this.pickedUp) {
+      this.drawableY = this.y;
+
       if (this.scaleFactor < 1) this.scaleFactor += 0.04;
       else this.scaleFactor = 1;
 

@@ -110,12 +110,6 @@ export class GenericParticle extends Particle {
     let halfS = 0.5 * scaledS;
     let oldFillStyle = Game.ctx.fillStyle;
     Game.ctx.fillStyle = this.color;
-    /* Game.ctx.fillRect(
-      Math.round((this.x - halfS) * scale),
-      Math.round((this.y - this.z - halfS) * scale),
-      Math.round(scaledS * scale),
-      Math.round(scaledS * scale)
-    ); */
 
     Game.ctx.beginPath();
     Game.ctx.arc(
@@ -157,6 +151,8 @@ export class GenericParticle extends Particle {
     if (this.expirationTimer <= 0) this.dead = true;
 
     if (this.dead) return;
+
+    this.drawableY = this.y;
 
     this.render();
   };

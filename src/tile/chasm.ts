@@ -39,9 +39,6 @@ export class Chasm extends Tile {
   draw = (delta: number) => {
     if (this.topEdge)
       Game.drawTile(22, 0, 1, 2, this.x, this.y, 1, 2, this.level.shadeColor, this.shadeAmount());
-  };
-
-  drawUnderPlayer = (delta: number) => {
     Game.drawTile(
       this.tileX,
       this.tileY,
@@ -54,5 +51,9 @@ export class Chasm extends Tile {
       this.level.shadeColor,
       this.shadeAmount()
     );
+  };
+
+  drawUnderPlayer = (delta: number) => {
+
   };
 }

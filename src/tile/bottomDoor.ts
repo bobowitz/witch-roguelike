@@ -9,11 +9,14 @@ export class BottomDoor extends Tile {
   linkedDoor: Door;
   game: Game;
 
-  constructor(level: Level, game: Game, x: number, y: number, linkedDoor: Door) {
+  constructor(level: Level, game: Game, x: number, y: number) {
     super(level, x, y);
     this.game = game;
-    this.linkedDoor = linkedDoor;
   }
+
+  link = (other: Door) => {
+    this.linkedDoor = other;
+  };
 
   canCrushEnemy = (): boolean => {
     return true;

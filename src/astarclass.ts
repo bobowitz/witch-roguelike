@@ -4,13 +4,13 @@ import { Wall } from "./tile/wall";
 export namespace astar {
   //================== start graph js
   /* 
-	graph.js http://github.com/bgrins/javascript-astar
-	MIT License
-	Creates a Graph class used in the astar search algorithm.
-	Includes Binary Heap (with modifications) from Marijn Haverbeke 
-	    URL: http://eloquentjavascript.net/appendix2.html
-	    License: http://creativecommons.org/licenses/by/3.0/
-	*/
+  graph.js http://github.com/bgrins/javascript-astar
+  MIT License
+  Creates a Graph class used in the astar search algorithm.
+  Includes Binary Heap (with modifications) from Marijn Haverbeke 
+      URL: http://eloquentjavascript.net/appendix2.html
+      License: http://creativecommons.org/licenses/by/3.0/
+  */
 
   export interface Position {
     x: number;
@@ -23,7 +23,10 @@ export namespace astar {
   }
 
   let getTileCost = tile => {
-    return tile.isSolid() ? 99999999 : 1;
+    if (tile)
+      return tile.isSolid() ? 99999999 : 1;
+    else
+      return 99999999;
   };
 
   export class Graph {
@@ -51,10 +54,10 @@ export namespace astar {
       var graphString = "\n";
       var nodes = this.nodes;
       var rowDebug: string, row: GraphNode[], y: number, l: number;
-      for (var x = 0, len = nodes.length; x < len; ) {
+      for (var x = 0, len = nodes.length; x < len;) {
         rowDebug = "";
         row = nodes[x++];
-        for (y = 0, l = row.length; y < l; ) {
+        for (y = 0, l = row.length; y < l;) {
           rowDebug += row[y++].type + " ";
         }
         graphString = graphString + rowDebug + "\n";
@@ -249,7 +252,7 @@ export namespace astar {
     }
 
     heap(): BinaryHeap {
-      return new BinaryHeap(function(node: AStarData) {
+      return new BinaryHeap(function (node: AStarData) {
         return node.f;
       });
     }

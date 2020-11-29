@@ -230,7 +230,7 @@ export class Enemy extends Drawable {
   };
   tick = () => { };
   drawTopLayer = (delta: number) => {
-    this.drawableY = this.y;
+    this.drawableY = this.y - this.drawY;
 
     this.healthBar.draw(delta, this.health, this.maxHealth, this.x, this.y, true);
     this.drawX += -0.5 * this.drawX;

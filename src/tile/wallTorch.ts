@@ -3,7 +3,7 @@ import { Tile } from "./tile";
 import { Level } from "../level";
 import { LightSource } from "../lightSource";
 
-export class WallSideTorch extends Tile {
+export class WallTorch extends Tile {
   frame: number;
 
   constructor(level: Level, x: number, y: number) {
@@ -19,7 +19,7 @@ export class WallSideTorch extends Tile {
     return true;
   };
   isOpaque = (): boolean => {
-    return false;
+    return true;
   };
 
   draw = (delta: number) => {
@@ -38,6 +38,20 @@ export class WallSideTorch extends Tile {
       this.level.shadeColor,
       this.shadeAmount()
     );
+
+    Game.drawTile(
+      2,
+      this.skin,
+      1,
+      1,
+      this.x,
+      this.y - 0.5,
+      1,
+      1,
+      this.level.shadeColor,
+      this.shadeAmount()
+    );
+
     Game.drawFX(Math.floor(this.frame), 32, 1, 2, this.x, this.y - 1, 1, 2);
   };
 }
