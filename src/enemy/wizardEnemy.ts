@@ -98,27 +98,27 @@ export class WizardEnemy extends Enemy {
         this.alertTicks = Math.max(0, this.alertTicks - 1);
         switch (this.state) {
           case WizardState.attack:
-            if (!this.level.levelArray[this.x - 1][this.y].isSolid()) {
+            if (this.level.getTile(this.x - 1, this.y) && !this.level.levelArray[this.x - 1][this.y].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x - 1, this.y));
-              if (!this.level.levelArray[this.x - 2][this.y].isSolid()) {
+              if (this.level.getTile(this.x - 2, this.y) && !this.level.levelArray[this.x - 2][this.y].isSolid()) {
                 this.level.projectiles.push(new WizardFireball(this, this.x - 2, this.y));
               }
             }
-            if (!this.level.levelArray[this.x + 1][this.y].isSolid()) {
+            if (this.level.getTile(this.x + 1, this.y) && !this.level.levelArray[this.x + 1][this.y].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x + 1, this.y));
-              if (!this.level.levelArray[this.x + 2][this.y].isSolid()) {
+              if (this.level.getTile(this.x + 2, this.y) && !this.level.levelArray[this.x + 2][this.y].isSolid()) {
                 this.level.projectiles.push(new WizardFireball(this, this.x + 2, this.y));
               }
             }
-            if (!this.level.levelArray[this.x][this.y - 1].isSolid()) {
+            if (this.level.getTile(this.x, this.y - 1) && !this.level.levelArray[this.x][this.y - 1].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 1));
-              if (!this.level.levelArray[this.x][this.y - 2].isSolid()) {
+              if (this.level.getTile(this.x, this.y - 2) && !this.level.levelArray[this.x][this.y - 2].isSolid()) {
                 this.level.projectiles.push(new WizardFireball(this, this.x, this.y - 2));
               }
             }
-            if (!this.level.levelArray[this.x][this.y + 1].isSolid()) {
+            if (this.level.getTile(this.x, this.y + 1) && !this.level.levelArray[this.x][this.y + 1].isSolid()) {
               this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 1));
-              if (!this.level.levelArray[this.x][this.y + 2].isSolid()) {
+              if (this.level.getTile(this.x, this.y + 2) && !this.level.levelArray[this.x][this.y + 2].isSolid()) {
                 this.level.projectiles.push(new WizardFireball(this, this.x, this.y + 2));
               }
             }

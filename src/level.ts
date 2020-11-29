@@ -281,7 +281,7 @@ export class Level {
           for (let xx = 0; xx < enemy.w; xx++) {
             for (let yy = 0; yy < enemy.h; yy++) {
               for (const e of this.enemies) {
-                if (e.pointIn(x + xx, y + yy)) {
+                if (!this.getEmptyTiles().some(tt => tt.x === x + xx && tt.y === y + yy)) {
                   numEnemies++; // extra loop iteration since we're throwing out this point
                   return; // throw out point if it overlaps an enemy
                 }
@@ -291,7 +291,7 @@ export class Level {
           this.enemies.push(enemy);
         };
 
-        let type = Game.randTable(tables[d], rand);
+        let type = 5;//Game.randTable(tables[d], rand);
         switch (type) {
           case 1:
             addEnemy(new SlimeEnemy(this, this.game, x, y, rand));
@@ -405,6 +405,7 @@ export class Level {
 
   populateEmpty = (rand: () => number) => {
     this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
+    this.addEnemies(1, rand);
   };
 
   populateDungeon = (rand: () => number) => {
@@ -838,7 +839,8 @@ export class Level {
   };
 
   getTile = (x: number, y: number) => {
-    return this.levelArray[x][y];
+    if (this.levelArray[x]) return this.levelArray[x][y];
+    else return undefined;
   };
 
   fadeLighting = () => {
