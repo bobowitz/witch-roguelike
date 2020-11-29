@@ -291,7 +291,7 @@ export class Level {
           this.enemies.push(enemy);
         };
 
-        let type = 5;//Game.randTable(tables[d], rand);
+        let type = Game.randTable(tables[d], rand);
         switch (type) {
           case 1:
             addEnemy(new SlimeEnemy(this, this.game, x, y, rand));
@@ -405,7 +405,6 @@ export class Level {
 
   populateEmpty = (rand: () => number) => {
     this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
-    this.addEnemies(1, rand);
   };
 
   populateDungeon = (rand: () => number) => {
