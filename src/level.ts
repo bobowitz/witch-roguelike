@@ -292,7 +292,7 @@ export class Level {
           return true;
         };
 
-        let type = 8;//Game.randTable(tables[d], rand);
+        let type = Game.randTable(tables[d], rand);
         switch (type) {
           case 1:
             addEnemy(new SlimeEnemy(this, this.game, x, y, rand));
