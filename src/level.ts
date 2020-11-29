@@ -377,7 +377,7 @@ export class Level {
   }
 
   private addVendingMachine(rand: () => number) {
-    let t = this.getEmptyTiles().sort(() => 0.5 - Math.random())[0];
+    let t = this.getEmptyTiles().sort(() => 0.5 - Random.rand())[0];
     let x = t.x;
     let y = t.y;
     let type = Game.randTable([1, 1, 1, 1, 2, 3, 4, 5, 6], rand);

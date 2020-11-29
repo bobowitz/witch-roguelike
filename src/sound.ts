@@ -9,7 +9,6 @@ export class Sound {
   static coinPickupSounds: Array<HTMLAudioElement>;
   static miningSounds: Array<HTMLAudioElement>;
   static breakRockSound: HTMLAudioElement;
-  static powerupSound: HTMLAudioElement;
   static hurtSounds: Array<HTMLAudioElement>;
   static genericPickupSound: HTMLAudioElement;
   static pushSounds: Array<HTMLAudioElement>;
@@ -67,9 +66,6 @@ export class Sound {
     Sound.pushSounds = new Array<HTMLAudioElement>();
     [1, 2].forEach(i => Sound.pushSounds.push(new Audio("res/SFX/pushing/push" + i + ".wav")));
     for (let f of Sound.pushSounds) f.volume = 1.0;
-
-    Sound.powerupSound = new Audio("res/powerup.wav");
-    Sound.powerupSound.volume = 0.5;
 
     Sound.healSound = new Audio("res/SFX/items/powerup1.wav");
     Sound.healSound.volume = 0.5;
@@ -132,11 +128,6 @@ export class Sound {
   static breakRock = () => {
     Sound.breakRockSound.play();
     Sound.breakRockSound.currentTime = 0;
-  };
-
-  static powerup = () => {
-    Sound.powerupSound.play();
-    Sound.powerupSound.currentTime = 0;
   };
 
   static heal = () => {

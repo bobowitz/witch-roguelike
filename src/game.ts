@@ -90,7 +90,6 @@ export class Game {
   static mobset: HTMLImageElement;
   static itemset: HTMLImageElement;
   static fxset: HTMLImageElement;
-  static shopset: HTMLImageElement;
   static fontsheet: HTMLImageElement;
 
   static text_rendering_canvases: Record<string, HTMLCanvasElement>;
@@ -324,8 +323,6 @@ export class Game {
       Game.itemset.src = "res/itemset.png";
       Game.fxset = new Image();
       Game.fxset.src = "res/fxset.png";
-      Game.shopset = new Image();
-      Game.shopset.src = "res/shopset.png";
       Game.fontsheet = new Image();
       Game.fontsheet.src = "res/font.png";
 
@@ -1107,29 +1104,6 @@ export class Game {
     shadeOpacity = 0
   ) => {
     Game.drawHelper(Game.mobset, sX, sY, sW, sH, dX, dY, dW, dH, shadeColor, shadeOpacity);
-  };
-
-  static drawShop = (
-    sX: number,
-    sY: number,
-    sW: number,
-    sH: number,
-    dX: number,
-    dY: number,
-    dW: number,
-    dH: number
-  ) => {
-    Game.ctx.drawImage(
-      Game.shopset,
-      Math.round(sX * GameConstants.TILESIZE),
-      Math.round(sY * GameConstants.TILESIZE),
-      Math.round(sW * GameConstants.TILESIZE),
-      Math.round(sH * GameConstants.TILESIZE),
-      Math.round(dX * GameConstants.TILESIZE),
-      Math.round(dY * GameConstants.TILESIZE),
-      Math.round(dW * GameConstants.TILESIZE),
-      Math.round(dH * GameConstants.TILESIZE)
-    );
   };
 
   static drawItem = (

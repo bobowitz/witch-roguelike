@@ -52,8 +52,4 @@ export class Chasm extends Tile {
       this.shadeAmount()
     );
   };
-
-  drawUnderPlayer = (delta: number) => {
-
-  };
 }

@@ -89,7 +89,7 @@ class Partition {
       points.push({ x: this.x + this.w, y: y });
     }
     points = points.filter(p => !this.connections.some(c => Math.abs(c.x - p.x) + Math.abs(c.y - p.y) <= 1));
-    points.sort(() => 0.5 - Math.random());
+    points.sort(() => 0.5 - Random.rand());
     return points[0];
   }
 }
@@ -153,7 +153,7 @@ let generate_dungeon_candidate = (map_w: number, map_h: number): Array<Partition
     frontier.splice(0, 1);
 
     let doors_found = 0;
-    const num_doors = Math.floor(Math.random() * 2 + 1);
+    const num_doors = Math.floor(Random.rand() * 2 + 1);
 
     let tries = 0;
     const max_tries = 100;
@@ -311,7 +311,7 @@ let generate_cave_candidate = (map_w: number, map_h: number, num_rooms: number):
     frontier.splice(0, 1);
 
     let doors_found = 0;
-    const num_doors = Math.floor(Math.random() * 2 + 1);
+    const num_doors = Math.floor(Random.rand() * 2 + 1);
 
     let tries = 0;
     const max_tries = 100;
@@ -402,8 +402,6 @@ let generate_cave = (map_w: number, map_h: number): Array<Partition> => {
     passes_checks = true;
     if (partitions.length < NUM_ROOMS) passes_checks = false;
   }
-
-  console.log(partitions);
 
   return partitions;
 }

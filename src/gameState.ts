@@ -651,6 +651,7 @@ export const loadGameState = (game: Game, activeUsernames: Array<string>, gameSt
   game.levels = Array<Level>();
   game.levelgen = new LevelGenerator();
   game.levelgen.setSeed(gameState.seed);
+  if ((gameState as any).init_state) gameState.depth = 0;
   game.levelgen.generateFirstNFloors(game, gameState.depth);
 
   if (!(gameState as any).init_state) {
