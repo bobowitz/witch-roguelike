@@ -206,8 +206,9 @@ export class Level {
     for (let xx = x - 1; xx < x + w + 1; xx++) {
       for (let yy = y - 1; yy < y + h + 1; yy++) {
         // add a floor border
-        if (xx === x - 1 || xx === x + w || yy === y - 1 || yy === y + h)
-          this.levelArray[xx][yy] = new Floor(this, xx, yy);
+        if (xx === x - 1 || xx === x + w || yy === y - 1 || yy === y + h) {
+          if (!(this.levelArray[xx][yy] instanceof SpawnFloor)) this.levelArray[xx][yy] = new Floor(this, xx, yy);
+        }
         else
           this.levelArray[xx][yy] = new Chasm(
             this,
@@ -274,17 +275,15 @@ export class Level {
         2: [1, 2, 3, 4, 5],
         3: [1, 2, 3, 4, 5, 6, 7, 8]
       };
-      let max_depth_table = 4;
+      let max_depth_table = 3;
       let d = Math.min(this.depth, max_depth_table);
       if (tables[d] && tables[d].length > 0) {
         let addEnemy = (enemy: Enemy): boolean => { // adds an enemy if it doesn't overlap any other enemies
           for (let xx = 0; xx < enemy.w; xx++) {
             for (let yy = 0; yy < enemy.h; yy++) {
-              for (const e of this.enemies) {
-                if (!this.getEmptyTiles().some(tt => tt.x === x + xx && tt.y === y + yy)) {
-                  numEnemies++; // extra loop iteration since we're throwing out this point
-                  return false; // throw out point if it overlaps an enemy
-                }
+              if (!this.getEmptyTiles().some(tt => tt.x === x + xx && tt.y === y + yy)) {
+                numEnemies++; // extra loop iteration since we're throwing out this point
+                return false; // throw out point if it overlaps an enemy
               }
             }
           }
@@ -382,7 +381,7 @@ export class Level {
     let t = this.getEmptyTiles().sort(() => 0.5 - Random.rand())[0];
     let x = t.x;
     let y = t.y;
-    let type = Game.randTable([1, 1, 1, 1, 2, 3, 4, 5, 6], rand);
+    let type = Game.randTable([1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6], rand);
     switch (type) {
       case 1:
         this.enemies.push(new VendingMachine(this, this.game, x, y, new Heart(this, 0, 0), rand));
@@ -429,7 +428,7 @@ export class Level {
     );
     this.addEnemies(numEnemies, rand);
 
-    if (factor <= 4) this.addVendingMachine(rand);
+    if (factor <= 6) this.addVendingMachine(rand);
   };
   populateBoss = (rand: () => number) => {
     this.addTorches(Game.randTable([0, 0, 0, 1, 1, 2, 2, 3, 4], rand), rand);
@@ -796,6 +795,7 @@ export class Level {
       this.roomY + Math.floor(this.height / 2)
     );
 
+    this.clearDeadStuff();
     this.updateLighting();
     this.entered = true;
     this.message = this.name;
@@ -811,6 +811,7 @@ export class Level {
       player.moveNoSmooth(door.x + side, door.y);
     }
 
+    this.clearDeadStuff();
     this.updateLighting();
     this.entered = true;
     this.message = this.name;
@@ -819,6 +820,7 @@ export class Level {
   enterLevelThroughLadder = (player: Player, ladder: any) => {
     player.moveSnap(ladder.x, ladder.y + 1);
 
+    this.clearDeadStuff();
     this.updateLighting();
     this.entered = true;
     this.message = this.name;
@@ -989,6 +991,13 @@ export class Level {
     }
   };
 
+  clearDeadStuff = () => {
+    this.enemies = this.enemies.filter(e => !e.dead);
+    this.projectiles = this.projectiles.filter(p => !p.dead);
+    this.hitwarnings = this.hitwarnings.filter(h => !h.dead);
+    this.particles = this.particles.filter(p => !p.dead);
+  };
+
   computerTurn = () => {
     // take computer turn
     for (const e of this.enemies) {
@@ -1024,6 +1033,8 @@ export class Level {
     }
     this.enemies = this.enemies.filter(e => !e.dead); // enemies may be killed by spiketrap
 
+    this.clearDeadStuff();
+
     this.playerTicked.finishTick();
     this.turn = TurnState.playerTurn;
   };
@@ -1042,10 +1053,6 @@ export class Level {
         tiles.push(this.levelArray[x][y]);
       }
     }
-
-    this.projectiles = this.projectiles.filter(p => !p.dead);
-    this.hitwarnings = this.hitwarnings.filter(h => !h.dead);
-    this.particles = this.particles.filter(p => !p.dead);
 
     let drawables = new Array<Drawable>();
 

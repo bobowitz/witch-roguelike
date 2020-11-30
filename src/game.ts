@@ -218,6 +218,11 @@ export class Game {
       this.socket.on('player joined', (connectedPlayerID: string) => {
         if (connectedPlayerID in this.offlinePlayers) { // old player reconnecting
           this.players[connectedPlayerID] = this.offlinePlayers[connectedPlayerID];
+          if (this.players[connectedPlayerID].levelID < this.levelgen.currentFloorFirstLevelID) {
+            this.players[connectedPlayerID].levelID = this.levelgen.currentFloorFirstLevelID;
+            this.players[connectedPlayerID].x = this.levels[this.levelgen.currentFloorFirstLevelID].roomX + Math.floor(this.levels[this.levelgen.currentFloorFirstLevelID].width / 2);
+            this.players[connectedPlayerID].y = this.levels[this.levelgen.currentFloorFirstLevelID].roomY + Math.floor(this.levels[this.levelgen.currentFloorFirstLevelID].height / 2);
+          }
           delete this.offlinePlayers[connectedPlayerID];
         }
         else if (!(connectedPlayerID in this.players)) { // new player connecting
@@ -267,6 +272,9 @@ export class Game {
           }
           else if (this.chatTextBox.text === "/r") {
             console.log(Random.state);
+          }
+          else if (this.chatTextBox.text === "/seed") {
+            console.log(this.levelgen.seed);
           }
           else if (this.chatTextBox.text === "/i") {
             for (let i = 0; i < this.input_history.length; i++) {

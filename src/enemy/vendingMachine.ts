@@ -104,15 +104,14 @@ export class VendingMachine extends Enemy {
         this.playerOpened.inventory.subtractItemCount(i);
       }
 
-      let xs = [this.x - 1, this.x + 1, this.x];
-      let ys = [this.y, this.y, this.y + 1];
-      let i = 0;
+      let x, y;
       do {
-        i = Game.rand(0, xs.length - 1, this.rand);
-      } while (this.level.levelArray[xs[i]][ys[i]].isSolid() || this.level.enemies.some(e => e.x === xs[i] && e.y === ys[i]));
+        x = Game.rand(this.x - 1, this.x + 1, this.rand);
+        y = Game.rand(this.y - 1, this.y + 1, this.rand);
+      } while ((x === this.x && y === this.y) || this.level.levelArray[x][y].isSolid() || this.level.enemies.some(e => e.x === x && e.y === y));
 
       let newItem = new (this.item.constructor as { new(): Item })();
-      newItem = newItem.constructor(this.level, xs[i], ys[i]);
+      newItem = newItem.constructor(this.level, x, y);
       this.level.items.push(newItem);
 
       if (!this.isInf) {

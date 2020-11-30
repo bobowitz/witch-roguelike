@@ -36,6 +36,8 @@ export class WizardFireball extends Projectile {
   };
 
   draw = (delta: number) => {
+    if (this.dead) return;
+
     if (this.state === 0) {
       this.frame += 0.25 * delta;
       if (this.frame >= 4) this.frame = 0;

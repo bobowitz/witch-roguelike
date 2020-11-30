@@ -10,6 +10,8 @@ import { GreenGem } from "../item/greengem";
 import { GenericParticle } from "../particle/genericParticle";
 import { Coin } from "../item/coin";
 import { Sound } from "../sound";
+import { RedGem } from "../item/redgem";
+import { BlueGem } from "../item/bluegem";
 
 export class Chest extends Enemy {
   constructor(level: Level, game: Game, x: number, y: number, rand: () => number) {
@@ -19,22 +21,25 @@ export class Chest extends Enemy {
     this.tileY = 0;
     this.health = 1;
 
-    let drop = Game.randTable([1, 1, 1, 2, 2, 3], rand);
+    let drop = Game.randTable([1, 1, 1, 1, 1, 1, 1, 2, 3, 4], rand);
 
     switch (drop) {
       case 1:
-        this.drop = new Coin(this.level, this.x, this.y);
-        break;
-      case 2:
         this.drop = new Heart(this.level, this.x, this.y);
         break;
-      case 3:
+      case 2:
         this.drop = new GreenGem(this.level, this.x, this.y);
         break;
       case 3:
-        this.drop = new Key(this.level, this.x, this.y);
+        this.drop = new RedGem(this.level, this.x, this.y);
         break;
       case 4:
+        this.drop = new BlueGem(this.level, this.x, this.y);
+        break;
+      case 5:
+        this.drop = new Key(this.level, this.x, this.y);
+        break;
+      case 6:
         this.drop = new Armor(this.level, this.x, this.y);
         break;
     }

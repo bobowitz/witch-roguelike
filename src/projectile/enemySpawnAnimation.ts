@@ -44,6 +44,8 @@ export class EnemySpawnAnimation extends Projectile {
   };
 
   drawTopLayer = (delta: number) => {
+    if (this.dead) return;
+
     this.frame += 0.25 * delta;
     if (this.frame >= 8) this.frame = 0;
     for (let i = 0; i < this.ANIM_COUNT; i++) {
