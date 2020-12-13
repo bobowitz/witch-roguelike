@@ -109,6 +109,7 @@ let loadProjectile = (ps: ProjectileState, game: Game): Projectile => {
     let wizard = (game.levels[ps.levelID].enemies[ps.wizardParentID] as WizardEnemy);
     let p = new WizardFireball(wizard, ps.x, ps.y);
     p.state = ps.wizardState;
+    return p;
   }
 }
 
