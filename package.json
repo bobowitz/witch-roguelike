@@ -90,7 +90,7 @@
     "jest-worker": "^26.6.2",
     "locate-path": "^6.0.0",
     "listify": "^1.0.3",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "loose-envify": "^1.4.0",
     "lowercase-keys": "^2.0.0",
     "make-dir": "^3.1.0",
